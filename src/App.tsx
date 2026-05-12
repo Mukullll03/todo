@@ -31,10 +31,6 @@ import {
   Flame
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { GoogleGenAI, Type } from "@google/genai";
-
-// Initialize Gemini
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // Icon mapping for syllabus subjects
 const SubjectIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -273,8 +269,7 @@ export default function App() {
 
     try {
       let prompt = "";
-      let responseMimeType: "text/plain" | "application/json" = "text/plain";
-      let responseSchema: any = undefined;
+      let responseFormat: "text" | "json" = "text";
 
       switch(type) {
         case 'tutor':
@@ -287,19 +282,8 @@ export default function App() {
           prompt = `Create 3-5 catchy mnemonics or memory tricks for these topics in ${params.subject}: ${params.tasks.map((t:any) => t.text).join(', ')}.`;
           break;
         case 'flashcards':
-          prompt = `Create 5 study flashcards for ${params.subject} on topics: ${params.tasks.map((t:any) => t.text).join(', ')}. Return valid JSON array of objects with "front" and "back" keys.`;
-          responseMimeType = "application/json";
-          responseSchema = {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                front: { type: Type.STRING },
-                back: { type: Type.STRING }
-              },
-              required: ["front", "back"]
-            }
-          };
+          prompt = `Create 5 study flashcards for ${params.subject} on topics: ${params.tasks.map((t:any) => t.text).join(', ')}. Return valid JSON array of objects with "front" and "back" keys only, no markdown formatting.`;
+          responseFormat = "json";
           break;
         case 'mock':
           const mockTopics = syllabusData.flatMap(m => m.subjects.flatMap(s => s.tasks)).filter(t => completedTasks.includes(t.id)).map(t => t.text);
@@ -308,42 +292,27 @@ export default function App() {
             setIsAiLoading(false);
             return;
           }
-          prompt = `Generate a 5-question multiple choice mock test based on these studied topics: ${mockTopics.slice(-10).join(', ')}. Each question must have 4 options and 1 correct answer index (0-3). Return a JSON array of objects.`;
-          responseMimeType = "application/json";
-          responseSchema = {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                question: { type: Type.STRING },
-                options: { 
-                  type: Type.ARRAY,
-                  items: { type: Type.STRING },
-                  minItems: 4,
-                  maxItems: 4
-                },
-                correctIndex: { type: Type.NUMBER },
-                explanation: { type: Type.STRING }
-              },
-              required: ["question", "options", "correctIndex", "explanation"]
-            }
-          };
+          prompt = `Generate a 5-question multiple choice mock test based on these studied topics: ${mockTopics.slice(-10).join(', ')}. Each question must have 4 options and 1 correct answer index (0-3). Return a JSON array of objects with question, options (array of 4 strings), correctIndex (number 0-3), and explanation fields.`;
+          responseFormat = "json";
           break;
       }
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-          responseMimeType,
-          responseSchema
-        }
+      const response = await fetch('http://localhost:3002/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, responseFormat })
       });
 
-      if (responseMimeType === "application/json") {
-        setAiResponse(JSON.parse(response.text));
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (responseFormat === "json") {
+        setAiResponse(data.content);
       } else {
-        setAiResponse(response.text);
+        setAiResponse(data.content);
       }
     } catch (error) {
       console.error(error);
