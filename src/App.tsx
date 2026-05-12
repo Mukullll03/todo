@@ -13,15 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Sparkles,
   Loader2,
-  Brain,
-  Layers,
   RotateCcw,
-  ArrowRight,
-  ArrowLeft,
-  Lightbulb,
-  Wand2,
   Menu,
   ChevronDown,
   LayoutDashboard,
@@ -31,6 +24,10 @@ import {
   Flame
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { supabase } from './lib/supabase';
+import { useDataSync } from './lib/useDataSync';
+import { Auth } from './components/Auth';
 
 // Icon mapping for syllabus subjects
 const SubjectIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -123,6 +120,10 @@ const dailyTasksList = [
 ];
 
 export default function App() {
+  // User State
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [activeMonth, setActiveMonth] = useState(1);
   const [activeView, setActiveView] = useState<'syllabus' | 'calendar' | 'insights'>('syllabus');
   
@@ -162,15 +163,34 @@ export default function App() {
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedDayDetail, setSelectedDayDetail] = useState<{ date: Date, dateStr: string, tasks: string[] } | null>(null);
 
-  // AI States
-  const [aiModal, setAiModal] = useState<{ type: 'tutor' | 'simplify' | 'mnemonics' | 'flashcards' | 'mock', topic?: string, subject?: string, tasks?: any[] } | null>(null);
-  const [aiResponse, setAiResponse] = useState<any>(null);
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [flashcardIndex, setFlashcardIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [mockAnswers, setMockAnswers] = useState<Record<number, number>>({});
-  const [mockSubmitted, setMockSubmitted] = useState(false);
-  const [mockCurrentIndex, setMockCurrentIndex] = useState(0);
+  // Analytics Filters
+  const [analyticsPeriod, setAnalyticsPeriod] = useState<'week' | 'month' | 'allTime'>('month');
+  const [analyticsChart, setAnalyticsChart] = useState<'weekly' | 'subject' | 'heatmap'>('weekly');
+
+  // Initialize Supabase auth
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUserId(user?.id);
+      } catch (error) {
+        console.error('[v0] Auth error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initAuth();
+  }, []);
+
+  // Data sync hook
+  const { saveDailyData, saveDailyBlueprint, saveStudyHistory } = useDataSync(
+    userId,
+    (data) => {
+      if (data.dailyData?.completed_tasks) {
+        setCompletedDailyTasks(data.dailyData.completed_tasks);
+      }
+    }
+  );
 
   // Syncs
   useEffect(() => localStorage.setItem('sscCompletedTasks', JSON.stringify(completedTasks)), [completedTasks]);
@@ -181,18 +201,44 @@ export default function App() {
     localStorage.setItem('sscLastResetDate', new Date().toDateString());
   }, [completedDailyTasks, dailyHistory, syllabusHistory]);
 
+  // Sync to Supabase - Daily Data
+  useEffect(() => {
+    if (userId && completedDailyTasks.length > 0) {
+      saveDailyData(completedDailyTasks);
+    }
+  }, [completedDailyTasks, userId, saveDailyData]);
+
+  // Sync to Supabase - Study History
+  useEffect(() => {
+    if (userId && Object.keys(syllabusHistory).length > 0) {
+      const today = new Date().toISOString().split('T')[0];
+      const todayTasks = syllabusHistory[new Date().toDateString()] || [];
+      const subjects = new Set(
+        todayTasks.map(id => {
+          const task = syllabusData.flatMap(m => m.subjects.flatMap(s => s.tasks)).find(t => t.id === id);
+          return syllabusData.flatMap(m => m.subjects).find(s => s.tasks.find(t => t.id === id))?.name || 'Unknown';
+        })
+      );
+      saveStudyHistory(todayTasks.length, Array.from(subjects));
+    }
+  }, [syllabusHistory, userId, saveStudyHistory]);
+
   // Midnight Reset Logic
   useEffect(() => {
-    const checkMidnight = setInterval(() => {
+    const checkMidnight = setInterval(async () => {
       const today = new Date().toDateString();
       const lastDate = localStorage.getItem('sscLastResetDate');
       if (lastDate && lastDate !== today) {
+        // Save yesterday's blueprint before resetting
+        if (userId && completedDailyTasks.length > 0) {
+          await saveDailyBlueprint(completedDailyTasks, true);
+        }
         setCompletedDailyTasks([]);
         localStorage.setItem('sscLastResetDate', today);
       }
     }, 60000);
     return () => clearInterval(checkMidnight);
-  }, []);
+  }, [userId, completedDailyTasks, saveDailyBlueprint]);
 
   // Stats & Streaks
   const currentStreak = useMemo(() => {
@@ -256,76 +302,100 @@ export default function App() {
     });
   };
 
-  // AI Feature Handlers
-  const handleAiAction = async (type: any, params: any) => {
-    setAiModal({ type, ...params });
-    setIsAiLoading(true);
-    setAiResponse(null);
-    setFlashcardIndex(0);
-    setIsFlipped(false);
-    setMockAnswers({});
-    setMockSubmitted(false);
-    setMockCurrentIndex(0);
 
-    try {
-      let prompt = "";
-      let responseFormat: "text" | "json" = "text";
-
-      switch(type) {
-        case 'tutor':
-          prompt = `You are an expert SSC tutor. Provide a concise summary of key concepts for "${params.topic}". Then provide 1 relevant practice question with an answer. Format with clear headings.`;
-          break;
-        case 'simplify':
-          prompt = `Explain "${params.topic}" like I'm 5. Use a real-world analogy. Mix easy English and Roman Hindi (Hinglish) for relatability. Keep it short.`;
-          break;
-        case 'mnemonics':
-          prompt = `Create 3-5 catchy mnemonics or memory tricks for these topics in ${params.subject}: ${params.tasks.map((t:any) => t.text).join(', ')}.`;
-          break;
-        case 'flashcards':
-          prompt = `Create 5 study flashcards for ${params.subject} on topics: ${params.tasks.map((t:any) => t.text).join(', ')}. Return valid JSON array of objects with "front" and "back" keys only, no markdown formatting.`;
-          responseFormat = "json";
-          break;
-        case 'mock':
-          const mockTopics = syllabusData.flatMap(m => m.subjects.flatMap(s => s.tasks)).filter(t => completedTasks.includes(t.id)).map(t => t.text);
-          if (mockTopics.length === 0) {
-            setAiResponse("Please complete at least one topic to generate a mock test!");
-            setIsAiLoading(false);
-            return;
-          }
-          prompt = `Generate a 5-question multiple choice mock test based on these studied topics: ${mockTopics.slice(-10).join(', ')}. Each question must have 4 options and 1 correct answer index (0-3). Return a JSON array of objects with question, options (array of 4 strings), correctIndex (number 0-3), and explanation fields.`;
-          responseFormat = "json";
-          break;
-      }
-
-      const response = await fetch('http://localhost:3001/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, responseFormat })
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      if (responseFormat === "json") {
-        setAiResponse(data.content);
-      } else {
-        setAiResponse(data.content);
-      }
-    } catch (error) {
-      console.error(error);
-      setAiResponse("Something went wrong with the AI service. Please try again.");
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
 
   const activeMonthData = syllabusData.find(m => m.month === activeMonth)!;
 
+  // Analytics Helper Functions
+  const getWeeklyData = () => {
+    const weekData = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toDateString();
+      const dayTasks = syllabusHistory[dateStr] || (dateStr === new Date().toDateString() ? completedTasks : []);
+      weekData.push({
+        day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        date: dateStr,
+        tasks: dayTasks.length,
+        subjects: new Set(dayTasks.map(id => {
+          const task = syllabusData.flatMap(m => m.subjects.flatMap(s => s.tasks)).find(t => t.id === id);
+          return syllabusData.flatMap(m => m.subjects).find(s => s.tasks.find(t => t.id === id))?.name || 'Unknown';
+        })).size
+      });
+    }
+    return weekData;
+  };
+
+  const getMonthlyData = () => {
+    const monthData = {};
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(thirtyDaysAgo.getTime() + i * 24 * 60 * 60 * 1000);
+      const dateStr = date.toDateString();
+      const dayTasks = syllabusHistory[dateStr] || [];
+      const weekNum = Math.ceil((date.getDate()) / 7);
+      
+      if (!monthData[`Week ${weekNum}`]) {
+        monthData[`Week ${weekNum}`] = 0;
+      }
+      monthData[`Week ${weekNum}`] += dayTasks.length;
+    }
+    
+    return Object.entries(monthData).map(([week, tasks]) => ({ week, tasks }));
+  };
+
+  const getSubjectBreakdown = () => {
+    const subjectMap = {};
+    completedTasks.forEach(taskId => {
+      const task = syllabusData.flatMap(m => m.subjects.flatMap(s => s.tasks)).find(t => t.id === taskId);
+      const subject = syllabusData.flatMap(m => m.subjects).find(s => s.tasks.find(t => t.id === taskId))?.name || 'Unknown';
+      subjectMap[subject] = (subjectMap[subject] || 0) + 1;
+    });
+    return Object.entries(subjectMap).map(([name, value]) => ({ name, value }));
+  };
+
+  const getHeatmapData = () => {
+    const heatmapData = [];
+    for (let i = 83; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toDateString();
+      const dayTasks = syllabusHistory[dateStr] || (dateStr === new Date().toDateString() ? completedTasks : []);
+      heatmapData.push({
+        date: dateStr,
+        count: dayTasks.length,
+        displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      });
+    }
+    return heatmapData;
+  };
+
+  const getStatistics = () => {
+    const totalCompleted = completedTasks.length;
+    const daysWithTasks = Object.keys(syllabusHistory).filter(date => syllabusHistory[date].length > 0).length;
+    const avgPerDay = daysWithTasks > 0 ? Math.round(totalCompleted / daysWithTasks * 10) / 10 : 0;
+    const topSubject = getSubjectBreakdown().sort((a, b) => b.value - a.value)[0]?.name || 'N/A';
+    
+    return {
+      totalCompleted,
+      streak: currentStreak,
+      avgPerDay,
+      daysActive: daysWithTasks,
+      completionRate: percentage,
+      topSubject
+    };
+  };
+
+  const stats = getStatistics();
+  const COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 border-x border-slate-200 min-h-screen bg-white">
+      <Auth userId={userId} onAuthChange={setUserId} />
+      
       {/* Navigation Rail / Header */}
       <header className="mb-8 md:mb-12 border-b border-slate-200 pb-6 md:pb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
@@ -362,12 +432,7 @@ export default function App() {
                 )}
               </div>
               <p className="text-2xl font-black text-slate-900">{completedCount} <span className="text-slate-400 text-lg">/ {totalTasksCount}</span></p>
-              <button 
-                onClick={() => handleAiAction('mock', {})}
-                className="mt-1 flex items-center gap-2 text-indigo-600 font-bold text-[10px] uppercase tracking-widest hover:translate-x-1 transition-transform"
-              >
-                Launch Mock Test <ChevronRight size={12} />
-              </button>
+
             </div>
           </div>
         </div>
@@ -462,10 +527,7 @@ export default function App() {
                         <div className="flex items-center gap-3 font-bold text-slate-800">
                           <SubjectIcon icon={subject.icon} className={`w-5 h-5 ${subject.color}`} /> {subject.name}
                         </div>
-                        <div className="flex gap-1">
-                          <button onClick={() => handleAiAction('mnemonics', { subject: subject.name, tasks: subject.tasks })} className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-indigo-600 transition-colors" title="Memory Tricks"><Lightbulb size={18} /></button>
-                          <button onClick={() => handleAiAction('flashcards', { subject: subject.name, tasks: subject.tasks })} className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-indigo-600 transition-colors" title="Flashcards"><Layers size={18} /></button>
-                        </div>
+
                       </div>
                       <div className="p-4 space-y-1">
                         {subject.tasks.map(task => {
@@ -483,10 +545,7 @@ export default function App() {
                                 </div>
                                 <span className={`font-semibold text-slate-700 ${done ? 'line-through text-slate-400 font-normal' : ''}`}>{task.text}</span>
                               </div>
-                              <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity">
-                                <button onClick={(e) => { e.stopPropagation(); handleAiAction('simplify', { topic: task.text }); }} className="p-1.5 hover:bg-indigo-50 text-indigo-400 hover:text-indigo-600 rounded-lg"><Wand2 size={16} /></button>
-                                <button onClick={(e) => { e.stopPropagation(); handleAiAction('tutor', { topic: task.text }); }} className="p-1.5 hover:bg-indigo-50 text-indigo-400 hover:text-indigo-600 rounded-lg"><Sparkles size={16} /></button>
-                              </div>
+
                             </div>
                           );
                         })}
@@ -584,218 +643,151 @@ export default function App() {
             )}
 
             {activeView === 'insights' && (
-              <motion.div key="insights" className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-                <Trophy size={48} className="mx-auto text-slate-200 mb-6" />
-                <h3 className="text-xl font-bold text-slate-600 mb-2">Achievement Insight Tracking Coming Soon</h3>
-                <p className="text-slate-400 max-w-xs mx-auto">We're analyzing your study patterns to give you deep insights into your learning velocity.</p>
+              <motion.div 
+                key="insights"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                className="space-y-8"
+              >
+                {/* Statistics Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Completed</p>
+                    <p className="text-2xl md:text-3xl font-black text-indigo-600">{stats.totalCompleted}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">tasks done</p>
+                  </div>
+                  
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Current Streak</p>
+                    <p className="text-2xl md:text-3xl font-black text-orange-500 flex items-center gap-1">{stats.streak} <Flame size={20} /></p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">days</p>
+                  </div>
+                  
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Avg Per Day</p>
+                    <p className="text-2xl md:text-3xl font-black text-cyan-500">{stats.avgPerDay}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">tasks</p>
+                  </div>
+                  
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Active Days</p>
+                    <p className="text-2xl md:text-3xl font-black text-emerald-500">{stats.daysActive}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">studied</p>
+                  </div>
+                  
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Completion</p>
+                    <p className="text-2xl md:text-3xl font-black text-purple-500">{stats.completionRate}%</p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">overall</p>
+                  </div>
+                  
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Top Subject</p>
+                    <p className="text-sm md:text-base font-black text-slate-900 line-clamp-2">{stats.topSubject}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">most studied</p>
+                  </div>
+                </div>
+
+                {/* Chart Controls */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <h3 className="text-lg md:text-xl font-black text-slate-900">Study Patterns</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {['weekly', 'subject', 'heatmap'].map(type => (
+                        <button
+                          key={type}
+                          onClick={() => setAnalyticsChart(type as any)}
+                          className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-bold text-xs md:text-sm uppercase tracking-widest transition-all ${
+                            analyticsChart === type 
+                              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' 
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {type === 'weekly' ? 'Weekly' : type === 'subject' ? 'By Subject' : 'Heatmap'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Charts */}
+                  {analyticsChart === 'weekly' && (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={getWeeklyData()}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis dataKey="day" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                        <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                        <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                        <Bar dataKey="tasks" fill="#4f46e5" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+
+                  {analyticsChart === 'subject' && (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={getSubjectBreakdown()}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, value }) => `${name} (${value})`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {getSubjectBreakdown().map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+
+                  {analyticsChart === 'heatmap' && (
+                    <div className="overflow-x-auto">
+                      <div className="grid grid-cols-7 gap-1.5 min-w-max">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                          <div key={day} className="w-12 text-center text-[10px] font-bold text-slate-400 uppercase mb-3">{day}</div>
+                        ))}
+                        {getHeatmapData().map((data, idx) => {
+                          const maxTasks = Math.max(...getHeatmapData().map(d => d.count));
+                          const intensity = data.count === 0 ? 0 : Math.ceil((data.count / maxTasks) * 4);
+                          const colors = ['bg-slate-100', 'bg-indigo-200', 'bg-indigo-400', 'bg-indigo-600', 'bg-indigo-800'];
+                          return (
+                            <div
+                              key={idx}
+                              title={`${data.displayDate}: ${data.count} tasks`}
+                              className={`w-12 h-12 rounded-lg ${colors[intensity]} border border-slate-200 cursor-help transition-all hover:scale-110`}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Monthly Overview */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <h3 className="text-lg md:text-xl font-black text-slate-900 mb-4">Last 30 Days</h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={getMonthlyData()}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="week" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                      <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                      <Line type="monotone" dataKey="tasks" stroke="#06b6d4" strokeWidth={3} dot={{ fill: '#06b6d4', r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </main>
       </div>
 
-      {/* AI Modal Overlay */}
-      <AnimatePresence>
-        {aiModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setAiModal(null)}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl overflow-hidden"
-            >
-              {/* Header */}
-              <div className="px-5 md:px-8 py-4 md:py-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                <div className="flex items-center gap-2 md:gap-3">
-                  <div className="p-2 md:p-3 bg-indigo-600 rounded-xl md:rounded-2xl text-white shadow-lg">
-                    {aiModal.type === 'tutor' && <Sparkles size={18} className="md:w-5 md:h-5" />}
-                    {aiModal.type === 'mock' && <Brain size={18} className="md:w-5 md:h-5" />}
-                    {aiModal.type === 'flashcards' && <Layers size={18} className="md:w-5 md:h-5" />}
-                    {aiModal.type === 'mnemonics' && <Lightbulb size={18} className="md:w-5 md:h-5" />}
-                    {aiModal.type === 'simplify' && <Wand2 size={18} className="md:w-5 md:h-5" />}
-                  </div>
-                  <div>
-                    <h3 className="font-black text-base md:text-xl uppercase tracking-tight text-slate-900 font-display">
-                      {aiModal.type === 'tutor' && 'AI Context Tutor'}
-                      {aiModal.type === 'mock' && 'Adaptive Mock Test'}
-                      {aiModal.type === 'flashcards' && 'Intelligent Cards'}
-                      {aiModal.type === 'mnemonics' && 'Memory Matrix'}
-                      {aiModal.type === 'simplify' && 'Simplifier (ELI5)'}
-                    </h3>
-                    <p className="text-[10px] md:text-sm font-semibold text-slate-500 line-clamp-1">{aiModal.topic || aiModal.subject || 'Strategic Challenge'}</p>
-                  </div>
-                </div>
-                <button onClick={() => setAiModal(null)} className="p-2 md:p-3 bg-white hover:bg-slate-100 rounded-full border border-slate-200 transition-colors"><X size={18} /></button>
-              </div>
 
-              {/* Content */}
-              <div className="p-5 md:p-8 max-h-[70vh] overflow-y-auto">
-                {isAiLoading ? (
-                  <div className="flex flex-col items-center justify-center py-20 gap-4">
-                    <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
-                    <p className="font-black text-slate-400 uppercase tracking-widest text-sm">Synchronizing Intelligence...</p>
-                  </div>
-                ) : aiModal.type === 'flashcards' ? (
-                  <div className="flex flex-col items-center gap-8 py-8">
-                    <motion.div 
-                      onClick={() => setIsFlipped(!isFlipped)}
-                      className={`relative w-full h-64 cursor-pointer group`}
-                      style={{ perspective: '1000px' }}
-                    >
-                      <motion.div 
-                        animate={{ rotateY: isFlipped ? 180 : 0 }}
-                        transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-                        style={{ transformStyle: 'preserve-3d' }}
-                        className="w-full h-full"
-                      >
-                        {/* Front */}
-                        <div className="absolute inset-0 backface-hidden bg-slate-50 rounded-[2rem] border-2 border-slate-100 flex flex-col items-center justify-center p-8 text-center shadow-sm group-hover:border-indigo-200 transition-colors">
-                          <span className="absolute top-6 left-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Question</span>
-                          <p className="text-2xl font-black text-slate-900 leading-tight">{aiResponse[flashcardIndex]?.front}</p>
-                        </div>
-                        {/* Back */}
-                        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-indigo-600 rounded-[2rem] border-2 border-indigo-500 flex flex-col items-center justify-center p-8 text-center text-white shadow-xl">
-                          <span className="absolute top-6 left-8 text-[10px] font-black text-indigo-200 uppercase tracking-widest">Answer</span>
-                          <p className="text-2xl font-bold leading-relaxed">{aiResponse[flashcardIndex]?.back}</p>
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                    <div className="flex items-center gap-6">
-                      <button onClick={() => { setFlashcardIndex(i => Math.max(0, i-1)); setIsFlipped(false); }} disabled={flashcardIndex === 0} className="p-3 bg-slate-100 hover:bg-slate-200 rounded-2xl disabled:opacity-30 transition-colors"><ArrowLeft size={24} /></button>
-                      <span className="font-black text-slate-400 uppercase text-xs tracking-tighter">Card {flashcardIndex + 1} of {aiResponse.length}</span>
-                      <button onClick={() => { setFlashcardIndex(i => Math.min(aiResponse.length-1, i+1)); setIsFlipped(false); }} disabled={flashcardIndex === aiResponse.length - 1} className="p-3 bg-slate-100 hover:bg-slate-200 rounded-2xl disabled:opacity-30 transition-colors"><ArrowRight size={24} /></button>
-                    </div>
-                  </div>
-                ) : aiModal.type === 'mock' && Array.isArray(aiResponse) ? (
-                  <div className="space-y-8 py-4">
-                    {!mockSubmitted ? (
-                      <div className="space-y-6">
-                        <div className="flex justify-between items-center px-1">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Question {mockCurrentIndex + 1} of {aiResponse.length}</span>
-                          <div className="flex gap-1">
-                            {aiResponse.map((_, i) => (
-                              <div key={i} className={`h-1 w-6 rounded-full transition-colors ${i === mockCurrentIndex ? 'bg-indigo-600' : mockAnswers[i] !== undefined ? 'bg-indigo-200' : 'bg-slate-100'}`} />
-                            ))}
-                          </div>
-                        </div>
-                        <h4 className="text-xl font-black text-slate-900 leading-tight">{aiResponse[mockCurrentIndex].question}</h4>
-                        <div className="grid grid-cols-1 gap-3">
-                          {aiResponse[mockCurrentIndex].options.map((opt, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => setMockAnswers({ ...mockAnswers, [mockCurrentIndex]: idx })}
-                              className={`w-full text-left p-4 rounded-2xl border-2 transition-all flex items-center gap-4 group
-                                ${mockAnswers[mockCurrentIndex] === idx ? 'border-indigo-600 bg-indigo-50/50' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}
-                            >
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm
-                                ${mockAnswers[mockCurrentIndex] === idx ? 'bg-indigo-600 text-white' : 'bg-white text-slate-400 group-hover:text-slate-600'}`}>
-                                {String.fromCharCode(65 + idx)}
-                              </div>
-                              <span className={`font-bold ${mockAnswers[mockCurrentIndex] === idx ? 'text-indigo-900' : 'text-slate-600'}`}>{opt}</span>
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex justify-between gap-4 pt-4">
-                          <button 
-                            disabled={mockCurrentIndex === 0}
-                            onClick={() => setMockCurrentIndex(i => i - 1)}
-                            className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black uppercase tracking-widest disabled:opacity-30 transition-all hover:bg-slate-200"
-                          >
-                            Previous
-                          </button>
-                          {mockCurrentIndex === aiResponse.length - 1 ? (
-                            <button 
-                              disabled={Object.keys(mockAnswers).length < aiResponse.length}
-                              onClick={() => setMockSubmitted(true)}
-                              className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest disabled:opacity-30 transition-all hover:bg-indigo-700 shadow-lg shadow-indigo-200"
-                            >
-                              Finish Test
-                            </button>
-                          ) : (
-                            <button 
-                              onClick={() => setMockCurrentIndex(i => i + 1)}
-                              className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest transition-all hover:bg-slate-800"
-                            >
-                              Next Question
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-8">
-                        <div className="bg-indigo-600 p-8 rounded-[2rem] text-white text-center shadow-xl shadow-indigo-100">
-                          <Trophy className="mx-auto mb-4" size={48} />
-                          <h4 className="text-3xl font-black mb-1">Test Completed!</h4>
-                          <p className="text-indigo-100 font-bold uppercase tracking-widest text-sm">
-                            Score: {Object.entries(mockAnswers).filter(([idx, ans]) => aiResponse[parseInt(idx)].correctIndex === ans).length} / {aiResponse.length}
-                          </p>
-                        </div>
-                        <div className="space-y-6">
-                           {aiResponse.map((q, i) => {
-                             const userAns = mockAnswers[i];
-                             const isCorrect = userAns === q.correctIndex;
-                             return (
-                               <div key={i} className="p-6 rounded-3xl border border-slate-100 bg-slate-50 space-y-4">
-                                 <div className="flex items-start justify-between gap-4">
-                                   <p className="font-black text-slate-900 leading-tight flex-1">{i + 1}. {q.question}</p>
-                                   {isCorrect ? <CheckCircle2 className="text-green-500 shrink-0" /> : <X className="text-red-500 shrink-0" />}
-                                 </div>
-                                 <div className="space-y-2">
-                                   <div className={`p-3 rounded-xl text-sm font-bold flex justify-between ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                     <span>Your Answer: {q.options[userAns]}</span>
-                                   </div>
-                                   {!isCorrect && (
-                                     <div className="p-3 rounded-xl text-sm font-bold bg-green-100 text-green-700">
-                                       Correct Answer: {q.options[q.correctIndex]}
-                                     </div>
-                                   )}
-                                   <p className="text-xs text-slate-500 font-medium italic mt-2">"{q.explanation}"</p>
-                                 </div>
-                               </div>
-                             );
-                           })}
-                        </div>
-                        <button onClick={() => setAiModal(null)} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-colors">Return to Dashboard</button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="prose prose-slate prose-lg max-w-none prose-p:font-medium prose-p:leading-relaxed prose-headings:font-black prose-headings:tracking-tight">
-                    {/* Basic Markdown Parser for AI response */}
-                    {typeof aiResponse === 'string' ? aiResponse.split('\n').map((line, i) => {
-                      if (line.startsWith('#')) return <h4 key={i} className="text-slate-900 border-b border-slate-100 pb-2 mt-6 mb-4">{line.replace(/#/g, '').trim()}</h4>;
-                      if (line.startsWith('*') || line.startsWith('-')) return <li key={i} className="text-slate-700 ml-4 mb-2">{line.replace(/[*|-]/g, '').trim()}</li>;
-                      return <p key={i} className="mb-4">{line}</p>;
-                    }) : JSON.stringify(aiResponse)}
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-slate-400 font-bold text-[10px] uppercase tracking-widest">
-                <div className="flex items-center gap-2">
-                   <Sparkles size={12} /> Powered by Gemini Intelligent Engine
-                </div>
-                {!isAiLoading && (
-                  <button 
-                    onClick={() => handleAiAction(aiModal.type, aiModal)}
-                    className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors"
-                  >
-                    Refresh Perspective <RotateCcw size={12} />
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Day Details Modal */}
       <AnimatePresence>
