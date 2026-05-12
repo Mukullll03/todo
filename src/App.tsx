@@ -24,6 +24,7 @@ import {
   Flame
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 // Icon mapping for syllabus subjects
 const SubjectIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -155,6 +156,10 @@ export default function App() {
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedDayDetail, setSelectedDayDetail] = useState<{ date: Date, dateStr: string, tasks: string[] } | null>(null);
 
+  // Analytics Filters
+  const [analyticsPeriod, setAnalyticsPeriod] = useState<'week' | 'month' | 'allTime'>('month');
+  const [analyticsChart, setAnalyticsChart] = useState<'weekly' | 'subject' | 'heatmap'>('weekly');
+
   // Syncs
   useEffect(() => localStorage.setItem('sscCompletedTasks', JSON.stringify(completedTasks)), [completedTasks]);
   useEffect(() => {
@@ -242,6 +247,92 @@ export default function App() {
 
 
   const activeMonthData = syllabusData.find(m => m.month === activeMonth)!;
+
+  // Analytics Helper Functions
+  const getWeeklyData = () => {
+    const weekData = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toDateString();
+      const dayTasks = syllabusHistory[dateStr] || (dateStr === new Date().toDateString() ? completedTasks : []);
+      weekData.push({
+        day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        date: dateStr,
+        tasks: dayTasks.length,
+        subjects: new Set(dayTasks.map(id => {
+          const task = syllabusData.flatMap(m => m.subjects.flatMap(s => s.tasks)).find(t => t.id === id);
+          return syllabusData.flatMap(m => m.subjects).find(s => s.tasks.find(t => t.id === id))?.name || 'Unknown';
+        })).size
+      });
+    }
+    return weekData;
+  };
+
+  const getMonthlyData = () => {
+    const monthData = {};
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(thirtyDaysAgo.getTime() + i * 24 * 60 * 60 * 1000);
+      const dateStr = date.toDateString();
+      const dayTasks = syllabusHistory[dateStr] || [];
+      const weekNum = Math.ceil((date.getDate()) / 7);
+      
+      if (!monthData[`Week ${weekNum}`]) {
+        monthData[`Week ${weekNum}`] = 0;
+      }
+      monthData[`Week ${weekNum}`] += dayTasks.length;
+    }
+    
+    return Object.entries(monthData).map(([week, tasks]) => ({ week, tasks }));
+  };
+
+  const getSubjectBreakdown = () => {
+    const subjectMap = {};
+    completedTasks.forEach(taskId => {
+      const task = syllabusData.flatMap(m => m.subjects.flatMap(s => s.tasks)).find(t => t.id === taskId);
+      const subject = syllabusData.flatMap(m => m.subjects).find(s => s.tasks.find(t => t.id === taskId))?.name || 'Unknown';
+      subjectMap[subject] = (subjectMap[subject] || 0) + 1;
+    });
+    return Object.entries(subjectMap).map(([name, value]) => ({ name, value }));
+  };
+
+  const getHeatmapData = () => {
+    const heatmapData = [];
+    for (let i = 83; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toDateString();
+      const dayTasks = syllabusHistory[dateStr] || (dateStr === new Date().toDateString() ? completedTasks : []);
+      heatmapData.push({
+        date: dateStr,
+        count: dayTasks.length,
+        displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      });
+    }
+    return heatmapData;
+  };
+
+  const getStatistics = () => {
+    const totalCompleted = completedTasks.length;
+    const daysWithTasks = Object.keys(syllabusHistory).filter(date => syllabusHistory[date].length > 0).length;
+    const avgPerDay = daysWithTasks > 0 ? Math.round(totalCompleted / daysWithTasks * 10) / 10 : 0;
+    const topSubject = getSubjectBreakdown().sort((a, b) => b.value - a.value)[0]?.name || 'N/A';
+    
+    return {
+      totalCompleted,
+      streak: currentStreak,
+      avgPerDay,
+      daysActive: daysWithTasks,
+      completionRate: percentage,
+      topSubject
+    };
+  };
+
+  const stats = getStatistics();
+  const COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 border-x border-slate-200 min-h-screen bg-white">
@@ -492,10 +583,144 @@ export default function App() {
             )}
 
             {activeView === 'insights' && (
-              <motion.div key="insights" className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-                <Trophy size={48} className="mx-auto text-slate-200 mb-6" />
-                <h3 className="text-xl font-bold text-slate-600 mb-2">Achievement Insight Tracking Coming Soon</h3>
-                <p className="text-slate-400 max-w-xs mx-auto">We're analyzing your study patterns to give you deep insights into your learning velocity.</p>
+              <motion.div 
+                key="insights"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                className="space-y-8"
+              >
+                {/* Statistics Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Completed</p>
+                    <p className="text-2xl md:text-3xl font-black text-indigo-600">{stats.totalCompleted}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">tasks done</p>
+                  </div>
+                  
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Current Streak</p>
+                    <p className="text-2xl md:text-3xl font-black text-orange-500 flex items-center gap-1">{stats.streak} <Flame size={20} /></p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">days</p>
+                  </div>
+                  
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Avg Per Day</p>
+                    <p className="text-2xl md:text-3xl font-black text-cyan-500">{stats.avgPerDay}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">tasks</p>
+                  </div>
+                  
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Active Days</p>
+                    <p className="text-2xl md:text-3xl font-black text-emerald-500">{stats.daysActive}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">studied</p>
+                  </div>
+                  
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Completion</p>
+                    <p className="text-2xl md:text-3xl font-black text-purple-500">{stats.completionRate}%</p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">overall</p>
+                  </div>
+                  
+                  <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Top Subject</p>
+                    <p className="text-sm md:text-base font-black text-slate-900 line-clamp-2">{stats.topSubject}</p>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-2">most studied</p>
+                  </div>
+                </div>
+
+                {/* Chart Controls */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <h3 className="text-lg md:text-xl font-black text-slate-900">Study Patterns</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {['weekly', 'subject', 'heatmap'].map(type => (
+                        <button
+                          key={type}
+                          onClick={() => setAnalyticsChart(type as any)}
+                          className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-bold text-xs md:text-sm uppercase tracking-widest transition-all ${
+                            analyticsChart === type 
+                              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' 
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {type === 'weekly' ? 'Weekly' : type === 'subject' ? 'By Subject' : 'Heatmap'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Charts */}
+                  {analyticsChart === 'weekly' && (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={getWeeklyData()}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis dataKey="day" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                        <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                        <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                        <Bar dataKey="tasks" fill="#4f46e5" radius={[8, 8, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+
+                  {analyticsChart === 'subject' && (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={getSubjectBreakdown()}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, value }) => `${name} (${value})`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {getSubjectBreakdown().map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+
+                  {analyticsChart === 'heatmap' && (
+                    <div className="overflow-x-auto">
+                      <div className="grid grid-cols-7 gap-1.5 min-w-max">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                          <div key={day} className="w-12 text-center text-[10px] font-bold text-slate-400 uppercase mb-3">{day}</div>
+                        ))}
+                        {getHeatmapData().map((data, idx) => {
+                          const maxTasks = Math.max(...getHeatmapData().map(d => d.count));
+                          const intensity = data.count === 0 ? 0 : Math.ceil((data.count / maxTasks) * 4);
+                          const colors = ['bg-slate-100', 'bg-indigo-200', 'bg-indigo-400', 'bg-indigo-600', 'bg-indigo-800'];
+                          return (
+                            <div
+                              key={idx}
+                              title={`${data.displayDate}: ${data.count} tasks`}
+                              className={`w-12 h-12 rounded-lg ${colors[intensity]} border border-slate-200 cursor-help transition-all hover:scale-110`}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Monthly Overview */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <h3 className="text-lg md:text-xl font-black text-slate-900 mb-4">Last 30 Days</h3>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={getMonthlyData()}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="week" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                      <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                      <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                      <Line type="monotone" dataKey="tasks" stroke="#06b6d4" strokeWidth={3} dot={{ fill: '#06b6d4', r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
