@@ -14,6 +14,7 @@ export function Auth({ userId, onAuthChange }: AuthProps) {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
+  const isSupabaseConfigured = !!import.meta.env.VITE_SUPABASE_URL;
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +80,13 @@ export function Auth({ userId, onAuthChange }: AuthProps) {
   if (!userId) {
     return (
       <div className="fixed top-4 right-4 z-40">
-        {!showAuth ? (
+        {!isSupabaseConfigured ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 w-64 text-sm">
+            <p className="text-amber-900 font-semibold mb-2">Offline Mode</p>
+            <p className="text-amber-800 text-xs mb-3">Add Supabase credentials to enable cloud sync and authentication.</p>
+            <p className="text-amber-700 text-xs">Your data is saved locally for now.</p>
+          </div>
+        ) : !showAuth ? (
           <button
             onClick={() => setShowAuth(true)}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold shadow-lg"
