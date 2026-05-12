@@ -25,9 +25,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { supabase } from './lib/supabase';
-import { useDataSync } from './lib/useDataSync';
-import { Auth } from './components/Auth';
 
 // Icon mapping for syllabus subjects
 const SubjectIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -120,10 +117,6 @@ const dailyTasksList = [
 ];
 
 export default function App() {
-  // User State
-  const [userId, setUserId] = useState<string | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
-
   const [activeMonth, setActiveMonth] = useState(1);
   const [activeView, setActiveView] = useState<'syllabus' | 'calendar' | 'insights'>('syllabus');
   
@@ -167,31 +160,6 @@ export default function App() {
   const [analyticsPeriod, setAnalyticsPeriod] = useState<'week' | 'month' | 'allTime'>('month');
   const [analyticsChart, setAnalyticsChart] = useState<'weekly' | 'subject' | 'heatmap'>('weekly');
 
-  // Initialize Supabase auth
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUserId(user?.id);
-      } catch (error) {
-        console.error('[v0] Auth error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    initAuth();
-  }, []);
-
-  // Data sync hook
-  const { saveDailyData, saveDailyBlueprint, saveStudyHistory } = useDataSync(
-    userId,
-    (data) => {
-      if (data.dailyData?.completed_tasks) {
-        setCompletedDailyTasks(data.dailyData.completed_tasks);
-      }
-    }
-  );
-
   // Syncs
   useEffect(() => localStorage.setItem('sscCompletedTasks', JSON.stringify(completedTasks)), [completedTasks]);
   useEffect(() => {
@@ -201,44 +169,18 @@ export default function App() {
     localStorage.setItem('sscLastResetDate', new Date().toDateString());
   }, [completedDailyTasks, dailyHistory, syllabusHistory]);
 
-  // Sync to Supabase - Daily Data
-  useEffect(() => {
-    if (userId && completedDailyTasks.length > 0) {
-      saveDailyData(completedDailyTasks);
-    }
-  }, [completedDailyTasks, userId, saveDailyData]);
-
-  // Sync to Supabase - Study History
-  useEffect(() => {
-    if (userId && Object.keys(syllabusHistory).length > 0) {
-      const today = new Date().toISOString().split('T')[0];
-      const todayTasks = syllabusHistory[new Date().toDateString()] || [];
-      const subjects = new Set(
-        todayTasks.map(id => {
-          const task = syllabusData.flatMap(m => m.subjects.flatMap(s => s.tasks)).find(t => t.id === id);
-          return syllabusData.flatMap(m => m.subjects).find(s => s.tasks.find(t => t.id === id))?.name || 'Unknown';
-        })
-      );
-      saveStudyHistory(todayTasks.length, Array.from(subjects));
-    }
-  }, [syllabusHistory, userId, saveStudyHistory]);
-
   // Midnight Reset Logic
   useEffect(() => {
-    const checkMidnight = setInterval(async () => {
+    const checkMidnight = setInterval(() => {
       const today = new Date().toDateString();
       const lastDate = localStorage.getItem('sscLastResetDate');
       if (lastDate && lastDate !== today) {
-        // Save yesterday's blueprint before resetting
-        if (userId && completedDailyTasks.length > 0) {
-          await saveDailyBlueprint(completedDailyTasks, true);
-        }
         setCompletedDailyTasks([]);
         localStorage.setItem('sscLastResetDate', today);
       }
     }, 60000);
     return () => clearInterval(checkMidnight);
-  }, [userId, completedDailyTasks, saveDailyBlueprint]);
+  }, []);
 
   // Stats & Streaks
   const currentStreak = useMemo(() => {
@@ -394,8 +336,6 @@ export default function App() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 border-x border-slate-200 min-h-screen bg-white">
-      <Auth userId={userId} onAuthChange={setUserId} />
-      
       {/* Navigation Rail / Header */}
       <header className="mb-8 md:mb-12 border-b border-slate-200 pb-6 md:pb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
