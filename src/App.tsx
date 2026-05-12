@@ -297,7 +297,7 @@ export default function App() {
           break;
       }
 
-      const response = await fetch('http://localhost:3002/api/ai', {
+      const response = await fetch('http://localhost:3001/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, responseFormat })
