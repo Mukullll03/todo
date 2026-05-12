@@ -13,15 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Sparkles,
   Loader2,
-  Brain,
-  Layers,
   RotateCcw,
-  ArrowRight,
-  ArrowLeft,
-  Lightbulb,
-  Wand2,
   Menu,
   ChevronDown,
   LayoutDashboard,
@@ -162,16 +155,6 @@ export default function App() {
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedDayDetail, setSelectedDayDetail] = useState<{ date: Date, dateStr: string, tasks: string[] } | null>(null);
 
-  // AI States
-  const [aiModal, setAiModal] = useState<{ type: 'tutor' | 'simplify' | 'mnemonics' | 'flashcards' | 'mock', topic?: string, subject?: string, tasks?: any[] } | null>(null);
-  const [aiResponse, setAiResponse] = useState<any>(null);
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [flashcardIndex, setFlashcardIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-  const [mockAnswers, setMockAnswers] = useState<Record<number, number>>({});
-  const [mockSubmitted, setMockSubmitted] = useState(false);
-  const [mockCurrentIndex, setMockCurrentIndex] = useState(0);
-
   // Syncs
   useEffect(() => localStorage.setItem('sscCompletedTasks', JSON.stringify(completedTasks)), [completedTasks]);
   useEffect(() => {
@@ -256,71 +239,7 @@ export default function App() {
     });
   };
 
-  // AI Feature Handlers
-  const handleAiAction = async (type: any, params: any) => {
-    setAiModal({ type, ...params });
-    setIsAiLoading(true);
-    setAiResponse(null);
-    setFlashcardIndex(0);
-    setIsFlipped(false);
-    setMockAnswers({});
-    setMockSubmitted(false);
-    setMockCurrentIndex(0);
 
-    try {
-      let prompt = "";
-      let responseFormat: "text" | "json" = "text";
-
-      switch(type) {
-        case 'tutor':
-          prompt = `You are an expert SSC tutor. Provide a concise summary of key concepts for "${params.topic}". Then provide 1 relevant practice question with an answer. Format with clear headings.`;
-          break;
-        case 'simplify':
-          prompt = `Explain "${params.topic}" like I'm 5. Use a real-world analogy. Mix easy English and Roman Hindi (Hinglish) for relatability. Keep it short.`;
-          break;
-        case 'mnemonics':
-          prompt = `Create 3-5 catchy mnemonics or memory tricks for these topics in ${params.subject}: ${params.tasks.map((t:any) => t.text).join(', ')}.`;
-          break;
-        case 'flashcards':
-          prompt = `Create 5 study flashcards for ${params.subject} on topics: ${params.tasks.map((t:any) => t.text).join(', ')}. Return valid JSON array of objects with "front" and "back" keys only, no markdown formatting.`;
-          responseFormat = "json";
-          break;
-        case 'mock':
-          const mockTopics = syllabusData.flatMap(m => m.subjects.flatMap(s => s.tasks)).filter(t => completedTasks.includes(t.id)).map(t => t.text);
-          if (mockTopics.length === 0) {
-            setAiResponse("Please complete at least one topic to generate a mock test!");
-            setIsAiLoading(false);
-            return;
-          }
-          prompt = `Generate a 5-question multiple choice mock test based on these studied topics: ${mockTopics.slice(-10).join(', ')}. Each question must have 4 options and 1 correct answer index (0-3). Return a JSON array of objects with question, options (array of 4 strings), correctIndex (number 0-3), and explanation fields.`;
-          responseFormat = "json";
-          break;
-      }
-
-      const response = await fetch('http://localhost:3001/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, responseFormat })
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      if (responseFormat === "json") {
-        setAiResponse(data.content);
-      } else {
-        setAiResponse(data.content);
-      }
-    } catch (error) {
-      console.error(error);
-      setAiResponse("Something went wrong with the AI service. Please try again.");
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
 
   const activeMonthData = syllabusData.find(m => m.month === activeMonth)!;
 
@@ -362,12 +281,7 @@ export default function App() {
                 )}
               </div>
               <p className="text-2xl font-black text-slate-900">{completedCount} <span className="text-slate-400 text-lg">/ {totalTasksCount}</span></p>
-              <button 
-                onClick={() => handleAiAction('mock', {})}
-                className="mt-1 flex items-center gap-2 text-indigo-600 font-bold text-[10px] uppercase tracking-widest hover:translate-x-1 transition-transform"
-              >
-                Launch Mock Test <ChevronRight size={12} />
-              </button>
+
             </div>
           </div>
         </div>
@@ -462,10 +376,7 @@ export default function App() {
                         <div className="flex items-center gap-3 font-bold text-slate-800">
                           <SubjectIcon icon={subject.icon} className={`w-5 h-5 ${subject.color}`} /> {subject.name}
                         </div>
-                        <div className="flex gap-1">
-                          <button onClick={() => handleAiAction('mnemonics', { subject: subject.name, tasks: subject.tasks })} className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-indigo-600 transition-colors" title="Memory Tricks"><Lightbulb size={18} /></button>
-                          <button onClick={() => handleAiAction('flashcards', { subject: subject.name, tasks: subject.tasks })} className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-indigo-600 transition-colors" title="Flashcards"><Layers size={18} /></button>
-                        </div>
+
                       </div>
                       <div className="p-4 space-y-1">
                         {subject.tasks.map(task => {
@@ -483,10 +394,7 @@ export default function App() {
                                 </div>
                                 <span className={`font-semibold text-slate-700 ${done ? 'line-through text-slate-400 font-normal' : ''}`}>{task.text}</span>
                               </div>
-                              <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity">
-                                <button onClick={(e) => { e.stopPropagation(); handleAiAction('simplify', { topic: task.text }); }} className="p-1.5 hover:bg-indigo-50 text-indigo-400 hover:text-indigo-600 rounded-lg"><Wand2 size={16} /></button>
-                                <button onClick={(e) => { e.stopPropagation(); handleAiAction('tutor', { topic: task.text }); }} className="p-1.5 hover:bg-indigo-50 text-indigo-400 hover:text-indigo-600 rounded-lg"><Sparkles size={16} /></button>
-                              </div>
+
                             </div>
                           );
                         })}
@@ -594,208 +502,7 @@ export default function App() {
         </main>
       </div>
 
-      {/* AI Modal Overlay */}
-      <AnimatePresence>
-        {aiModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setAiModal(null)}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-            />
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl overflow-hidden"
-            >
-              {/* Header */}
-              <div className="px-5 md:px-8 py-4 md:py-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                <div className="flex items-center gap-2 md:gap-3">
-                  <div className="p-2 md:p-3 bg-indigo-600 rounded-xl md:rounded-2xl text-white shadow-lg">
-                    {aiModal.type === 'tutor' && <Sparkles size={18} className="md:w-5 md:h-5" />}
-                    {aiModal.type === 'mock' && <Brain size={18} className="md:w-5 md:h-5" />}
-                    {aiModal.type === 'flashcards' && <Layers size={18} className="md:w-5 md:h-5" />}
-                    {aiModal.type === 'mnemonics' && <Lightbulb size={18} className="md:w-5 md:h-5" />}
-                    {aiModal.type === 'simplify' && <Wand2 size={18} className="md:w-5 md:h-5" />}
-                  </div>
-                  <div>
-                    <h3 className="font-black text-base md:text-xl uppercase tracking-tight text-slate-900 font-display">
-                      {aiModal.type === 'tutor' && 'AI Context Tutor'}
-                      {aiModal.type === 'mock' && 'Adaptive Mock Test'}
-                      {aiModal.type === 'flashcards' && 'Intelligent Cards'}
-                      {aiModal.type === 'mnemonics' && 'Memory Matrix'}
-                      {aiModal.type === 'simplify' && 'Simplifier (ELI5)'}
-                    </h3>
-                    <p className="text-[10px] md:text-sm font-semibold text-slate-500 line-clamp-1">{aiModal.topic || aiModal.subject || 'Strategic Challenge'}</p>
-                  </div>
-                </div>
-                <button onClick={() => setAiModal(null)} className="p-2 md:p-3 bg-white hover:bg-slate-100 rounded-full border border-slate-200 transition-colors"><X size={18} /></button>
-              </div>
 
-              {/* Content */}
-              <div className="p-5 md:p-8 max-h-[70vh] overflow-y-auto">
-                {isAiLoading ? (
-                  <div className="flex flex-col items-center justify-center py-20 gap-4">
-                    <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
-                    <p className="font-black text-slate-400 uppercase tracking-widest text-sm">Synchronizing Intelligence...</p>
-                  </div>
-                ) : aiModal.type === 'flashcards' ? (
-                  <div className="flex flex-col items-center gap-8 py-8">
-                    <motion.div 
-                      onClick={() => setIsFlipped(!isFlipped)}
-                      className={`relative w-full h-64 cursor-pointer group`}
-                      style={{ perspective: '1000px' }}
-                    >
-                      <motion.div 
-                        animate={{ rotateY: isFlipped ? 180 : 0 }}
-                        transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-                        style={{ transformStyle: 'preserve-3d' }}
-                        className="w-full h-full"
-                      >
-                        {/* Front */}
-                        <div className="absolute inset-0 backface-hidden bg-slate-50 rounded-[2rem] border-2 border-slate-100 flex flex-col items-center justify-center p-8 text-center shadow-sm group-hover:border-indigo-200 transition-colors">
-                          <span className="absolute top-6 left-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Question</span>
-                          <p className="text-2xl font-black text-slate-900 leading-tight">{aiResponse[flashcardIndex]?.front}</p>
-                        </div>
-                        {/* Back */}
-                        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-indigo-600 rounded-[2rem] border-2 border-indigo-500 flex flex-col items-center justify-center p-8 text-center text-white shadow-xl">
-                          <span className="absolute top-6 left-8 text-[10px] font-black text-indigo-200 uppercase tracking-widest">Answer</span>
-                          <p className="text-2xl font-bold leading-relaxed">{aiResponse[flashcardIndex]?.back}</p>
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                    <div className="flex items-center gap-6">
-                      <button onClick={() => { setFlashcardIndex(i => Math.max(0, i-1)); setIsFlipped(false); }} disabled={flashcardIndex === 0} className="p-3 bg-slate-100 hover:bg-slate-200 rounded-2xl disabled:opacity-30 transition-colors"><ArrowLeft size={24} /></button>
-                      <span className="font-black text-slate-400 uppercase text-xs tracking-tighter">Card {flashcardIndex + 1} of {aiResponse.length}</span>
-                      <button onClick={() => { setFlashcardIndex(i => Math.min(aiResponse.length-1, i+1)); setIsFlipped(false); }} disabled={flashcardIndex === aiResponse.length - 1} className="p-3 bg-slate-100 hover:bg-slate-200 rounded-2xl disabled:opacity-30 transition-colors"><ArrowRight size={24} /></button>
-                    </div>
-                  </div>
-                ) : aiModal.type === 'mock' && Array.isArray(aiResponse) ? (
-                  <div className="space-y-8 py-4">
-                    {!mockSubmitted ? (
-                      <div className="space-y-6">
-                        <div className="flex justify-between items-center px-1">
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Question {mockCurrentIndex + 1} of {aiResponse.length}</span>
-                          <div className="flex gap-1">
-                            {aiResponse.map((_, i) => (
-                              <div key={i} className={`h-1 w-6 rounded-full transition-colors ${i === mockCurrentIndex ? 'bg-indigo-600' : mockAnswers[i] !== undefined ? 'bg-indigo-200' : 'bg-slate-100'}`} />
-                            ))}
-                          </div>
-                        </div>
-                        <h4 className="text-xl font-black text-slate-900 leading-tight">{aiResponse[mockCurrentIndex].question}</h4>
-                        <div className="grid grid-cols-1 gap-3">
-                          {aiResponse[mockCurrentIndex].options.map((opt, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => setMockAnswers({ ...mockAnswers, [mockCurrentIndex]: idx })}
-                              className={`w-full text-left p-4 rounded-2xl border-2 transition-all flex items-center gap-4 group
-                                ${mockAnswers[mockCurrentIndex] === idx ? 'border-indigo-600 bg-indigo-50/50' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}
-                            >
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm
-                                ${mockAnswers[mockCurrentIndex] === idx ? 'bg-indigo-600 text-white' : 'bg-white text-slate-400 group-hover:text-slate-600'}`}>
-                                {String.fromCharCode(65 + idx)}
-                              </div>
-                              <span className={`font-bold ${mockAnswers[mockCurrentIndex] === idx ? 'text-indigo-900' : 'text-slate-600'}`}>{opt}</span>
-                            </button>
-                          ))}
-                        </div>
-                        <div className="flex justify-between gap-4 pt-4">
-                          <button 
-                            disabled={mockCurrentIndex === 0}
-                            onClick={() => setMockCurrentIndex(i => i - 1)}
-                            className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black uppercase tracking-widest disabled:opacity-30 transition-all hover:bg-slate-200"
-                          >
-                            Previous
-                          </button>
-                          {mockCurrentIndex === aiResponse.length - 1 ? (
-                            <button 
-                              disabled={Object.keys(mockAnswers).length < aiResponse.length}
-                              onClick={() => setMockSubmitted(true)}
-                              className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest disabled:opacity-30 transition-all hover:bg-indigo-700 shadow-lg shadow-indigo-200"
-                            >
-                              Finish Test
-                            </button>
-                          ) : (
-                            <button 
-                              onClick={() => setMockCurrentIndex(i => i + 1)}
-                              className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest transition-all hover:bg-slate-800"
-                            >
-                              Next Question
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-8">
-                        <div className="bg-indigo-600 p-8 rounded-[2rem] text-white text-center shadow-xl shadow-indigo-100">
-                          <Trophy className="mx-auto mb-4" size={48} />
-                          <h4 className="text-3xl font-black mb-1">Test Completed!</h4>
-                          <p className="text-indigo-100 font-bold uppercase tracking-widest text-sm">
-                            Score: {Object.entries(mockAnswers).filter(([idx, ans]) => aiResponse[parseInt(idx)].correctIndex === ans).length} / {aiResponse.length}
-                          </p>
-                        </div>
-                        <div className="space-y-6">
-                           {aiResponse.map((q, i) => {
-                             const userAns = mockAnswers[i];
-                             const isCorrect = userAns === q.correctIndex;
-                             return (
-                               <div key={i} className="p-6 rounded-3xl border border-slate-100 bg-slate-50 space-y-4">
-                                 <div className="flex items-start justify-between gap-4">
-                                   <p className="font-black text-slate-900 leading-tight flex-1">{i + 1}. {q.question}</p>
-                                   {isCorrect ? <CheckCircle2 className="text-green-500 shrink-0" /> : <X className="text-red-500 shrink-0" />}
-                                 </div>
-                                 <div className="space-y-2">
-                                   <div className={`p-3 rounded-xl text-sm font-bold flex justify-between ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                     <span>Your Answer: {q.options[userAns]}</span>
-                                   </div>
-                                   {!isCorrect && (
-                                     <div className="p-3 rounded-xl text-sm font-bold bg-green-100 text-green-700">
-                                       Correct Answer: {q.options[q.correctIndex]}
-                                     </div>
-                                   )}
-                                   <p className="text-xs text-slate-500 font-medium italic mt-2">"{q.explanation}"</p>
-                                 </div>
-                               </div>
-                             );
-                           })}
-                        </div>
-                        <button onClick={() => setAiModal(null)} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-colors">Return to Dashboard</button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="prose prose-slate prose-lg max-w-none prose-p:font-medium prose-p:leading-relaxed prose-headings:font-black prose-headings:tracking-tight">
-                    {/* Basic Markdown Parser for AI response */}
-                    {typeof aiResponse === 'string' ? aiResponse.split('\n').map((line, i) => {
-                      if (line.startsWith('#')) return <h4 key={i} className="text-slate-900 border-b border-slate-100 pb-2 mt-6 mb-4">{line.replace(/#/g, '').trim()}</h4>;
-                      if (line.startsWith('*') || line.startsWith('-')) return <li key={i} className="text-slate-700 ml-4 mb-2">{line.replace(/[*|-]/g, '').trim()}</li>;
-                      return <p key={i} className="mb-4">{line}</p>;
-                    }) : JSON.stringify(aiResponse)}
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-slate-400 font-bold text-[10px] uppercase tracking-widest">
-                <div className="flex items-center gap-2">
-                   <Sparkles size={12} /> Powered by Gemini Intelligent Engine
-                </div>
-                {!isAiLoading && (
-                  <button 
-                    onClick={() => handleAiAction(aiModal.type, aiModal)}
-                    className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 transition-colors"
-                  >
-                    Refresh Perspective <RotateCcw size={12} />
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* Day Details Modal */}
       <AnimatePresence>
