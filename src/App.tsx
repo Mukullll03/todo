@@ -358,21 +358,21 @@ export default function App() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 border-x border-slate-200 min-h-screen bg-white">
       {/* Navigation Rail / Header */}
-      <header className="mb-12 border-b border-slate-200 pb-8">
-        <div className="flex flex-col md:flex-row justify-between items-end gap-8">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                <Target size={28} />
+      <header className="mb-8 md:mb-12 border-b border-slate-200 pb-6 md:pb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
+          <div className="flex-1 w-full">
+            <div className="flex items-center gap-3 mb-3 md:mb-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                <Target size={24} className="md:w-7 md:h-7" />
               </div>
-              <h1 className="text-4xl font-black tracking-tight text-slate-900 font-display">SSC MASTERY <span className="text-indigo-600">180</span></h1>
+              <h1 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900 font-display">SSC MASTERY <span className="text-indigo-600">180</span></h1>
             </div>
-            <p className="text-slate-500 max-w-md text-lg font-medium leading-relaxed">
+            <p className="text-slate-500 max-w-md text-base md:text-lg font-medium leading-relaxed">
               Your intelligent companion for the 180-day challenge. Designed for precision, powered by AI.
             </p>
           </div>
           
-          <div className="glass p-6 rounded-3xl border-slate-200 shadow-xl shadow-slate-100 flex items-center gap-6 min-w-[280px]">
+          <div className="glass p-4 md:p-6 rounded-[1.5rem] md:rounded-3xl border-slate-200 shadow-xl shadow-slate-100 flex items-center gap-4 md:gap-6 w-full md:w-auto min-w-0 md:min-w-[280px]">
             <div className="relative w-20 h-20">
                <svg className="w-20 h-20 transform -rotate-90">
                  <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
@@ -408,27 +408,27 @@ export default function App() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left Col: Daily & Views */}
-        <div className="lg:col-span-3 space-y-8">
-          <section className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+        <div className="lg:col-span-3 space-y-6 md:space-y-8">
+          <section className="bg-slate-50 p-5 md:p-6 rounded-[1.5rem] md:rounded-3xl border border-slate-100">
+            <h2 className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 md:mb-6 flex items-center gap-2">
               <Clock size={14} /> Daily Blueprint
             </h2>
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
               {dailyTasksList.map(task => {
                 const done = completedDailyTasks.includes(task.id);
                 return (
                   <button 
                     key={task.id}
                     onClick={() => toggleDailyTask(task.id)}
-                    className={`w-full text-left p-4 rounded-2xl border transition-all flex items-start gap-3 group
+                    className={`w-full text-left p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all flex items-start gap-3 group
                       ${done ? 'bg-white border-transparent opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 shadow-sm hover:shadow-md'}`}
                   >
                     <div className={`mt-0.5 ${done ? 'text-green-500' : 'text-slate-300 group-hover:text-indigo-500'}`}>
-                      {done ? <CheckCircle2 size={20} /> : <Circle size={20} />}
+                      {done ? <CheckCircle2 size={18} /> : <Circle size={18} />}
                     </div>
                     <div>
-                      <p className={`font-bold leading-tight ${done ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{task.title}</p>
-                      <p className="text-xs text-slate-500 font-medium">{task.duration}</p>
+                      <p className={`font-bold text-sm md:text-base leading-tight ${done ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{task.title}</p>
+                      <p className="text-[10px] md:text-xs text-slate-500 font-medium">{task.duration}</p>
                     </div>
                   </button>
                 );
@@ -436,19 +436,19 @@ export default function App() {
             </div>
           </section>
 
-          <nav className="flex flex-col gap-2">
+          <nav className="flex flex-row lg:flex-col gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
             {[
-              { id: 'syllabus', icon: LayoutDashboard, label: 'Course Map' },
-              { id: 'calendar', icon: Calendar, label: 'Work History' },
-              { id: 'insights', icon: Trophy, label: 'Achievements' }
+              { id: 'syllabus', icon: LayoutDashboard, label: 'Course' },
+              { id: 'calendar', icon: Calendar, label: 'History' },
+              { id: 'insights', icon: Trophy, label: 'Stats' }
             ].map(item => (
               <button 
                 key={item.id}
                 onClick={() => setActiveView(item.id as any)}
-                className={`flex items-center gap-3 px-6 py-4 rounded-2xl font-bold transition-all
-                  ${activeView === item.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`flex items-center gap-2 md:gap-3 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold transition-all whitespace-nowrap md:whitespace-normal
+                  ${activeView === item.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50 bg-white md:bg-transparent border border-slate-100 md:border-0'}`}
               >
-                <item.icon size={20} /> {item.label}
+                <item.icon size={18} /> <span className="hidden sm:inline">{item.label}</span>
               </button>
             ))}
           </nav>
@@ -466,12 +466,12 @@ export default function App() {
                 className="space-y-8"
               >
                 {/* Month Tabs */}
-                <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl w-fit">
+                <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl w-fit max-w-full overflow-x-auto scrollbar-hide">
                   {syllabusData.map(m => (
                     <button 
                       key={m.month}
                       onClick={() => setActiveMonth(m.month)}
-                      className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all
+                      className={`px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all whitespace-nowrap
                         ${activeMonth === m.month ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                       {m.title.split(':')[0]}
@@ -479,10 +479,10 @@ export default function App() {
                   ))}
                 </div>
 
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center px-1">
                   <div>
-                    <h2 className="text-3xl font-black text-slate-900 font-display">{activeMonthData.title}</h2>
-                    <p className="text-slate-500 font-medium">{activeMonthData.subtitle}</p>
+                    <h2 className="text-xl md:text-3xl font-black text-slate-900 font-display">{activeMonthData.title}</h2>
+                    <p className="text-xs md:text-slate-500 font-medium">{activeMonthData.subtitle}</p>
                   </div>
                 </div>
 
@@ -577,8 +577,8 @@ export default function App() {
                   })}
                 </div>
 
-                <div className="grid grid-cols-7 gap-3">
-                  {['S','M','T','W','T','F','S'].map((d, i) => <div key={`${d}-${i}`} className="text-center text-xs font-black text-slate-400 py-4 uppercase tracking-tighter">{d}</div>)}
+                <div className="grid grid-cols-7 gap-1.5 md:gap-3">
+                  {['S','M','T','W','T','F','S'].map((d, i) => <div key={`${d}-${i}`} className="text-center text-[10px] md:text-xs font-black text-slate-400 py-2 md:py-4 uppercase tracking-tighter">{d}</div>)}
                   {Array.from({ length: new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1).getDay() }).map((_, i) => <div key={i} />)}
                   {Array.from({ length: new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0).getDate() }).map((_, i) => {
                     const day = i + 1;
@@ -593,20 +593,20 @@ export default function App() {
                       <button 
                         key={day}
                         onClick={() => setSelectedDayDetail({ date, dateStr, tasks, syllabusTasks } as any)}
-                        className={`aspect-square rounded-2xl border-2 flex items-center justify-center font-bold text-lg transition-all relative group
+                        className={`aspect-square rounded-lg md:rounded-2xl border-2 flex items-center justify-center font-bold text-sm md:text-lg transition-all relative group
                           ${isToday ? 'border-indigo-600' : 'border-transparent'}
                           ${level === 4 ? 'bg-green-500 text-white shadow-lg shadow-green-100' : 
                             level === 3 ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-100' :
                             level > 0 ? 'bg-indigo-100 text-indigo-600' : 'bg-white text-slate-300 hover:border-slate-200'}`}
                       >
                         {day}
-                        {level > 0 && <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-white/40" />}
+                        {level > 0 && <div className="absolute top-1 right-1 w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-white/40" />}
                       </button>
                     );
                   })}
                 </div>
 
-                <div className="mt-8 flex gap-6 items-center text-xs font-bold text-slate-400">
+                <div className="mt-6 md:mt-8 flex flex-wrap gap-4 md:gap-6 items-center text-[10px] md:text-xs font-bold text-slate-400">
                   <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-white border border-slate-200" /> Missed</span>
                   <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-indigo-100" /> Started</span>
                   <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-green-500" /> Mastered</span>
@@ -640,34 +640,34 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-2xl bg-white rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl overflow-hidden"
             >
               {/* Header */}
-              <div className="px-8 py-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-indigo-600 rounded-2xl text-white shadow-lg">
-                    {aiModal.type === 'tutor' && <Sparkles size={20} />}
-                    {aiModal.type === 'mock' && <Brain size={20} />}
-                    {aiModal.type === 'flashcards' && <Layers size={20} />}
-                    {aiModal.type === 'mnemonics' && <Lightbulb size={20} />}
-                    {aiModal.type === 'simplify' && <Wand2 size={20} />}
+              <div className="px-5 md:px-8 py-4 md:py-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="p-2 md:p-3 bg-indigo-600 rounded-xl md:rounded-2xl text-white shadow-lg">
+                    {aiModal.type === 'tutor' && <Sparkles size={18} className="md:w-5 md:h-5" />}
+                    {aiModal.type === 'mock' && <Brain size={18} className="md:w-5 md:h-5" />}
+                    {aiModal.type === 'flashcards' && <Layers size={18} className="md:w-5 md:h-5" />}
+                    {aiModal.type === 'mnemonics' && <Lightbulb size={18} className="md:w-5 md:h-5" />}
+                    {aiModal.type === 'simplify' && <Wand2 size={18} className="md:w-5 md:h-5" />}
                   </div>
                   <div>
-                    <h3 className="font-black text-xl uppercase tracking-tight text-slate-900 font-display">
+                    <h3 className="font-black text-base md:text-xl uppercase tracking-tight text-slate-900 font-display">
                       {aiModal.type === 'tutor' && 'AI Context Tutor'}
                       {aiModal.type === 'mock' && 'Adaptive Mock Test'}
                       {aiModal.type === 'flashcards' && 'Intelligent Cards'}
                       {aiModal.type === 'mnemonics' && 'Memory Matrix'}
                       {aiModal.type === 'simplify' && 'Simplifier (ELI5)'}
                     </h3>
-                    <p className="text-sm font-semibold text-slate-500">{aiModal.topic || aiModal.subject || 'Strategic Challenge'}</p>
+                    <p className="text-[10px] md:text-sm font-semibold text-slate-500 line-clamp-1">{aiModal.topic || aiModal.subject || 'Strategic Challenge'}</p>
                   </div>
                 </div>
-                <button onClick={() => setAiModal(null)} className="p-3 bg-white hover:bg-slate-100 rounded-full border border-slate-200 transition-colors"><X size={20} /></button>
+                <button onClick={() => setAiModal(null)} className="p-2 md:p-3 bg-white hover:bg-slate-100 rounded-full border border-slate-200 transition-colors"><X size={18} /></button>
               </div>
 
               {/* Content */}
-              <div className="p-8 max-h-[60vh] overflow-y-auto">
+              <div className="p-5 md:p-8 max-h-[70vh] overflow-y-auto">
                 {isAiLoading ? (
                   <div className="flex flex-col items-center justify-center py-20 gap-4">
                     <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
@@ -833,10 +833,10 @@ export default function App() {
         {selectedDayDetail && (
            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedDayDetail(null)} className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" />
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="relative bg-white p-8 rounded-[2rem] shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto">
-                <h3 className="text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight">{selectedDayDetail.date.toLocaleDateString(undefined, { weekday:'long', month:'short', day:'numeric' })}</h3>
-                <div className="flex items-center gap-2 mb-6">
-                  <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Performance Snapshot</p>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="relative bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto">
+                <h3 className="text-xl md:text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight">{selectedDayDetail.date.toLocaleDateString(undefined, { weekday:'long', month:'short', day:'numeric' })}</h3>
+                <div className="flex items-center gap-2 mb-4 md:mb-6">
+                  <p className="text-slate-400 text-[10px] md:text-sm font-bold uppercase tracking-widest">Performance Snapshot</p>
                   {(selectedDayDetail as any).tasks.length > 0 && (
                     <div className="flex items-center gap-1 bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full text-[10px] font-black">
                       <Clock size={10} /> {Math.round((selectedDayDetail as any).tasks.reduce((acc: number, id: string) => {
