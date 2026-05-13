@@ -450,8 +450,8 @@ export default function App() {
               </div>
               
               {/* Stats Info */}
-              <div className="flex flex-col sm:flex-col md:flex-col gap-0.5 sm:gap-1 min-w-0 flex-1 justify-center">
-                <p className="text-slate-400 text-[8px] sm:text-[9px] md:text-[10px] font-bold uppercase tracking-widest leading-none">Overall Progress</p>
+              <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0 flex-1">
+                <p className="text-slate-400 text-[8px] sm:text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Overall Progress</p>
                 <p className="text-xs sm:text-sm md:text-lg font-black text-slate-900 leading-tight">{completedCount} of {totalTasksCount} topics mastered</p>
               </div>
             </div>
