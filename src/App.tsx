@@ -453,6 +453,11 @@ export default function App() {
               <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0 flex-1">
                 <p className="text-slate-400 text-[8px] sm:text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Overall Progress</p>
                 <p className="text-xs sm:text-sm md:text-lg font-black text-slate-900 leading-tight">{completedCount} of {totalTasksCount} topics mastered</p>
+                {currentStreak > 0 && (
+                  <span className="flex items-center gap-0.5 bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full text-[7px] sm:text-[8px] font-black w-fit mt-1">
+                    <Flame size={10} fill="currentColor" /> {currentStreak}D
+                  </span>
+                )}
               </div>
             </div>
           </div>
