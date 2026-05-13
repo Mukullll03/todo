@@ -444,15 +444,15 @@ export default function App() {
                <div className="absolute inset-0 flex items-center justify-center font-bold text-xl text-slate-900">{percentage}%</div>
             </div>
             <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Growth</p>
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Syllabus Progress</p>
                 {currentStreak > 0 && (
                   <span className="flex items-center gap-0.5 bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full text-[10px] font-black">
                     <Flame size={10} fill="currentColor" /> {currentStreak}D STREAK
                   </span>
                 )}
               </div>
-              <p className="text-2xl font-black text-slate-900">{completedCount} <span className="text-slate-400 text-lg">/ {totalTasksCount}</span></p>
+              <p className="text-xs md:text-sm text-slate-600 font-medium">{completedCount} of {totalTasksCount} topics completed</p>
 
             </div>
           </div>
