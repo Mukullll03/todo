@@ -296,7 +296,9 @@ export default function App() {
   }, [dailyHistory, completedDailyTasks]);
 
   const { totalTasksCount, completedCount, percentage } = useMemo(() => {
-    const total = syllabusData.reduce((acc, m) => acc + m.subjects.reduce((sa, s) => sa + s.tasks.length, 0), 0);
+    const total = Object.values(subjectSyllabusData).reduce((acc, subject) => 
+      acc + subject.sections.reduce((sectionAcc, section) => sectionAcc + section.items.length, 0), 0
+    );
     const completed = completedTasks.length;
     return { totalTasksCount: total, completedCount: completed, percentage: Math.round((completed / total) * 100) };
   }, [completedTasks]);
