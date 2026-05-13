@@ -352,9 +352,7 @@ export default function App() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
           <div className="flex-1 w-full">
             <div className="flex items-center gap-3 mb-3 md:mb-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                <Target size={24} className="md:w-7 md:h-7" />
-              </div>
+              <img src="/logo.jpg" alt="SSC Mastery 180 Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover" />
               <h1 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900 font-display">SSC MASTERY <span className="text-indigo-600">180</span></h1>
             </div>
             <p className="text-slate-500 max-w-md text-base md:text-lg font-medium leading-relaxed">
