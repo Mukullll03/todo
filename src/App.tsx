@@ -434,8 +434,8 @@ export default function App() {
             </p>
           </div>
           
-          <div className="glass p-3 sm:p-4 md:p-4 rounded-lg sm:rounded-xl md:rounded-2xl border-slate-200 shadow-xl shadow-slate-100 flex items-center justify-between gap-3 md:gap-4 w-full">
-            <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3 md:gap-4 w-full">
+            <div className="glass p-3 sm:p-4 md:p-4 rounded-lg sm:rounded-xl md:rounded-2xl border-slate-200 shadow-xl shadow-slate-100 flex items-center gap-2 md:gap-3 min-w-0 flex-1">
               <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-14 md:h-14 flex-shrink-0">
                 <svg className="w-14 h-14 sm:w-16 sm:h-16 md:w-14 md:h-14 transform -rotate-90" viewBox="0 0 80 80">
                   <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
