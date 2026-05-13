@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 // Icon mapping for syllabus subjects
 const SubjectIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -816,6 +817,7 @@ export default function App() {
           transform: rotateY(180deg);
         }
       `}</style>
+      <SpeedInsights />
     </div>
   );
 }
