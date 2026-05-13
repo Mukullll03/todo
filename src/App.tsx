@@ -434,29 +434,28 @@ export default function App() {
             </p>
           </div>
           
-          <div className="glass p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl border-slate-200 shadow-xl shadow-slate-100 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4 md:gap-4 w-full">
-            <div className="flex items-center gap-3 sm:gap-4 md:gap-5 flex-1 min-w-0">
-              <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
-                <svg className="w-16 h-16 sm:w-20 sm:h-20 transform -rotate-90" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
-                  <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" 
-                    strokeDasharray={226} strokeDashoffset={226 - (226 * percentage) / 100}
-                    className="text-indigo-600 transition-all duration-1000 ease-out" 
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center font-bold text-sm sm:text-base md:text-xl text-slate-900">{percentage}%</div>
-              </div>
-              <div className="flex flex-col min-w-0 flex-1">
-                <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 font-medium">{completedCount} of {totalTasksCount} topics completed</p>
-              </div>
+          <div className="glass p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl border-slate-200 shadow-xl shadow-slate-100 flex items-center gap-3 sm:gap-4 md:gap-6 w-full overflow-x-auto">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
+               <svg className="w-16 h-16 sm:w-20 sm:h-20 transform -rotate-90" viewBox="0 0 80 80">
+                 <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
+                 <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" 
+                   strokeDasharray={226} strokeDashoffset={226 - (226 * percentage) / 100}
+                   className="text-indigo-600 transition-all duration-1000 ease-out" 
+                 />
+               </svg>
+               <div className="absolute inset-0 flex items-center justify-center font-bold text-sm sm:text-base md:text-xl text-slate-900">{percentage}%</div>
             </div>
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 md:flex-col md:items-end md:gap-1">
-              <p className="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">Syllabus Progress</p>
-              {currentStreak > 0 && (
-                <span className="flex items-center gap-0.5 bg-orange-100 text-orange-600 px-1 sm:px-1.5 py-0.5 rounded-full text-[8px] sm:text-[10px] font-black whitespace-nowrap">
-                  <Flame size={9} className="sm:w-2.5 sm:h-2.5" fill="currentColor" /> {currentStreak}D
-                </span>
-              )}
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2 flex-wrap">
+                <p className="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">Syllabus Progress</p>
+                {currentStreak > 0 && (
+                  <span className="flex items-center gap-0.5 bg-orange-100 text-orange-600 px-1 sm:px-1.5 py-0.5 rounded-full text-[8px] sm:text-[10px] font-black whitespace-nowrap">
+                    <Flame size={9} className="sm:w-2.5 sm:h-2.5" fill="currentColor" /> {currentStreak}D
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 font-medium line-clamp-2">{completedCount} of {totalTasksCount} topics completed</p>
+
             </div>
           </div>
         </div>
