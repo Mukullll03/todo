@@ -110,10 +110,10 @@ const syllabusData = [
 ];
 
 const dailyTasksList = [
-  { id: 'd-maths', title: 'Maths', duration: '2 Hours', minutes: 120 },
-  { id: 'd-eng', title: 'English', duration: '1.5 Hours', minutes: 90 },
-  { id: 'd-rea', title: 'Reasoning & GA', duration: '2.5 Hours', minutes: 150 },
-  { id: 'd-rev', title: 'Revision', duration: '30 Mins Daily', minutes: 30 }
+  { id: 'd-maths', title: 'Maths', duration: '2 Hours' },
+  { id: 'd-eng', title: 'English', duration: '1.5 Hours' },
+  { id: 'd-rea', title: 'Reasoning & GA', duration: '2.5 Hours' },
+  { id: 'd-rev', title: 'Revision', duration: '30 Mins Daily' }
 ];
 
 export default function App() {
