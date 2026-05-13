@@ -432,27 +432,27 @@ export default function App() {
             </p>
           </div>
           
-          <div className="glass p-4 md:p-6 rounded-[1.5rem] md:rounded-3xl border-slate-200 shadow-xl shadow-slate-100 flex items-center gap-4 md:gap-6 w-full md:w-auto min-w-0 md:min-w-[280px]">
-            <div className="relative w-20 h-20">
-               <svg className="w-20 h-20 transform -rotate-90">
+          <div className="glass p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl border border-slate-200 shadow-xl shadow-slate-100 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 md:gap-6 w-full">
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0">
+               <svg className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 transform -rotate-90">
                  <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
                  <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" 
                    strokeDasharray={226} strokeDashoffset={226 - (226 * percentage) / 100}
                    className="text-indigo-600 transition-all duration-1000 ease-out" 
                  />
                </svg>
-               <div className="absolute inset-0 flex items-center justify-center font-bold text-xl text-slate-900">{percentage}%</div>
+               <div className="absolute inset-0 flex items-center justify-center font-bold text-sm sm:text-base md:text-xl text-slate-900">{percentage}%</div>
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-1">
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Growth</p>
+            <div className="flex flex-col items-center sm:items-start">
+              <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                <p className="text-slate-400 text-[8px] sm:text-[10px] font-bold uppercase tracking-widest">Syllabus Progress</p>
                 {currentStreak > 0 && (
-                  <span className="flex items-center gap-0.5 bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full text-[10px] font-black">
-                    <Flame size={10} fill="currentColor" /> {currentStreak}D STREAK
+                  <span className="flex items-center gap-0.5 bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full text-[8px] sm:text-[10px] font-black whitespace-nowrap">
+                    <Flame size={9} className="sm:w-3 sm:h-3" fill="currentColor" /> {currentStreak}D
                   </span>
                 )}
               </div>
-              <p className="text-2xl font-black text-slate-900">{completedCount} <span className="text-slate-400 text-lg">/ {totalTasksCount}</span></p>
+              <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 text-center sm:text-left">{completedCount} <span className="text-slate-400 text-xs sm:text-sm md:text-lg">/ {totalTasksCount}</span></p>
 
             </div>
           </div>
