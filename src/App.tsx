@@ -435,27 +435,27 @@ export default function App() {
           </div>
           
           {/* Progress Stats Card */}
-          <div className="glass p-4 md:p-6 rounded-xl md:rounded-2xl border-slate-200 shadow-xl shadow-slate-100 w-full md:w-auto md:min-w-fit">
-            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+          <div className="glass p-2 sm:p-3 md:p-6 rounded-lg sm:rounded-xl md:rounded-2xl border-slate-200 shadow-xl shadow-slate-100 w-full md:w-auto md:min-w-fit">
+            <div className="flex items-center gap-2 sm:gap-3 md:gap-6">
               {/* Circular Progress */}
-              <div className="relative w-20 h-20 flex-shrink-0">
-                <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+              <div className="relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0">
+                <svg className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 transform -rotate-90" viewBox="0 0 80 80">
                   <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
                   <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" 
                     strokeDasharray={226} strokeDashoffset={226 - (226 * percentage) / 100}
                     className="text-indigo-600 transition-all duration-1000 ease-out" 
                   />
                 </svg>
-                <div className="absolute inset-0 flex items-center justify-center font-bold text-xl text-slate-900">{percentage}%</div>
+                <div className="absolute inset-0 flex items-center justify-center font-bold text-[10px] sm:text-sm md:text-xl text-slate-900">{percentage}%</div>
               </div>
               
               {/* Stats Info */}
-              <div className="flex flex-col items-center md:items-start gap-2">
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Overall Progress</p>
-                <p className="text-lg md:text-xl font-black text-slate-900">{completedCount} of {totalTasksCount} topics mastered</p>
+              <div className="flex flex-col gap-0.5 sm:gap-1 md:gap-2 min-w-0">
+                <p className="text-slate-400 text-[7px] sm:text-[8px] md:text-[10px] font-bold uppercase tracking-widest leading-none">Overall Progress</p>
+                <p className="text-[9px] sm:text-xs md:text-lg font-black text-slate-900 leading-tight">{completedCount} of {totalTasksCount} topics mastered</p>
                 {currentStreak > 0 && (
-                  <span className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-1 rounded-full text-xs font-black">
-                    <Flame size={12} fill="currentColor" /> {currentStreak} Day Streak
+                  <span className="flex items-center gap-0.5 bg-orange-100 text-orange-600 px-1 sm:px-2 py-0.5 rounded-full text-[6px] sm:text-[8px] font-black w-fit">
+                    <Flame size={8} fill="currentColor" /> {currentStreak}D
                   </span>
                 )}
               </div>
