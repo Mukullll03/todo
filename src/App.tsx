@@ -257,7 +257,7 @@ export default function App() {
 
 
 
-  const activeMonthData = syllabusData.find(m => m.month === activeMonth)!;
+  const activeMonthData = syllabusData.find(m => m.month === activeMonth) || syllabusData[0];
 
   // Analytics Helper Functions
   const getWeeklyData = () => {
