@@ -423,7 +423,7 @@ export default function App() {
     <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 border-x border-slate-200 min-h-screen bg-white">
       {/* Navigation Rail / Header */}
       <header className="mb-8 md:mb-12 border-b border-slate-200 pb-6 md:pb-8">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 lg:gap-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
           <div className="flex-1 w-full">
             <div className="flex items-center gap-3 mb-3 md:mb-4">
               <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover" />
@@ -434,7 +434,7 @@ export default function App() {
             </p>
           </div>
           
-          <div className="glass p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl border-slate-200 shadow-xl shadow-slate-100 flex items-center gap-3 sm:gap-4 md:gap-6 w-full lg:w-auto lg:min-w-sm">
+          <div className="glass p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl border-slate-200 shadow-xl shadow-slate-100 flex items-center gap-3 sm:gap-4 md:gap-6 w-full overflow-x-auto">
             <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
                <svg className="w-16 h-16 sm:w-20 sm:h-20 transform -rotate-90" viewBox="0 0 80 80">
                  <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
