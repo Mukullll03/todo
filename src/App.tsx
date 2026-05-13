@@ -450,12 +450,11 @@ export default function App() {
               </div>
               
               {/* Stats Info */}
-              <div className="flex flex-col items-center md:items-start gap-1">
+              <div className="flex flex-col items-center md:items-start gap-2">
                 <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Overall Progress</p>
-                <p className="text-2xl font-black text-slate-900">{completedCount}</p>
-                <p className="text-xs text-slate-500 font-medium">of {totalTasksCount} topics mastered</p>
+                <p className="text-lg md:text-xl font-black text-slate-900">{completedCount} of {totalTasksCount} topics mastered</p>
                 {currentStreak > 0 && (
-                  <span className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-1 rounded-full text-xs font-black mt-2">
+                  <span className="flex items-center gap-1 bg-orange-100 text-orange-600 px-2 py-1 rounded-full text-xs font-black">
                     <Flame size={12} fill="currentColor" /> {currentStreak} Day Streak
                   </span>
                 )}
