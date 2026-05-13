@@ -127,8 +127,80 @@ const dailyTasksList = [
   { id: 'd-rev', title: 'Revision', duration: '30 Mins Daily', minutes: 30 }
 ];
 
+// New Syllabus Data for Subject-Based View
+const subjectSyllabusData = {
+  maths: {
+    title: 'Maths',
+    sections: [
+      {
+        name: 'Arithmetic',
+        items: ['Number System', 'HCF & LCM', 'Simplification', 'Percentage', 'Ratio & Proportion', 'Average', 'Profit Loss & Discount', 'Simple & Compound Interest', 'Time & Work', 'Pipe & Cistern', 'Time Speed & Distance', 'Boat & Stream', 'Mixture & Alligation', 'Partnership']
+      },
+      {
+        name: 'Advance Maths',
+        items: ['Algebra', 'Geometry', 'Trigonometry', 'Mensuration (2D & 3D)', 'Coordinate Geometry', 'Height & Distance', 'Data Interpretation']
+      }
+    ]
+  },
+  english: {
+    title: 'English',
+    sections: [
+      {
+        name: 'Grammar',
+        items: ['Parts Of Speech', 'Noun', 'Conjunction', 'Subject - Verb Agreement', 'Noun + Conjunction', 'Verb', 'Question Tag', 'Tense', 'Conditional Sentences', 'Voice', 'Narration', 'Article', 'Preposition', 'Pronoun', 'Adjective', 'Adverb']
+      },
+      {
+        name: 'Vocab',
+        items: ['Root Words', 'Confused Words', 'Synonyms & Antonyms through Mnemonics', 'Idioms', 'One Word Substitution', 'Phrasal Verbs', 'Fixed Preposition', 'Spelling Errors', 'Fill in the blank', 'Homonyms']
+      }
+    ]
+  },
+  reasoning: {
+    title: 'Reasoning',
+    sections: [
+      {
+        name: 'Reasoning',
+        items: ['Alphabet Test', 'Coding-Decoding', 'Number Series', 'Alphanumeric Series', 'Analogy', 'Classification / Odd One Out', 'Blood Relations', 'Direction & Distance', 'Order & Ranking', 'Syllogism', 'Venn Diagram', 'Mathematical Operations', 'Clock & Calendar', 'Inequalities', 'Input-Output', 'Data Sufficiency', 'Figure Counting', 'Mirror/Water Image', 'Paper Folding & Cutting', 'Dice & Cube', 'Seating Arrangement', 'Puzzles']
+      }
+    ]
+  },
+  gk: {
+    title: 'GK - GS',
+    sections: [
+      {
+        name: 'History',
+        items: ['Ancient', 'Medieval', 'Modern']
+      },
+      {
+        name: 'Geography',
+        items: ['Indian', 'World', 'Physical']
+      },
+      {
+        name: 'Polity',
+        items: ['Constitution', 'Articles', 'Amendments', 'Schedules', 'Parliament', 'Judiciary']
+      },
+      {
+        name: 'Economics',
+        items: ['Indian Economy', 'Five Year Plans', 'Budget', 'Macro/Micro Basics']
+      },
+      {
+        name: 'General Science',
+        items: ['Physics', 'Chemistry', 'Biology']
+      },
+      {
+        name: 'Static GK',
+        items: ['National Parks', 'Wildlife Sanctuaries', 'Folk & Classical Dances', 'Festivals', 'Important Days', 'Books & Authors', 'Awards & Honors', 'Sports', 'International Organizations']
+      },
+      {
+        name: 'Current Affairs',
+        items: []
+      }
+    ]
+  }
+};
+
 export default function App() {
-  const [activeMonth, setActiveMonth] = useState(1);
+  const [activeSubject, setActiveSubject] = useState<'maths' | 'english' | 'reasoning' | 'gk'>('maths');
   const [activeView, setActiveView] = useState<'syllabus' | 'calendar' | 'insights'>('syllabus');
   
   // Persistence
@@ -257,7 +329,7 @@ export default function App() {
 
 
 
-  const activeMonthData = syllabusData.find(m => m.month === activeMonth) || syllabusData[0];
+
 
   // Analytics Helper Functions
   const getWeeklyData = () => {
@@ -396,8 +468,36 @@ export default function App() {
             <h2 className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 md:mb-6 flex items-center gap-2">
               <Clock size={14} /> Daily Blueprint
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
-              {dailyTasksList.map(task => {
+            
+            {/* Daily Checklist at the top */}
+            <div className="mb-6 pb-6 border-b border-slate-200">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Quick Tasks</p>
+              <div className="space-y-2">
+                {dailyTasksList.slice(0, 11).map(task => {
+                  const done = completedDailyTasks.includes(task.id);
+                  return (
+                    <button 
+                      key={task.id}
+                      onClick={() => toggleDailyTask(task.id)}
+                      className={`w-full text-left p-2 md:p-3 rounded-lg md:rounded-xl border transition-all flex items-start gap-2 group
+                        ${done ? 'bg-white border-transparent opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 shadow-sm hover:shadow-md'}`}
+                    >
+                      <div className={`mt-0.5 ${done ? 'text-green-500' : 'text-slate-300 group-hover:text-indigo-500'}`}>
+                        {done ? <CheckCircle2 size={16} /> : <Circle size={16} />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className={`font-bold text-xs md:text-sm leading-tight ${done ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{task.title}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Old Tasks */}
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Main Study</p>
+            <div className="space-y-2">
+              {dailyTasksList.slice(11).map(task => {
                 const done = completedDailyTasks.includes(task.id);
                 return (
                   <button 
@@ -450,52 +550,59 @@ export default function App() {
               >
                 {/* Subject Tabs */}
                 <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl w-fit max-w-full overflow-x-auto scrollbar-hide">
-                  {['Maths', 'English', 'Reasoning', 'GK - GS'].map((tab, idx) => (
+                  {[
+                    { key: 'maths', label: 'Maths' },
+                    { key: 'english', label: 'English' },
+                    { key: 'reasoning', label: 'Reasoning' },
+                    { key: 'gk', label: 'GK - GS' }
+                  ].map(tab => (
                     <button 
-                      key={tab}
-                      onClick={() => setActiveMonth(idx + 1)}
+                      key={tab.key}
+                      onClick={() => setActiveSubject(tab.key as any)}
                       className={`px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all whitespace-nowrap
-                        ${activeMonth === idx + 1 ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        ${activeSubject === tab.key ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                      {tab}
+                      {tab.label}
                     </button>
                   ))}
                 </div>
 
                 <div className="flex justify-between items-center px-1">
                   <div>
-                    <h2 className="text-xl md:text-3xl font-black text-slate-900 font-display">{activeMonthData.title}</h2>
-                    <p className="text-xs md:text-slate-500 font-medium">{activeMonthData.subtitle}</p>
+                    <h2 className="text-xl md:text-3xl font-black text-slate-900 font-display">Syllabus</h2>
+                    <p className="text-xs md:text-slate-500 font-medium">Master each topic systematically</p>
                   </div>
                 </div>
 
+                {/* Syllabus Card with Interactive Checkboxes */}
                 <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all">
                   <div className="bg-slate-50 px-6 py-6 border-b border-slate-200 flex items-center gap-3">
                     <BookOpen className="w-6 h-6 text-indigo-600" />
-                    <h3 className="text-xl font-bold text-slate-800">Syllabus</h3>
+                    <h3 className="text-xl font-bold text-slate-800">{subjectSyllabusData[activeSubject].title} Syllabus</h3>
                   </div>
                   <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {activeMonthData.subjects.map(subject => (
-                        <div key={subject.id} className="space-y-3">
-                          <div className="flex items-center gap-2 font-bold text-slate-800">
-                            <SubjectIcon icon={subject.icon} className={`w-5 h-5 ${subject.color}`} /> 
-                            <span className="text-base">{subject.name}</span>
-                          </div>
-                          <div className="space-y-2 pl-7">
-                            {subject.tasks.map(task => {
-                              const done = completedTasks.includes(task.id);
+                    <div className="space-y-6">
+                      {subjectSyllabusData[activeSubject].sections.map((section, sectionIdx) => (
+                        <div key={sectionIdx} className="space-y-3">
+                          <h4 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                            <div className="w-1 h-6 bg-indigo-600 rounded-full" />
+                            {section.name}
+                          </h4>
+                          <div className="space-y-2 pl-4">
+                            {section.items.map((item, itemIdx) => {
+                              const taskId = `${activeSubject}-${sectionIdx}-${itemIdx}`;
+                              const done = completedTasks.includes(taskId);
                               return (
                                 <div 
-                                  key={task.id}
-                                  className={`group flex items-center gap-3 p-2 rounded-lg transition-all hover:bg-slate-50 cursor-pointer
+                                  key={taskId}
+                                  className={`group flex items-center gap-3 p-3 rounded-lg transition-all hover:bg-slate-50 cursor-pointer
                                     ${done ? 'opacity-60' : ''}`}
-                                  onClick={() => toggleTask(task.id)}
+                                  onClick={() => toggleTask(taskId)}
                                 >
                                   <div className={`flex-shrink-0 ${done ? 'text-green-500' : 'text-slate-200 group-hover:text-indigo-400'}`}>
                                     {done ? <CheckCircle2 size={18} /> : <Circle size={18} />}
                                   </div>
-                                  <span className={`text-sm font-medium text-slate-700 ${done ? 'line-through text-slate-400 font-normal' : ''}`}>{task.text}</span>
+                                  <span className={`text-sm font-medium text-slate-700 ${done ? 'line-through text-slate-400 font-normal' : ''}`}>{item}</span>
                                 </div>
                               );
                             })}
