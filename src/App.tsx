@@ -422,9 +422,9 @@ export default function App() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 border-x border-slate-200 min-h-screen bg-white">
       {/* Navigation Rail / Header */}
-      <header className="mb-4 lg:mb-8 md:mb-12 border-b border-slate-200 pb-2 lg:pb-6 md:pb-8">
+      <header className="mb-8 md:mb-12 border-b border-slate-200 pb-6 md:pb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
-          <div className="flex-1 w-full hidden lg:block">
+          <div className="flex-1 w-full">
             <div className="flex items-center gap-3 mb-3 md:mb-4">
               <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover" />
               <h1 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
@@ -435,24 +435,24 @@ export default function App() {
           </div>
           
           {/* Progress Stats Card */}
-          <div className="glass p-1.5 sm:p-2 md:p-6 rounded-lg sm:rounded-xl md:rounded-2xl border-slate-200 shadow-xl shadow-slate-100 w-full md:w-auto md:min-w-fit">
-            <div className="flex items-center gap-1.5 sm:gap-3 md:gap-6">
+          <div className="glass p-2 sm:p-3 md:p-6 rounded-lg sm:rounded-xl md:rounded-2xl border-slate-200 shadow-xl shadow-slate-100 w-full">
+            <div className="flex items-center justify-between gap-2 sm:gap-3 md:gap-6">
               {/* Circular Progress */}
-              <div className="relative w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0">
-                <svg className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 transform -rotate-90" viewBox="0 0 80 80">
+              <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0">
+                <svg className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 transform -rotate-90" viewBox="0 0 80 80">
                   <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
                   <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" 
                     strokeDasharray={226} strokeDashoffset={226 - (226 * percentage) / 100}
                     className="text-indigo-600 transition-all duration-1000 ease-out" 
                   />
                 </svg>
-                <div className="absolute inset-0 flex items-center justify-center font-bold text-[8px] sm:text-sm md:text-xl text-slate-900">{percentage}%</div>
+                <div className="absolute inset-0 flex items-center justify-center font-bold text-sm sm:text-base md:text-xl text-slate-900">{percentage}%</div>
               </div>
               
               {/* Stats Info */}
-              <div className="flex flex-col gap-0 sm:gap-1 md:gap-2 min-w-0">
-                <p className="text-slate-400 text-[6px] sm:text-[8px] md:text-[10px] font-bold uppercase tracking-widest leading-none">Overall Progress</p>
-                <p className="text-[8px] sm:text-xs md:text-lg font-black text-slate-900 leading-tight">{completedCount} of {totalTasksCount} topics mastered</p>
+              <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0 flex-1">
+                <p className="text-slate-400 text-[8px] sm:text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Overall Progress</p>
+                <p className="text-xs sm:text-sm md:text-lg font-black text-slate-900 leading-tight">{completedCount} of {totalTasksCount} topics mastered</p>
               </div>
             </div>
           </div>
