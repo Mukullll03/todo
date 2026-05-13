@@ -464,29 +464,29 @@ export default function App() {
         
         {/* Left Col: Daily & Views */}
         <div className="lg:col-span-3 space-y-6 md:space-y-8">
-          <section className="bg-slate-50 p-3 md:p-4 rounded-[1.5rem] md:rounded-3xl border border-slate-100">
-            <h2 className="text-[9px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 md:mb-3 flex items-center gap-2">
-              <Clock size={12} /> Daily Blueprint
+          <section className="bg-slate-50 p-5 md:p-6 rounded-[1.5rem] md:rounded-3xl border border-slate-100">
+            <h2 className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 md:mb-6 flex items-center gap-2">
+              <Clock size={14} /> Daily Blueprint
             </h2>
             
             {/* Daily Checklist at the top */}
-            <div className="mb-3 pb-3 border-b border-slate-200">
-              <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Quick Tasks</p>
-              <div className="space-y-1">
+            <div className="mb-6 pb-6 border-b border-slate-200">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Quick Tasks</p>
+              <div className="space-y-2">
                 {dailyTasksList.slice(0, 11).map(task => {
                   const done = completedDailyTasks.includes(task.id);
                   return (
                     <button 
                       key={task.id}
                       onClick={() => toggleDailyTask(task.id)}
-                      className={`w-full text-left p-1.5 rounded-md border transition-all flex items-start gap-1.5 group
+                      className={`w-full text-left p-2 md:p-3 rounded-lg md:rounded-xl border transition-all flex items-start gap-2 group
                         ${done ? 'bg-white border-transparent opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 shadow-sm hover:shadow-md'}`}
                     >
-                      <div className={`mt-0.5 flex-shrink-0 ${done ? 'text-green-500' : 'text-slate-300 group-hover:text-indigo-500'}`}>
-                        {done ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+                      <div className={`mt-0.5 ${done ? 'text-green-500' : 'text-slate-300 group-hover:text-indigo-500'}`}>
+                        {done ? <CheckCircle2 size={16} /> : <Circle size={16} />}
                       </div>
                       <div className="min-w-0">
-                        <p className={`font-bold text-[11px] leading-tight ${done ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{task.title}</p>
+                        <p className={`font-bold text-xs md:text-sm leading-tight ${done ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{task.title}</p>
                       </div>
                     </button>
                   );
@@ -495,23 +495,23 @@ export default function App() {
             </div>
 
             {/* Old Tasks */}
-            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Main Study</p>
-            <div className="space-y-1.5">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Main Study</p>
+            <div className="space-y-2">
               {dailyTasksList.slice(11).map(task => {
                 const done = completedDailyTasks.includes(task.id);
                 return (
                   <button 
                     key={task.id}
                     onClick={() => toggleDailyTask(task.id)}
-                    className={`w-full text-left p-2 rounded-lg border transition-all flex items-start gap-2 group
+                    className={`w-full text-left p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all flex items-start gap-3 group
                       ${done ? 'bg-white border-transparent opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 shadow-sm hover:shadow-md'}`}
                   >
-                    <div className={`mt-0.5 flex-shrink-0 ${done ? 'text-green-500' : 'text-slate-300 group-hover:text-indigo-500'}`}>
-                      {done ? <CheckCircle2 size={16} /> : <Circle size={16} />}
+                    <div className={`mt-0.5 ${done ? 'text-green-500' : 'text-slate-300 group-hover:text-indigo-500'}`}>
+                      {done ? <CheckCircle2 size={18} /> : <Circle size={18} />}
                     </div>
                     <div>
-                      <p className={`font-bold text-xs md:text-sm leading-tight ${done ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{task.title}</p>
-                      <p className="text-[8px] md:text-[10px] text-slate-500 font-medium">{task.duration}</p>
+                      <p className={`font-bold text-sm md:text-base leading-tight ${done ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{task.title}</p>
+                      <p className="text-[10px] md:text-xs text-slate-500 font-medium">{task.duration}</p>
                     </div>
                   </button>
                 );
