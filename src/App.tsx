@@ -494,7 +494,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Old Tasks */}
+            {/* Main Study */}
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Main Study</p>
             <div className="space-y-2">
               {dailyTasksList.slice(11).map(task => {
@@ -503,19 +503,19 @@ export default function App() {
                   <button 
                     key={task.id}
                     onClick={() => toggleDailyTask(task.id)}
-                    className={`w-full text-left p-3 md:p-4 rounded-xl md:rounded-2xl border transition-all flex items-start gap-3 group
+                    className={`w-full text-left p-2 md:p-3 rounded-lg md:rounded-xl border transition-all flex items-start gap-2 group
                       ${done ? 'bg-white border-transparent opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 shadow-sm hover:shadow-md'}`}
-                  >
-                    <div className={`mt-0.5 ${done ? 'text-green-500' : 'text-slate-300 group-hover:text-indigo-500'}`}>
-                      {done ? <CheckCircle2 size={18} /> : <Circle size={18} />}
-                    </div>
-                    <div>
-                      <p className={`font-bold text-sm md:text-base leading-tight ${done ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{task.title}</p>
-                      <p className="text-[10px] md:text-xs text-slate-500 font-medium">{task.duration}</p>
-                    </div>
-                  </button>
-                );
-              })}
+                    >
+                      <div className={`mt-0.5 ${done ? 'text-green-500' : 'text-slate-300 group-hover:text-indigo-500'}`}>
+                        {done ? <CheckCircle2 size={16} /> : <Circle size={16} />}
+                      </div>
+                      <div className="min-w-0">
+                        <p className={`font-bold text-xs md:text-sm leading-tight ${done ? 'text-slate-400 line-through' : 'text-slate-900'}`}>{task.title}</p>
+                        <p className="text-[9px] md:text-[10px] text-slate-500 font-medium">{task.duration}</p>
+                      </div>
+                    </button>
+                  );
+                })}
             </div>
           </section>
 
