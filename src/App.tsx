@@ -110,6 +110,17 @@ const syllabusData = [
 ];
 
 const dailyTasksList = [
+  { id: 'd-live-mock', title: 'Live Mock', duration: '', minutes: 0 },
+  { id: 'd-calc', title: 'Calculation - 10 m', duration: '', minutes: 10 },
+  { id: 'd-tables', title: 'Tables - 10', duration: '', minutes: 0 },
+  { id: 'd-squares', title: 'Squares - 10', duration: '', minutes: 0 },
+  { id: 'd-cubes', title: 'Cubes - 10', duration: '', minutes: 0 },
+  { id: 'd-grammar', title: '120 Rules of Grammar', duration: '', minutes: 0 },
+  { id: 'd-pqrs', title: 'PQRS', duration: '', minutes: 0 },
+  { id: 'd-cloze', title: '1 cloze test', duration: '', minutes: 0 },
+  { id: 'd-passage', title: '1 Passage', duration: '', minutes: 0 },
+  { id: 'd-vocab', title: 'Vocab - 30 m', duration: '', minutes: 30 },
+  { id: 'd-editorial', title: 'Editorial', duration: '', minutes: 0 },
   { id: 'd-maths', title: 'Maths', duration: '2 Hours', minutes: 120 },
   { id: 'd-eng', title: 'English', duration: '1.5 Hours', minutes: 90 },
   { id: 'd-rea', title: 'Reasoning & GA', duration: '2.5 Hours', minutes: 150 },
