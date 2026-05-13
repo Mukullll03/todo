@@ -597,7 +597,7 @@ export default function App() {
                               return (
                                 <div 
                                   key={taskId}
-                                  className={`group flex items-center gap-3 p-3 rounded-lg transition-all hover:bg-slate-50 cursor-pointer
+                                  className={`group flex items-center gap-3 p-3 rounded-lg transition-all bg-slate-50/50 hover:bg-slate-100 cursor-pointer
                                     ${done ? 'opacity-60' : ''}`}
                                   onClick={() => toggleTask(taskId)}
                                 >
