@@ -448,16 +448,16 @@ export default function App() {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-8"
               >
-                {/* Month Tabs */}
+                {/* Subject Tabs */}
                 <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl w-fit max-w-full overflow-x-auto scrollbar-hide">
-                  {syllabusData.map(m => (
+                  {['Maths', 'English', 'Reasoning', 'GK - GS'].map((tab, idx) => (
                     <button 
-                      key={m.month}
-                      onClick={() => setActiveMonth(m.month)}
+                      key={tab}
+                      onClick={() => setActiveMonth(idx + 1)}
                       className={`px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all whitespace-nowrap
-                        ${activeMonth === m.month ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        ${activeMonth === idx + 1 ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                      {m.title.split(':')[0]}
+                      {tab}
                     </button>
                   ))}
                 </div>
@@ -469,38 +469,41 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {activeMonthData.subjects.map(subject => (
-                    <div key={subject.id} className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all">
-                      <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
-                        <div className="flex items-center gap-3 font-bold text-slate-800">
-                          <SubjectIcon icon={subject.icon} className={`w-5 h-5 ${subject.color}`} /> {subject.name}
-                        </div>
-
-                      </div>
-                      <div className="p-4 space-y-1">
-                        {subject.tasks.map(task => {
-                          const done = completedTasks.includes(task.id);
-                          return (
-                            <div 
-                              key={task.id}
-                              className={`group flex items-center justify-between p-3 rounded-xl transition-all hover:bg-slate-50 cursor-pointer
-                                ${done ? 'opacity-60' : ''}`}
-                              onClick={() => toggleTask(task.id)}
-                            >
-                              <div className="flex items-center gap-4">
-                                <div className={`${done ? 'text-green-500' : 'text-slate-200 group-hover:text-indigo-400'}`}>
-                                  {done ? <CheckCircle2 size={22} /> : <Circle size={22} />}
+                <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all">
+                  <div className="bg-slate-50 px-6 py-6 border-b border-slate-200 flex items-center gap-3">
+                    <BookOpen className="w-6 h-6 text-indigo-600" />
+                    <h3 className="text-xl font-bold text-slate-800">Syllabus</h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {activeMonthData.subjects.map(subject => (
+                        <div key={subject.id} className="space-y-3">
+                          <div className="flex items-center gap-2 font-bold text-slate-800">
+                            <SubjectIcon icon={subject.icon} className={`w-5 h-5 ${subject.color}`} /> 
+                            <span className="text-base">{subject.name}</span>
+                          </div>
+                          <div className="space-y-2 pl-7">
+                            {subject.tasks.map(task => {
+                              const done = completedTasks.includes(task.id);
+                              return (
+                                <div 
+                                  key={task.id}
+                                  className={`group flex items-center gap-3 p-2 rounded-lg transition-all hover:bg-slate-50 cursor-pointer
+                                    ${done ? 'opacity-60' : ''}`}
+                                  onClick={() => toggleTask(task.id)}
+                                >
+                                  <div className={`flex-shrink-0 ${done ? 'text-green-500' : 'text-slate-200 group-hover:text-indigo-400'}`}>
+                                    {done ? <CheckCircle2 size={18} /> : <Circle size={18} />}
+                                  </div>
+                                  <span className={`text-sm font-medium text-slate-700 ${done ? 'line-through text-slate-400 font-normal' : ''}`}>{task.text}</span>
                                 </div>
-                                <span className={`font-semibold text-slate-700 ${done ? 'line-through text-slate-400 font-normal' : ''}`}>{task.text}</span>
-                              </div>
-
-                            </div>
-                          );
-                        })}
-                      </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
               </motion.div>
             )}
