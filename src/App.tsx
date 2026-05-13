@@ -295,35 +295,12 @@ export default function App() {
     return streak;
   }, [dailyHistory, completedDailyTasks]);
 
-  const { totalTasksCount, completedCount, percentage, subjectStats } = useMemo(() => {
+  const { totalTasksCount, completedCount, percentage } = useMemo(() => {
     const total = Object.values(subjectSyllabusData).reduce((acc, subject) => 
       acc + subject.sections.reduce((sectionAcc, section) => sectionAcc + section.items.length, 0), 0
     );
     const completed = completedTasks.length;
-    
-    // Calculate per-subject stats
-    const subjects = {
-      maths: { completed: 0, total: 0, label: 'Maths' },
-      english: { completed: 0, total: 0, label: 'English' },
-      reasoning: { completed: 0, total: 0, label: 'Reasoning' },
-      gk: { completed: 0, total: 0, label: 'GK-GS' }
-    };
-    
-    Object.entries(subjectSyllabusData).forEach(([key, subject]) => {
-      const totalTopics = subject.sections.reduce((acc, section) => acc + section.items.length, 0);
-      subjects[key].total = totalTopics;
-      
-      subject.sections.forEach((section, sectionIdx) => {
-        section.items.forEach((item, itemIdx) => {
-          const taskId = `${key}-${sectionIdx}-${itemIdx}`;
-          if (completedTasks.includes(taskId)) {
-            subjects[key].completed++;
-          }
-        });
-      });
-    });
-    
-    return { totalTasksCount: total, completedCount: completed, percentage: Math.round((completed / total) * 100), subjectStats: subjects };
+    return { totalTasksCount: total, completedCount: completed, percentage: Math.round((completed / total) * 100) };
   }, [completedTasks]);
 
   // Handlers
@@ -457,57 +434,28 @@ export default function App() {
             </p>
           </div>
           
-          <div className="glass p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl border-slate-200 shadow-xl shadow-slate-100 w-full">
-            <div className="flex items-start gap-4 md:gap-6 mb-5 md:mb-6">
-              {/* Circular Progress */}
-              <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
-                <svg className="w-16 h-16 sm:w-20 sm:h-20 transform -rotate-90" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
-                  <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" 
-                    strokeDasharray={226} strokeDashoffset={226 - (226 * percentage) / 100}
-                    className="text-indigo-600 transition-all duration-1000 ease-out" 
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center font-bold text-sm sm:text-base md:text-xl text-slate-900">{percentage}%</div>
-              </div>
-              
-              {/* Main Stats */}
-              <div className="flex flex-col min-w-0 flex-1">
-                <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2 flex-wrap">
-                  <p className="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">Overall Progress</p>
-                  {currentStreak > 0 && (
-                    <span className="flex items-center gap-0.5 bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full text-[8px] sm:text-[10px] font-black whitespace-nowrap">
-                      <Flame size={10} fill="currentColor" /> {currentStreak}D STREAK
-                    </span>
-                  )}
-                </div>
-                <p className="text-[12px] sm:text-sm text-slate-900 font-bold mb-2">{completedCount} of {totalTasksCount} topics mastered</p>
-                <div className="w-full bg-slate-200 rounded-full h-1.5 sm:h-2 overflow-hidden">
-                  <div className="bg-indigo-600 h-full transition-all duration-500" style={{width: `${percentage}%`}}></div>
-                </div>
-              </div>
+          <div className="glass p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl md:rounded-3xl border-slate-200 shadow-xl shadow-slate-100 flex items-center gap-3 sm:gap-4 md:gap-6 w-full overflow-x-auto">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
+               <svg className="w-16 h-16 sm:w-20 sm:h-20 transform -rotate-90" viewBox="0 0 80 80">
+                 <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
+                 <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" 
+                   strokeDasharray={226} strokeDashoffset={226 - (226 * percentage) / 100}
+                   className="text-indigo-600 transition-all duration-1000 ease-out" 
+                 />
+               </svg>
+               <div className="absolute inset-0 flex items-center justify-center font-bold text-sm sm:text-base md:text-xl text-slate-900">{percentage}%</div>
             </div>
-            
-            {/* Subject Breakdown */}
-            <div className="border-t border-slate-200 pt-4 md:pt-5">
-              <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Subject Progress</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
-                {Object.entries(subjectStats).map(([key, stat]) => {
-                  const subjectPercentage = stat.total > 0 ? Math.round((stat.completed / stat.total) * 100) : 0;
-                  return (
-                    <div key={key} className="bg-slate-50/60 p-2 sm:p-3 rounded-lg">
-                      <p className="text-[10px] sm:text-xs font-bold text-slate-900 mb-1">{stat.label}</p>
-                      <div className="flex items-baseline gap-1 mb-1.5">
-                        <p className="text-[12px] sm:text-sm font-bold text-indigo-600">{subjectPercentage}%</p>
-                        <p className="text-[8px] sm:text-[10px] text-slate-500">{stat.completed}/{stat.total}</p>
-                      </div>
-                      <div className="w-full bg-slate-200 rounded-full h-1 overflow-hidden">
-                        <div className="bg-indigo-600 h-full transition-all duration-500" style={{width: `${subjectPercentage}%`}}></div>
-                      </div>
-                    </div>
-                  );
-                })}
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2 flex-wrap">
+                <p className="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">Syllabus Progress</p>
+                {currentStreak > 0 && (
+                  <span className="flex items-center gap-0.5 bg-orange-100 text-orange-600 px-1 sm:px-1.5 py-0.5 rounded-full text-[8px] sm:text-[10px] font-black whitespace-nowrap">
+                    <Flame size={9} className="sm:w-2.5 sm:h-2.5" fill="currentColor" /> {currentStreak}D
+                  </span>
+                )}
               </div>
+              <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 font-medium line-clamp-2">{completedCount} of {totalTasksCount} topics completed</p>
+
             </div>
           </div>
         </div>
