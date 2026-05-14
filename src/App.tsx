@@ -895,15 +895,13 @@ export default function App() {
             )}
           </AnimatePresence>
         </main>
-      </div>
-
-
+        </div>
 
       {/* Day Details Modal */}
       <AnimatePresence>
         {selectedDayDetail && (
            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedDayDetail(null)} className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" />
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedDayDetail(null)} className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"></motion.div>
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="relative bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto">
                 <h3 className="text-xl md:text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight">{selectedDayDetail.date.toLocaleDateString(undefined, { weekday:'long', month:'short', day:'numeric' })}</h3>
                 <div className="flex items-center gap-2 mb-4 md:mb-6">

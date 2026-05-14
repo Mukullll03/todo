@@ -28,12 +28,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         if (error) {
           setError(error.message || 'Sign up failed');
         } else {
-          setSuccess('Sign up successful! Check your email to confirm.');
+          setSuccess('Account created and signed in successfully!');
           setTimeout(() => {
+            onClose();
             setEmail('');
             setPassword('');
             setIsSignUp(false);
-          }, 2000);
+          }, 1500);
         }
       } else {
         const { error } = await signIn(email, password);

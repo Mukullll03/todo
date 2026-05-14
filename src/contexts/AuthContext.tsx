@@ -48,11 +48,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
       });
-      return { error };
+      
+      if (signUpError) {
+        return { error: signUpError };
+      }
+
+      // After signup, automatically sign in the user
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        console.error('[v0] Auto sign-in after signup failed:', signInError);
+      }
+
+      return { error: signInError };
     } catch (error) {
       return { error: error as Error };
     }
@@ -60,12 +75,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
+      if (error) {
+        console.error('[v0] Sign in error:', error);
+      } else if (data?.session) {
+        console.log('[v0] Sign in successful, session created');
+        setSession(data.session);
+        setUser(data.session.user);
+      }
+
       return { error };
     } catch (error) {
+      console.error('[v0] Sign in exception:', error);
       return { error: error as Error };
     }
   };
