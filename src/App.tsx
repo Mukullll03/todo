@@ -21,10 +21,14 @@ import {
   Calendar,
   History,
   Info as InfoIcon,
-  Flame
+  Flame,
+  LogOut
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useAuth } from './contexts/AuthContext';
+import { DataSyncService } from './lib/dataSyncService';
+import { AuthPage } from './components/AuthPage';
 
 // Icon mapping for syllabus subjects
 const SubjectIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -199,41 +203,75 @@ const subjectSyllabusData = {
   }
 };
 
-export default function App() {
+function AppContent() {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+          <p className="text-slate-600">Loading your study data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage />;
+  }
+
+  return <AppMain />;
+}
+
+function AppMain() {
+  const { user, signOut } = useAuth();
   const [activeSubject, setActiveSubject] = useState<'maths' | 'english' | 'reasoning' | 'gk'>('maths');
   const [activeView, setActiveView] = useState<'syllabus' | 'calendar' | 'insights'>('syllabus');
   
-  // Persistence
-  const [completedTasks, setCompletedTasks] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('sscCompletedTasks');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
+  // Persistence with Supabase sync
+  const [completedTasks, setCompletedTasks] = useState<string[]>([]);
+  const [completedDailyTasks, setCompletedDailyTasks] = useState<string[]>([]);
+  const [dailyHistory, setDailyHistory] = useState<Record<string, string[]>>({});
+  const [syllabusHistory, setSyllabusHistory] = useState<Record<string, string[]>>({});
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
-  const [completedDailyTasks, setCompletedDailyTasks] = useState<string[]>(() => {
-    try {
-      const savedDaily = localStorage.getItem('sscDailyTasks');
-      const lastDate = localStorage.getItem('sscLastResetDate');
-      const today = new Date().toDateString();
-      if (lastDate !== today) return [];
-      return savedDaily ? JSON.parse(savedDaily) : [];
-    } catch { return []; }
-  });
+  // Load data from Supabase on mount
+  useEffect(() => {
+    if (!user?.id) return;
 
-  const [dailyHistory, setDailyHistory] = useState<Record<string, string[]>>(() => {
-    try {
-      const savedHistory = localStorage.getItem('sscDailyHistory');
-      return savedHistory ? JSON.parse(savedHistory) : {};
-    } catch { return {}; }
-  });
+    const loadData = async () => {
+      try {
+        setIsLoadingData(true);
+        
+        // Load all history records
+        const history = await DataSyncService.loadStudyHistory(user.id);
+        
+        // Rebuild state from history
+        const rebuilt = await DataSyncService.rebuildCompletedTasksFromHistory(user.id);
+        setCompletedTasks(rebuilt);
 
-  const [syllabusHistory, setSyllabusHistory] = useState<Record<string, string[]>>(() => {
-    try {
-      const saved = localStorage.getItem('sscSyllabusHistory');
-      return saved ? JSON.parse(saved) : {};
-    } catch { return {}; }
-  });
+        const dailyHist = await DataSyncService.rebuildDailyHistoryFromRecords(user.id);
+        setDailyHistory(dailyHist);
+
+        const syllabusHist = await DataSyncService.rebuildSyllabusHistoryFromRecords(user.id);
+        setSyllabusHistory(syllabusHist);
+
+        // Load today's daily tasks
+        const today = new Date().toDateString();
+        const todayData = await DataSyncService.getTodayData(user.id);
+        if (todayData?.completed_daily_tasks) {
+          setCompletedDailyTasks(todayData.completed_daily_tasks);
+        }
+      } catch (error) {
+        console.error('[App] Error loading data:', error);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    loadData();
+  }, [user?.id]);
 
   // Calendar
   const [calendarDate, setCalendarDate] = useState(new Date());
@@ -243,27 +281,56 @@ export default function App() {
   const [analyticsPeriod, setAnalyticsPeriod] = useState<'week' | 'month' | 'allTime'>('month');
   const [analyticsChart, setAnalyticsChart] = useState<'weekly' | 'subject' | 'heatmap'>('weekly');
 
-  // Syncs
-  useEffect(() => localStorage.setItem('sscCompletedTasks', JSON.stringify(completedTasks)), [completedTasks]);
+  // Syncs to Supabase (debounced)
   useEffect(() => {
-    localStorage.setItem('sscDailyTasks', JSON.stringify(completedDailyTasks));
-    localStorage.setItem('sscDailyHistory', JSON.stringify(dailyHistory));
-    localStorage.setItem('sscSyllabusHistory', JSON.stringify(syllabusHistory));
-    localStorage.setItem('sscLastResetDate', new Date().toDateString());
-  }, [completedDailyTasks, dailyHistory, syllabusHistory]);
+    if (!user?.id || isLoadingData) return;
+    
+    const timer = setTimeout(() => {
+      const dateStr = new Date().toDateString();
+      DataSyncService.syncCompletedTasks(user.id, completedTasks, dateStr).catch(err =>
+        console.error('[Sync] Error syncing completed tasks:', err)
+      );
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [completedTasks, user?.id, isLoadingData]);
+
+  useEffect(() => {
+    if (!user?.id || isLoadingData) return;
+
+    const timer = setTimeout(() => {
+      const dateStr = new Date().toDateString();
+      DataSyncService.syncDailyTasks(user.id, completedDailyTasks).catch(err =>
+        console.error('[Sync] Error syncing daily tasks:', err)
+      );
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [completedDailyTasks, user?.id, isLoadingData]);
 
   // Midnight Reset Logic
   useEffect(() => {
-    const checkMidnight = setInterval(() => {
+    if (!user?.id) return;
+
+    const checkMidnight = setInterval(async () => {
       const today = new Date().toDateString();
-      const lastDate = localStorage.getItem('sscLastResetDate');
+      const lastDate = sessionStorage.getItem('sscLastResetDate');
       if (lastDate && lastDate !== today) {
         setCompletedDailyTasks([]);
-        localStorage.setItem('sscLastResetDate', today);
+        sessionStorage.setItem('sscLastResetDate', today);
+        
+        // Sync the reset to Supabase
+        await DataSyncService.syncDailyTasks(user.id, []).catch(err =>
+          console.error('[Reset] Error syncing daily task reset:', err)
+        );
       }
     }, 60000);
+
+    // Initialize session date
+    sessionStorage.setItem('sscLastResetDate', new Date().toDateString());
+
     return () => clearInterval(checkMidnight);
-  }, []);
+  }, [user?.id]);
 
   // Stats & Streaks
   const currentStreak = useMemo(() => {
@@ -424,10 +491,20 @@ export default function App() {
       {/* Navigation Rail / Header */}
       <header className="mb-4 lg:mb-8 md:mb-12 border-b border-slate-200 pb-2 lg:pb-6 md:pb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
-          <div className="flex-1 w-full hidden lg:block">
+          <div className="flex-1 w-full">
             <div className="flex items-center gap-3 mb-3 md:mb-4">
               <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover" />
-              <h1 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
+              <div className="flex-1">
+                <h1 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
+              </div>
+              <button
+                onClick={() => signOut()}
+                className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg md:rounded-xl font-bold text-xs md:text-sm transition-colors"
+                title={`Logged in as: ${user?.email}`}
+              >
+                <LogOut size={16} />
+                <span className="hidden sm:inline">Sign Out</span>
+              </button>
             </div>
             <p className="text-slate-500 max-w-md text-base md:text-lg font-medium leading-relaxed">
               Plan daily, master SSC. Your smart study companion for systematic excellence.
@@ -925,4 +1002,8 @@ export default function App() {
       `}</style>
     </div>
   );
+}
+
+export default function App() {
+  return <AppContent />;
 }
