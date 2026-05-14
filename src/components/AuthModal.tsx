@@ -23,9 +23,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setLoading(true);
 
     try {
+      if (!email || !password) {
+        setError('Please fill in all fields');
+        setLoading(false);
+        return;
+      }
+
       if (isSignUp) {
         const { error } = await signUp(email, password);
         if (error) {
+          console.error('[v0] Auth error:', error);
           setError(error.message || 'Sign up failed');
         } else {
           setSuccess('Account created and signed in successfully!');
@@ -39,6 +46,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       } else {
         const { error } = await signIn(email, password);
         if (error) {
+          console.error('[v0] Auth error:', error);
           setError(error.message || 'Sign in failed');
         } else {
           setSuccess('Signed in successfully!');
@@ -49,6 +57,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           }, 1000);
         }
       }
+    } catch (err) {
+      console.error('[v0] Unexpected error:', err);
+      setError('An unexpected error occurred');
     } finally {
       setLoading(false);
     }

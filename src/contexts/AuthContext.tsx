@@ -54,8 +54,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (signUpError) {
+        console.error('[v0] Sign up error:', signUpError.message);
         return { error: signUpError };
       }
+
+      console.log('[v0] Sign up successful, attempting auto sign-in');
 
       // After signup, automatically sign in the user
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -64,11 +67,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (signInError) {
-        console.error('[v0] Auto sign-in after signup failed:', signInError);
+        console.error('[v0] Auto sign-in after signup failed:', signInError.message);
+        return { error: signInError };
       }
 
-      return { error: signInError };
+      console.log('[v0] Auto sign-in successful after signup');
+      return { error: null };
     } catch (error) {
+      console.error('[v0] Sign up exception:', error);
       return { error: error as Error };
     }
   };
@@ -81,14 +87,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.error('[v0] Sign in error:', error);
-      } else if (data?.session) {
+        console.error('[v0] Sign in error:', error.message, error.code);
+        return { error };
+      }
+
+      if (data?.session) {
         console.log('[v0] Sign in successful, session created');
         setSession(data.session);
         setUser(data.session.user);
       }
 
-      return { error };
+      return { error: null };
     } catch (error) {
       console.error('[v0] Sign in exception:', error);
       return { error: error as Error };
