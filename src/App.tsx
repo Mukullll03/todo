@@ -482,19 +482,9 @@ export default function App() {
           {/* Navigation Rail / Header */}
           <header className="mb-4 sm:mb-6 md:mb-8 lg:mb-12 border-b border-slate-200 pb-2 sm:pb-3 md:pb-4 lg:pb-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 md:gap-8">
-            <div className="flex-1 w-full">
-              {/* Left Section - Logo & Description */}
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 md:mb-4">
-                <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover flex-shrink-0" />
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
-              </div>
-              <p className="text-slate-500 max-w-md text-xs sm:text-sm md:text-base lg:text-lg font-medium leading-relaxed hidden sm:block">
-                Plan daily, master SSC. Your smart study companion for systematic excellence.
-              </p>
-              </div>
-
-              {/* Auth Button - Sticky Right */}
-              <div className="flex items-center gap-3">
+            <div className="flex-1 w-full relative">
+              {/* Auth Button - Top Right */}
+              <div className="absolute top-0 right-0">
                 {!user ? (
                   <button
                     onClick={() => setShowAuthModal(true)}
@@ -535,6 +525,13 @@ export default function App() {
                   </div>
                 )}
               </div>
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 md:mb-4">
+                <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover flex-shrink-0" />
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
+              </div>
+              <p className="text-slate-500 max-w-md text-xs sm:text-sm md:text-base lg:text-lg font-medium leading-relaxed hidden sm:block">
+                Plan daily, master SSC. Your smart study companion for systematic excellence.
+              </p>
             </div>
             
             {/* Progress Stats Card */}
