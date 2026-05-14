@@ -22,26 +22,81 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check current session
-    const checkSession = async () => {
+    // Auto-login with demo account
+    const autoLogin = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        setSession(data.session);
-        setUser(data.session?.user ?? null);
+        // Demo account credentials
+        const demoEmail = 'demo@sscapp.local';
+        const demoPassword = 'Demo@SSC123456';
+
+        // Try to get existing session first
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData.session) {
+          setSession(sessionData.session);
+          setUser(sessionData.session.user);
+          setLoading(false);
+          return;
+        }
+
+        // If no session, try to sign in with demo account
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: demoEmail,
+          password: demoPassword,
+        });
+
+        if (error) {
+          // If demo account doesn't exist, create it
+          if (error.message.includes('Invalid login credentials')) {
+            console.log('[v0] Creating demo account...');
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+              email: demoEmail,
+              password: demoPassword,
+              options: {
+                data: {
+                  isDemo: true,
+                  displayName: 'Demo User',
+                },
+              },
+            });
+
+            if (signUpError) {
+              console.error('[v0] Error creating demo account:', signUpError);
+              setLoading(false);
+              return;
+            }
+
+            // Try to sign in again
+            const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+              email: demoEmail,
+              password: demoPassword,
+            });
+
+            if (loginError) {
+              console.error('[v0] Error signing in to demo account:', loginError);
+            } else if (loginData.session) {
+              setSession(loginData.session);
+              setUser(loginData.session.user);
+            }
+          } else {
+            console.error('[v0] Error during auto-login:', error);
+          }
+        } else if (data.session) {
+          setSession(data.session);
+          setUser(data.session.user);
+        }
       } catch (error) {
-        console.error('[v0] Error checking session:', error);
+        console.error('[v0] Exception during auto-login:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    checkSession();
+    autoLogin();
 
     // Listen for auth changes
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
     });
 
     return () => {

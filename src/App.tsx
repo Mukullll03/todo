@@ -16,8 +16,6 @@ import {
   Loader2,
   RotateCcw,
   Menu,
-  ChevronDown,
-  LogOut,
   LayoutDashboard,
   Calendar,
   History,
@@ -28,7 +26,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useAuth } from './contexts/AuthContext';
 import { loadTasks, loadDailyTasks, loadHistory, debouncedSave, saveTasks, saveDailyTasks, saveHistory } from './lib/dataSync';
-import AuthModal from './components/AuthModal';
+
 
 // Icon mapping for syllabus subjects
 const SubjectIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -422,14 +420,7 @@ export default function App() {
 
   const stats = getStatistics();
   const COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const { user, signOut } = useAuth();
-
-  const handleSignOut = async () => {
-    await signOut();
-    setShowProfileMenu(false);
-  };
+  const { user } = useAuth();
 
   // Load user data on mount and when user changes
   useEffect(() => {
@@ -481,53 +472,10 @@ export default function App() {
         <div className="max-w-6xl mx-auto h-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 lg:py-12">
           {/* Navigation Rail / Header */}
           <header className="mb-4 sm:mb-6 md:mb-8 lg:mb-12 border-b border-slate-200 pb-4 sm:pb-6 md:pb-8 lg:pb-10">
-            {/* Top Row: Logo and Auth Button */}
-            <div className="flex justify-between items-start gap-4 sm:gap-6 md:gap-8 mb-4 sm:mb-6">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover flex-shrink-0" />
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
-              </div>
-              
-              {/* Auth Button - Sticky Right */}
-              {!user ? (
-                <button
-                  onClick={() => setShowAuthModal(true)}
-                  className="flex items-center gap-1 sm:gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm md:text-base transition-colors whitespace-nowrap flex-shrink-0"
-                >
-                  <span className="hidden sm:inline">→</span>
-                  <span className="sm:hidden">Sign In</span>
-                  <span className="hidden sm:inline">Sign In / Sign Up</span>
-                </button>
-              ) : (
-                <div className="relative flex-shrink-0">
-                  <button
-                    onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-                  >
-                    <span className="text-xs sm:text-sm font-medium text-slate-700 truncate max-w-[80px] sm:max-w-none">
-                      {user.email?.split('@')[0]}
-                    </span>
-                    <ChevronDown size={14} className="text-slate-600 flex-shrink-0 hidden sm:block" />
-                  </button>
-
-                  {/* Profile Menu */}
-                  {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50">
-                      <div className="px-3 sm:px-4 py-2 border-b border-slate-200 break-words">
-                        <p className="text-[10px] sm:text-xs text-slate-500">Signed in as</p>
-                        <p className="text-xs sm:text-sm font-medium text-slate-700 break-all">{user.email}</p>
-                      </div>
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full flex items-center gap-2 px-3 sm:px-4 py-2 text-red-600 hover:bg-red-50 transition-colors text-xs sm:text-sm font-medium"
-                      >
-                        <LogOut size={14} className="flex-shrink-0" />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+            {/* Top Row: Logo */}
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover flex-shrink-0" />
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
             </div>
 
             {/* Description Text */}
@@ -1024,8 +972,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Auth Modal */}
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }
