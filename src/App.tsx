@@ -485,7 +485,7 @@ export default function App() {
             <div className="flex justify-between items-start gap-4 sm:gap-6 md:gap-8 mb-4 sm:mb-6">
               <div className="flex items-center gap-2 sm:gap-3">
                 <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover flex-shrink-0" />
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
               </div>
               
               {/* Auth Button - Sticky Right */}
@@ -557,7 +557,7 @@ export default function App() {
                 </div>
               </div>
             </div>
-        </header>
+          </header>
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8">
@@ -669,7 +669,7 @@ export default function App() {
 
                 <div className="flex justify-between items-center px-1">
                   <div>
-                    <h2 className="text-xl md:text-3xl font-black text-slate-900 font-display">Syllabus</h2>
+                    <h2 className="text-xl md:text-3xl font-bold text-slate-900 font-display">Syllabus</h2>
                     <p className="text-xs md:text-slate-500 font-medium">Master each topic systematically</p>
                   </div>
                 </div>
@@ -724,7 +724,7 @@ export default function App() {
                 className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200"
               >
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                  <h2 className="text-2xl font-black text-slate-900 font-display flex items-center gap-3">
+                  <h2 className="text-2xl font-bold text-slate-900 font-display flex items-center gap-3">
                     <CalendarDays className="text-indigo-600" /> STREAK CALENDAR
                   </h2>
                   <div className="flex flex-wrap items-center gap-3">
@@ -851,7 +851,7 @@ export default function App() {
                 {/* Chart Controls */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                    <h3 className="text-lg md:text-xl font-black text-slate-900">Study Patterns</h3>
+                    <h3 className="text-lg md:text-xl font-bold text-slate-900">Study Patterns</h3>
                     <div className="flex flex-wrap gap-2">
                       {['weekly', 'subject', 'heatmap'].map(type => (
                         <button
@@ -929,7 +929,7 @@ export default function App() {
 
                 {/* Monthly Overview */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                  <h3 className="text-lg md:text-xl font-black text-slate-900 mb-4">Last 30 Days</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-4">Last 30 Days</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={getMonthlyData()}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -952,7 +952,7 @@ export default function App() {
            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedDayDetail(null)} className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm"></motion.div>
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="relative bg-white p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto">
-                <h3 className="text-xl md:text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight">{selectedDayDetail.date.toLocaleDateString(undefined, { weekday:'long', month:'short', day:'numeric' })}</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-slate-900 mb-2 uppercase tracking-tight">{selectedDayDetail.date.toLocaleDateString(undefined, { weekday:'long', month:'short', day:'numeric' })}</h3>
                 <div className="flex items-center gap-2 mb-4 md:mb-6">
                   <p className="text-slate-400 text-[10px] md:text-sm font-bold uppercase tracking-widest">Performance Snapshot</p>
                   {(selectedDayDetail as any).tasks.length > 0 && (
