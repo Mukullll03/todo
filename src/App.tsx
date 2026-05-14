@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useSync } from './contexts/SyncContext';
+import { useAuth } from './contexts/AuthContext';
 import { loadTasks, loadDailyTasks, loadHistory, debouncedSave, saveTasks, saveDailyTasks, saveHistory } from './lib/dataSync';
 
 
@@ -424,16 +424,16 @@ export default function App() {
 
   const stats = getStatistics();
   const COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-  const { syncCode, setSyncCode, isConfigured } = useSync();
+  const { user, loading: authLoading } = useAuth();
 
-  // Load data on mount using sync code
+  // Load data on mount using user id
   useEffect(() => {
-    const loadSyncedData = async () => {
-      if (isConfigured && syncCode) {
+    const loadUserData = async () => {
+      if (user?.id) {
         const [loadedTasks, loadedDaily, loadedHistory] = await Promise.all([
-          loadTasks(syncCode),
-          loadDailyTasks(syncCode),
-          loadHistory(syncCode),
+          loadTasks(user.id),
+          loadDailyTasks(user.id),
+          loadHistory(user.id),
         ]);
         
         if (loadedTasks.length > 0) {
@@ -448,38 +448,27 @@ export default function App() {
       }
     };
 
-    loadSyncedData();
-  }, [isConfigured, syncCode]);
+    loadUserData();
+  }, [user?.id]);
 
-  // Save to Supabase when data changes using sync code
+  // Save to Supabase when data changes
   useEffect(() => {
-    if (isConfigured && syncCode) {
-      debouncedSave(saveTasks, syncCode, completedTasks.map(id => ({ id, completed: true })), 1000);
+    if (user?.id) {
+      debouncedSave(saveTasks, user.id, completedTasks.map(id => ({ id, completed: true })), 1000);
     }
-  }, [completedTasks, syncCode, isConfigured]);
-
-  useEffect(() => {
-    if (isConfigured && syncCode) {
-      debouncedSave(saveDailyTasks, syncCode, completedDailyTasks.map(id => ({ id, completed: true })), 1000);
-    }
-  }, [completedDailyTasks, syncCode, isConfigured]);
+  }, [completedTasks, user?.id]);
 
   useEffect(() => {
-    if (isConfigured && syncCode) {
-      debouncedSave(saveHistory, syncCode, dailyHistory, 1000);
+    if (user?.id) {
+      debouncedSave(saveDailyTasks, user.id, completedDailyTasks.map(id => ({ id, completed: true })), 1000);
     }
-  }, [dailyHistory, syncCode, isConfigured]);
+  }, [completedDailyTasks, user?.id]);
 
-  // Handle sync code change
-  const handleSyncCodeChange = async () => {
-    if (syncCodeInput.trim().length >= 4) {
-      setSyncCode(syncCodeInput);
-      setShowSyncModal(false);
-      setSyncCodeInput('');
-      // Reload the page to fetch new data
-      window.location.reload();
+  useEffect(() => {
+    if (user?.id) {
+      debouncedSave(saveHistory, user.id, dailyHistory, 1000);
     }
-  };
+  }, [dailyHistory, user?.id]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
