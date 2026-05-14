@@ -149,7 +149,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ showLogout = false }) => {
                   onClick={() => {
                     setIsSignUp(!isSignUp);
                     setMessage('');
-                    setError(null);
                   }}
                   className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
                 >
