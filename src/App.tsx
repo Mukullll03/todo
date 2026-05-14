@@ -25,6 +25,9 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import Navbar from './components/Navbar';
+import { useAuth } from './contexts/AuthContext';
+import { loadTasks, loadDailyTasks, loadHistory, debouncedSave, saveTasks, saveDailyTasks, saveHistory } from './lib/dataSync';
 
 // Icon mapping for syllabus subjects
 const SubjectIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -404,7 +407,7 @@ export default function App() {
     const totalCompleted = completedTasks.length;
     const daysWithTasks = Object.keys(syllabusHistory).filter(date => syllabusHistory[date].length > 0).length;
     const avgPerDay = daysWithTasks > 0 ? Math.round(totalCompleted / daysWithTasks * 10) / 10 : 0;
-    const topSubject = getSubjectBreakdown().sort((a, b) => b.value - a.value)[0]?.name || 'N/A';
+    const topSubject = getSubjectBreakdown().sort((a, b) => (b.value as number) - (a.value as number))[0]?.name || 'N/A';
     
     return {
       totalCompleted,
@@ -418,52 +421,99 @@ export default function App() {
 
   const stats = getStatistics();
   const COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  const { user } = useAuth();
+
+  // Load user data on mount and when user changes
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (user?.id) {
+        const [loadedTasks, loadedDaily, loadedHistory] = await Promise.all([
+          loadTasks(user.id),
+          loadDailyTasks(user.id),
+          loadHistory(user.id),
+        ]);
+        
+        if (loadedTasks.length > 0) {
+          setCompletedTasks(loadedTasks.map((t: any) => t.id));
+        }
+        if (loadedDaily.length > 0) {
+          setCompletedDailyTasks(loadedDaily.map((t: any) => t.id));
+        }
+        if (Object.keys(loadedHistory).length > 0) {
+          setDailyHistory(loadedHistory);
+        }
+      }
+    };
+
+    loadUserData();
+  }, [user?.id]);
+
+  // Save to Supabase when data changes
+  useEffect(() => {
+    if (user?.id) {
+      debouncedSave(saveTasks, user.id, completedTasks.map(id => ({ id, completed: true })), 1000);
+    }
+  }, [completedTasks, user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      debouncedSave(saveDailyTasks, user.id, completedDailyTasks.map(id => ({ id, completed: true })), 1000);
+    }
+  }, [completedDailyTasks, user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      debouncedSave(saveHistory, user.id, dailyHistory, 1000);
+    }
+  }, [dailyHistory, user?.id]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 border-x border-slate-200 min-h-screen bg-white">
-      {/* Navigation Rail / Header */}
-      <header className="mb-4 lg:mb-8 md:mb-12 border-b border-slate-200 pb-2 lg:pb-6 md:pb-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
-          <div className="flex-1 w-full hidden lg:block">
-            <div className="flex items-center gap-3 mb-3 md:mb-4">
-              <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover" />
-              <h1 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
-            </div>
-            <p className="text-slate-500 max-w-md text-base md:text-lg font-medium leading-relaxed">
-              Plan daily, master SSC. Your smart study companion for systematic excellence.
-            </p>
-          </div>
-          
-          {/* Progress Stats Card */}
-          <div className="glass p-1.5 sm:p-2 md:p-6 rounded-lg sm:rounded-xl md:rounded-2xl border-slate-200 shadow-xl shadow-slate-100 w-full md:w-auto md:min-w-fit">
-            <div className="flex items-center gap-1.5 sm:gap-3 md:gap-6">
-              {/* Circular Progress */}
-              <div className="relative w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0">
-                <svg className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 transform -rotate-90" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
-                  <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" 
-                    strokeDasharray={226} strokeDashoffset={226 - (226 * percentage) / 100}
-                    className="text-indigo-600 transition-all duration-1000 ease-out" 
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center font-bold text-[8px] sm:text-sm md:text-xl text-slate-900">{percentage}%</div>
+    <div className="flex flex-col min-h-screen bg-white">
+      <Navbar />
+      <div className="max-w-6xl mx-auto w-full px-4 py-8 md:py-12 border-x border-slate-200 flex-1 bg-white">
+        {/* Navigation Rail / Header */}
+        <header className="mb-4 lg:mb-8 md:mb-12 border-b border-slate-200 pb-2 lg:pb-6 md:pb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
+            <div className="flex-1 w-full hidden lg:block">
+              <div className="flex items-center gap-3 mb-3 md:mb-4">
+                <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover" />
+                <h1 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
               </div>
-              
-              {/* Stats Info */}
-              <div className="flex flex-col gap-0 sm:gap-1 md:gap-2 min-w-0">
-                <p className="text-slate-400 text-[6px] sm:text-[8px] md:text-[10px] font-bold uppercase tracking-widest leading-none">Overall Progress</p>
-                <p className="text-[8px] sm:text-xs md:text-lg font-black text-slate-900 leading-tight">{completedCount} of {totalTasksCount} topics mastered</p>
+              <p className="text-slate-500 max-w-md text-base md:text-lg font-medium leading-relaxed">
+                Plan daily, master SSC. Your smart study companion for systematic excellence.
+              </p>
+            </div>
+            
+            {/* Progress Stats Card */}
+            <div className="glass p-1.5 sm:p-2 md:p-6 rounded-lg sm:rounded-xl md:rounded-2xl border-slate-200 shadow-xl shadow-slate-100 w-full md:w-auto md:min-w-fit">
+              <div className="flex items-center gap-1.5 sm:gap-3 md:gap-6">
+                {/* Circular Progress */}
+                <div className="relative w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0">
+                  <svg className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 transform -rotate-90" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
+                    <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" 
+                      strokeDasharray={226} strokeDashoffset={226 - (226 * percentage) / 100}
+                      className="text-indigo-600 transition-all duration-1000 ease-out" 
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center font-bold text-[8px] sm:text-sm md:text-xl text-slate-900">{percentage}%</div>
+                </div>
+                
+                {/* Stats Info */}
+                <div className="flex flex-col gap-0 sm:gap-1 md:gap-2 min-w-0">
+                  <p className="text-slate-400 text-[6px] sm:text-[8px] md:text-[10px] font-bold uppercase tracking-widest leading-none">Overall Progress</p>
+                  <p className="text-[8px] sm:text-xs md:text-lg font-black text-slate-900 leading-tight">{completedCount} of {totalTasksCount} topics mastered</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Left Col: Daily & Views */}
-        <div className="lg:col-span-3 space-y-6 md:space-y-8">
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Left Col: Daily & Views */}
+          <div className="lg:col-span-3 space-y-6 md:space-y-8">
           <section className="bg-slate-50 p-5 md:p-6 rounded-[1.5rem] md:rounded-3xl border border-slate-100">
             <h2 className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 md:mb-6 flex items-center gap-2">
               <Clock size={14} /> Daily Blueprint
@@ -923,6 +973,7 @@ export default function App() {
           transform: rotateY(180deg);
         }
       `}</style>
+      </div>
     </div>
   );
 }
