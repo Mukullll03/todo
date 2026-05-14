@@ -8,6 +8,9 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signInWithGoogle: () => Promise<{ error: Error | null }>;
+  signInWithPhone: (phone: string) => Promise<{ error: Error | null }>;
+  verifyPhone: (phone: string, token: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<{ error: Error | null }>;
 }
 
@@ -104,6 +107,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      // For Vite app, use the current origin
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) {
+        console.error('[v0] Google sign in error:', error.message);
+        return { error };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error('[v0] Google sign in exception:', error);
+      return { error: error as Error };
+    }
+  };
+
+  const signInWithPhone = async (phone: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        phone,
+      });
+
+      if (error) {
+        console.error('[v0] Phone sign in error:', error.message);
+        return { error };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error('[v0] Phone sign in exception:', error);
+      return { error: error as Error };
+    }
+  };
+
+  const verifyPhone = async (phone: string, token: string) => {
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        phone,
+        token,
+        type: 'sms',
+      });
+
+      if (error) {
+        console.error('[v0] Phone verification error:', error.message);
+        return { error };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error('[v0] Phone verification exception:', error);
+      return { error: error as Error };
+    }
+  };
+
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -114,7 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, user, loading, signUp, signIn, signInWithGoogle, signInWithPhone, verifyPhone, signOut }}>
       {children}
     </AuthContext.Provider>
   );
