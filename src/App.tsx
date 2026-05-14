@@ -28,7 +28,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useAuth } from './contexts/AuthContext';
 import { DataSyncService } from './lib/dataSyncService';
-import { AuthPage } from './components/AuthPage';
+import { AuthModal } from './components/AuthModal';
+import { LandingPage } from './components/LandingPage';
 
 // Icon mapping for syllabus subjects
 const SubjectIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -205,6 +206,7 @@ const subjectSyllabusData = {
 
 function AppContent() {
   const { user, loading } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   
   if (loading) {
     return (
@@ -218,7 +220,12 @@ function AppContent() {
   }
 
   if (!user) {
-    return <AuthPage />;
+    return (
+      <>
+        <LandingPage onSignIn={() => setShowAuthModal(true)} />
+        <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      </>
+    );
   }
 
   return <AppMain />;
