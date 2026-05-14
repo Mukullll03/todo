@@ -480,62 +480,63 @@ export default function App() {
       <div className="w-full flex-1 bg-white">
         <div className="max-w-6xl mx-auto h-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 lg:py-12">
           {/* Navigation Rail / Header */}
-          <header className="mb-4 sm:mb-6 md:mb-8 lg:mb-12 border-b border-slate-200 pb-2 sm:pb-3 md:pb-4 lg:pb-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 md:gap-8">
-            <div className="flex-1 w-full relative">
-              {/* Auth Button - Top Right */}
-              <div className="absolute top-0 right-0">
-                {!user ? (
-                  <button
-                    onClick={() => setShowAuthModal(true)}
-                    className="flex items-center gap-1 sm:gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm md:text-base transition-colors whitespace-nowrap"
-                  >
-                    <span className="hidden sm:inline">→</span>
-                    <span className="sm:hidden">Sign In</span>
-                    <span className="hidden sm:inline">Sign In / Sign Up</span>
-                  </button>
-                ) : (
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowProfileMenu(!showProfileMenu)}
-                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-                    >
-                      <span className="text-xs sm:text-sm font-medium text-slate-700 truncate max-w-[80px] sm:max-w-none">
-                        {user.email?.split('@')[0]}
-                      </span>
-                      <ChevronDown size={14} className="text-slate-600 flex-shrink-0 hidden sm:block" />
-                    </button>
-
-                    {/* Profile Menu */}
-                    {showProfileMenu && (
-                      <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50">
-                        <div className="px-3 sm:px-4 py-2 border-b border-slate-200 break-words">
-                          <p className="text-[10px] sm:text-xs text-slate-500">Signed in as</p>
-                          <p className="text-xs sm:text-sm font-medium text-slate-700 break-all">{user.email}</p>
-                        </div>
-                        <button
-                          onClick={handleSignOut}
-                          className="w-full flex items-center gap-2 px-3 sm:px-4 py-2 text-red-600 hover:bg-red-50 transition-colors text-xs sm:text-sm font-medium"
-                        >
-                          <LogOut size={14} className="flex-shrink-0" />
-                          <span>Sign Out</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 md:mb-4">
+          <header className="mb-4 sm:mb-6 md:mb-8 lg:mb-12 border-b border-slate-200 pb-4 sm:pb-6 md:pb-8 lg:pb-10">
+            {/* Top Row: Logo and Auth Button */}
+            <div className="flex justify-between items-start gap-4 sm:gap-6 md:gap-8 mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover flex-shrink-0" />
                 <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
               </div>
-              <p className="text-slate-500 max-w-md text-xs sm:text-sm md:text-base lg:text-lg font-medium leading-relaxed hidden sm:block">
-                Plan daily, master SSC. Your smart study companion for systematic excellence.
-              </p>
+              
+              {/* Auth Button - Sticky Right */}
+              {!user ? (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="flex items-center gap-1 sm:gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm md:text-base transition-colors whitespace-nowrap flex-shrink-0"
+                >
+                  <span className="hidden sm:inline">→</span>
+                  <span className="sm:hidden">Sign In</span>
+                  <span className="hidden sm:inline">Sign In / Sign Up</span>
+                </button>
+              ) : (
+                <div className="relative flex-shrink-0">
+                  <button
+                    onClick={() => setShowProfileMenu(!showProfileMenu)}
+                    className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                  >
+                    <span className="text-xs sm:text-sm font-medium text-slate-700 truncate max-w-[80px] sm:max-w-none">
+                      {user.email?.split('@')[0]}
+                    </span>
+                    <ChevronDown size={14} className="text-slate-600 flex-shrink-0 hidden sm:block" />
+                  </button>
+
+                  {/* Profile Menu */}
+                  {showProfileMenu && (
+                    <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-2 z-50">
+                      <div className="px-3 sm:px-4 py-2 border-b border-slate-200 break-words">
+                        <p className="text-[10px] sm:text-xs text-slate-500">Signed in as</p>
+                        <p className="text-xs sm:text-sm font-medium text-slate-700 break-all">{user.email}</p>
+                      </div>
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full flex items-center gap-2 px-3 sm:px-4 py-2 text-red-600 hover:bg-red-50 transition-colors text-xs sm:text-sm font-medium"
+                      >
+                        <LogOut size={14} className="flex-shrink-0" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            
-            {/* Progress Stats Card */}
-            <div className="glass p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl md:rounded-2xl border border-slate-200 shadow-xl shadow-slate-100 w-full sm:w-auto sm:min-w-fit">
+
+            {/* Description Text */}
+            <p className="text-slate-500 max-w-md text-xs sm:text-sm md:text-base lg:text-lg font-medium leading-relaxed hidden sm:block mb-4 sm:mb-6">
+              Plan daily, master SSC. Your smart study companion for systematic excellence.
+            </p>
+
+            {/* Progress Stats Card - Below */}
+            <div className="glass p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl md:rounded-2xl border border-slate-200 shadow-xl shadow-slate-100 w-full">
               <div className="flex items-center gap-3 sm:gap-4 md:gap-6">
                 {/* Circular Progress */}
                 <div className="relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0">
@@ -556,7 +557,6 @@ export default function App() {
                 </div>
               </div>
             </div>
-          </div>
         </header>
 
         {/* Main Grid */}
