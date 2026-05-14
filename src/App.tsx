@@ -470,39 +470,40 @@ export default function App() {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Navbar />
-      <div className="max-w-6xl mx-auto w-full px-4 py-8 md:py-12 border-x border-slate-200 flex-1 bg-white">
-        {/* Navigation Rail / Header */}
-        <header className="mb-4 lg:mb-8 md:mb-12 border-b border-slate-200 pb-2 lg:pb-6 md:pb-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-8">
-            <div className="flex-1 w-full hidden lg:block">
-              <div className="flex items-center gap-3 mb-3 md:mb-4">
-                <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover" />
-                <h1 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
+      <div className="w-full flex-1 bg-white">
+        <div className="max-w-6xl mx-auto h-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 lg:py-12">
+          {/* Navigation Rail / Header */}
+          <header className="mb-4 sm:mb-6 md:mb-8 lg:mb-12 border-b border-slate-200 pb-2 sm:pb-3 md:pb-4 lg:pb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 md:gap-8">
+            <div className="flex-1 w-full">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 md:mb-4">
+                <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover flex-shrink-0" />
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
               </div>
-              <p className="text-slate-500 max-w-md text-base md:text-lg font-medium leading-relaxed">
+              <p className="text-slate-500 max-w-md text-xs sm:text-sm md:text-base lg:text-lg font-medium leading-relaxed hidden sm:block">
                 Plan daily, master SSC. Your smart study companion for systematic excellence.
               </p>
             </div>
             
             {/* Progress Stats Card */}
-            <div className="glass p-1.5 sm:p-2 md:p-6 rounded-lg sm:rounded-xl md:rounded-2xl border-slate-200 shadow-xl shadow-slate-100 w-full md:w-auto md:min-w-fit">
-              <div className="flex items-center gap-1.5 sm:gap-3 md:gap-6">
+            <div className="glass p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl md:rounded-2xl border border-slate-200 shadow-xl shadow-slate-100 w-full sm:w-auto sm:min-w-fit">
+              <div className="flex items-center gap-3 sm:gap-4 md:gap-6">
                 {/* Circular Progress */}
-                <div className="relative w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0">
-                  <svg className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 transform -rotate-90" viewBox="0 0 80 80">
+                <div className="relative w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 flex-shrink-0">
+                  <svg className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 transform -rotate-90" viewBox="0 0 80 80">
                     <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
                     <circle cx="40" cy="40" r="36" stroke="currentColor" strokeWidth="6" fill="transparent" 
                       strokeDasharray={226} strokeDashoffset={226 - (226 * percentage) / 100}
                       className="text-indigo-600 transition-all duration-1000 ease-out" 
                     />
                   </svg>
-                  <div className="absolute inset-0 flex items-center justify-center font-bold text-[8px] sm:text-sm md:text-xl text-slate-900">{percentage}%</div>
+                  <div className="absolute inset-0 flex items-center justify-center font-bold text-[7px] sm:text-xs md:text-lg lg:text-xl text-slate-900">{percentage}%</div>
                 </div>
                 
                 {/* Stats Info */}
-                <div className="flex flex-col gap-0 sm:gap-1 md:gap-2 min-w-0">
-                  <p className="text-slate-400 text-[6px] sm:text-[8px] md:text-[10px] font-bold uppercase tracking-widest leading-none">Overall Progress</p>
-                  <p className="text-[8px] sm:text-xs md:text-lg font-black text-slate-900 leading-tight">{completedCount} of {totalTasksCount} topics mastered</p>
+                <div className="flex flex-col gap-0.5 sm:gap-1 md:gap-2 min-w-0">
+                  <p className="text-slate-400 text-[7px] sm:text-[8px] md:text-[10px] font-bold uppercase tracking-widest leading-tight">Overall Progress</p>
+                  <p className="text-[9px] sm:text-xs md:text-base lg:text-lg font-black text-slate-900 leading-tight">{completedCount} of {totalTasksCount} topics</p>
                 </div>
               </div>
             </div>
@@ -510,11 +511,11 @@ export default function App() {
         </header>
 
         {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8">
           
           {/* Left Col: Daily & Views */}
-          <div className="lg:col-span-3 space-y-6 md:space-y-8">
-          <section className="bg-slate-50 p-5 md:p-6 rounded-[1.5rem] md:rounded-3xl border border-slate-100">
+          <div className="md:col-span-1 lg:col-span-3 space-y-4 sm:space-y-6 md:space-y-8">
+          <section className="bg-slate-50 p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-[1.5rem] md:rounded-3xl border border-slate-100">
             <h2 className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 md:mb-6 flex items-center gap-2">
               <Clock size={14} /> Daily Blueprint
             </h2>
@@ -973,6 +974,7 @@ export default function App() {
           transform: rotateY(180deg);
         }
       `}</style>
+        </div>
       </div>
     </div>
   );
