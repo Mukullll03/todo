@@ -28,7 +28,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useAuth } from './contexts/AuthContext';
 import { DataSyncService } from './lib/dataSyncService';
-import { AuthPage } from './components/AuthPage';
+import { AuthModal } from './components/AuthModal';
+import { LandingPage } from './components/LandingPage';
+import { InsightsCard } from './components/InsightsCard';
 
 // Icon mapping for syllabus subjects
 const SubjectIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -205,6 +207,7 @@ const subjectSyllabusData = {
 
 function AppContent() {
   const { user, loading } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   
   if (loading) {
     return (
@@ -218,7 +221,12 @@ function AppContent() {
   }
 
   if (!user) {
-    return <AuthPage />;
+    return (
+      <>
+        <LandingPage onSignIn={() => setShowAuthModal(true)} />
+        <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      </>
+    );
   }
 
   return <AppMain />;
@@ -786,6 +794,19 @@ function AppMain() {
                 exit={{ opacity: 0, scale: 1.02 }}
                 className="space-y-8"
               >
+                {/* AI Insights Card */}
+                <InsightsCard 
+                  stats={{
+                    mathsCompletion: stats.mathsCompletion,
+                    englishCompletion: stats.englishCompletion,
+                    reasoningCompletion: stats.reasoningCompletion,
+                    gkCompletion: stats.gkCompletion,
+                    dailyCompletion: stats.dailyCompletion,
+                    totalDaysTracked: stats.daysActive,
+                    recentStreak: stats.streak,
+                  }}
+                />
+
                 {/* Statistics Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
                   <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
