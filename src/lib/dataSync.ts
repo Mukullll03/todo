@@ -1,25 +1,49 @@
-import { supabase, Task, DailyTask, HistoryEntry } from './supabase';
+import { supabase } from './supabase';
 
 // Debounce timer for saving
 let saveDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
+// Generate a random sync code
+export function generateSyncCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed confusing chars like 0, O, 1, I
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+// Get or create sync code
+export function getSyncCode(): string {
+  let code = localStorage.getItem('sync_code');
+  if (!code) {
+    code = generateSyncCode();
+    localStorage.setItem('sync_code', code);
+  }
+  return code;
+}
+
+// Set sync code (when user enters existing code)
+export function setSyncCode(code: string): void {
+  localStorage.setItem('sync_code', code.toUpperCase().trim());
+}
+
 /**
- * Save tasks to Supabase, with automatic fallback to localStorage
+ * Save tasks to Supabase using sync_code
  */
-export async function saveTasks(userId: string, tasks: any[]) {
-  if (!userId) {
-    // Fallback to localStorage if no user
+export async function saveTasks(syncCode: string, tasks: any[]) {
+  if (!syncCode) {
     localStorage.setItem('tasks', JSON.stringify(tasks));
     return;
   }
 
   try {
-    // First, clear existing tasks for this user
-    await supabase.from('tasks').delete().eq('user_id', userId);
+    // First, clear existing tasks for this sync code
+    await supabase.from('tasks').delete().eq('sync_code', syncCode);
 
     // Then insert new tasks
     const tasksToInsert = tasks.map((task) => ({
-      user_id: userId,
+      sync_code: syncCode,
       subject_id: task.subjectId || '',
       task_id: task.id,
       text: task.text,
@@ -30,7 +54,6 @@ export async function saveTasks(userId: string, tasks: any[]) {
       const { error } = await supabase.from('tasks').insert(tasksToInsert);
       if (error) {
         console.error('[v0] Error saving tasks:', error);
-        // Fallback to localStorage
         localStorage.setItem('tasks', JSON.stringify(tasks));
       }
     }
@@ -41,19 +64,19 @@ export async function saveTasks(userId: string, tasks: any[]) {
 }
 
 /**
- * Save daily tasks to Supabase
+ * Save daily tasks to Supabase using sync_code
  */
-export async function saveDailyTasks(userId: string, dailyTasks: any[]) {
-  if (!userId) {
+export async function saveDailyTasks(syncCode: string, dailyTasks: any[]) {
+  if (!syncCode) {
     localStorage.setItem('daily-tasks', JSON.stringify(dailyTasks));
     return;
   }
 
   try {
-    await supabase.from('daily_tasks').delete().eq('user_id', userId);
+    await supabase.from('daily_tasks').delete().eq('sync_code', syncCode);
 
     const tasksToInsert = dailyTasks.map((task) => ({
-      user_id: userId,
+      sync_code: syncCode,
       daily_task_id: task.id,
       title: task.title,
       completed: task.completed || false,
@@ -73,19 +96,19 @@ export async function saveDailyTasks(userId: string, dailyTasks: any[]) {
 }
 
 /**
- * Save history to Supabase
+ * Save history to Supabase using sync_code
  */
-export async function saveHistory(userId: string, history: any) {
-  if (!userId) {
+export async function saveHistory(syncCode: string, history: any) {
+  if (!syncCode) {
     localStorage.setItem('history', JSON.stringify(history));
     return;
   }
 
   try {
-    await supabase.from('history').delete().eq('user_id', userId);
+    await supabase.from('history').delete().eq('sync_code', syncCode);
 
     const historyToInsert = Object.entries(history).map(([date, stats]: [string, any]) => ({
-      user_id: userId,
+      sync_code: syncCode,
       date,
       stats: stats || {},
     }));
@@ -104,10 +127,10 @@ export async function saveHistory(userId: string, history: any) {
 }
 
 /**
- * Load tasks from Supabase, with fallback to localStorage
+ * Load tasks from Supabase using sync_code
  */
-export async function loadTasks(userId: string): Promise<any[]> {
-  if (!userId) {
+export async function loadTasks(syncCode: string): Promise<any[]> {
+  if (!syncCode) {
     const stored = localStorage.getItem('tasks');
     return stored ? JSON.parse(stored) : [];
   }
@@ -116,7 +139,7 @@ export async function loadTasks(userId: string): Promise<any[]> {
     const { data, error } = await supabase
       .from('tasks')
       .select('*')
-      .eq('user_id', userId);
+      .eq('sync_code', syncCode);
 
     if (error) {
       console.error('[v0] Error loading tasks:', error);
@@ -125,8 +148,7 @@ export async function loadTasks(userId: string): Promise<any[]> {
     }
 
     if (data && data.length > 0) {
-      // Convert database format back to app format
-      return data.map((task: Task) => ({
+      return data.map((task: any) => ({
         id: task.task_id,
         subjectId: task.subject_id,
         text: task.text,
@@ -143,10 +165,10 @@ export async function loadTasks(userId: string): Promise<any[]> {
 }
 
 /**
- * Load daily tasks from Supabase
+ * Load daily tasks from Supabase using sync_code
  */
-export async function loadDailyTasks(userId: string): Promise<any[]> {
-  if (!userId) {
+export async function loadDailyTasks(syncCode: string): Promise<any[]> {
+  if (!syncCode) {
     const stored = localStorage.getItem('daily-tasks');
     return stored ? JSON.parse(stored) : [];
   }
@@ -155,7 +177,7 @@ export async function loadDailyTasks(userId: string): Promise<any[]> {
     const { data, error } = await supabase
       .from('daily_tasks')
       .select('*')
-      .eq('user_id', userId);
+      .eq('sync_code', syncCode);
 
     if (error) {
       console.error('[v0] Error loading daily tasks:', error);
@@ -164,7 +186,7 @@ export async function loadDailyTasks(userId: string): Promise<any[]> {
     }
 
     if (data && data.length > 0) {
-      return data.map((task: DailyTask) => ({
+      return data.map((task: any) => ({
         id: task.daily_task_id,
         title: task.title,
         completed: task.completed,
@@ -180,10 +202,10 @@ export async function loadDailyTasks(userId: string): Promise<any[]> {
 }
 
 /**
- * Load history from Supabase
+ * Load history from Supabase using sync_code
  */
-export async function loadHistory(userId: string): Promise<Record<string, any>> {
-  if (!userId) {
+export async function loadHistory(syncCode: string): Promise<Record<string, any>> {
+  if (!syncCode) {
     const stored = localStorage.getItem('history');
     return stored ? JSON.parse(stored) : {};
   }
@@ -192,7 +214,7 @@ export async function loadHistory(userId: string): Promise<Record<string, any>> 
     const { data, error } = await supabase
       .from('history')
       .select('*')
-      .eq('user_id', userId);
+      .eq('sync_code', syncCode);
 
     if (error) {
       console.error('[v0] Error loading history:', error);
@@ -202,7 +224,7 @@ export async function loadHistory(userId: string): Promise<Record<string, any>> 
 
     if (data && data.length > 0) {
       const result: Record<string, any> = {};
-      data.forEach((entry: HistoryEntry) => {
+      data.forEach((entry: any) => {
         result[entry.date] = entry.stats;
       });
       return result;
@@ -220,8 +242,8 @@ export async function loadHistory(userId: string): Promise<Record<string, any>> 
  * Debounced save function to avoid too many requests
  */
 export function debouncedSave(
-  saveFunction: (userId: string, data: any) => Promise<void>,
-  userId: string,
+  saveFunction: (syncCode: string, data: any) => Promise<void>,
+  syncCode: string,
   data: any,
   delay: number = 1000
 ) {
@@ -230,6 +252,6 @@ export function debouncedSave(
   }
 
   saveDebounceTimer = setTimeout(() => {
-    saveFunction(userId, data);
+    saveFunction(syncCode, data);
   }, delay);
 }

@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useAuth } from './contexts/AuthContext';
+import { useSync } from './contexts/SyncContext';
 import { loadTasks, loadDailyTasks, loadHistory, debouncedSave, saveTasks, saveDailyTasks, saveHistory } from './lib/dataSync';
 
 
@@ -245,6 +245,10 @@ export default function App() {
   const [analyticsPeriod, setAnalyticsPeriod] = useState<'week' | 'month' | 'allTime'>('month');
   const [analyticsChart, setAnalyticsChart] = useState<'weekly' | 'subject' | 'heatmap'>('weekly');
 
+  // Sync Code Modal
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [syncCodeInput, setSyncCodeInput] = useState('');
+
   // Syncs
   useEffect(() => localStorage.setItem('sscCompletedTasks', JSON.stringify(completedTasks)), [completedTasks]);
   useEffect(() => {
@@ -420,16 +424,16 @@ export default function App() {
 
   const stats = getStatistics();
   const COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-  const { user } = useAuth();
+  const { syncCode, setSyncCode, isConfigured } = useSync();
 
-  // Load user data on mount and when user changes
+  // Load data on mount using sync code
   useEffect(() => {
-    const loadUserData = async () => {
-      if (user?.id) {
+    const loadSyncedData = async () => {
+      if (isConfigured && syncCode) {
         const [loadedTasks, loadedDaily, loadedHistory] = await Promise.all([
-          loadTasks(user.id),
-          loadDailyTasks(user.id),
-          loadHistory(user.id),
+          loadTasks(syncCode),
+          loadDailyTasks(syncCode),
+          loadHistory(syncCode),
         ]);
         
         if (loadedTasks.length > 0) {
@@ -444,38 +448,116 @@ export default function App() {
       }
     };
 
-    loadUserData();
-  }, [user?.id]);
+    loadSyncedData();
+  }, [isConfigured, syncCode]);
 
-  // Save to Supabase when data changes
+  // Save to Supabase when data changes using sync code
   useEffect(() => {
-    if (user?.id) {
-      debouncedSave(saveTasks, user.id, completedTasks.map(id => ({ id, completed: true })), 1000);
+    if (isConfigured && syncCode) {
+      debouncedSave(saveTasks, syncCode, completedTasks.map(id => ({ id, completed: true })), 1000);
     }
-  }, [completedTasks, user?.id]);
-
-  useEffect(() => {
-    if (user?.id) {
-      debouncedSave(saveDailyTasks, user.id, completedDailyTasks.map(id => ({ id, completed: true })), 1000);
-    }
-  }, [completedDailyTasks, user?.id]);
+  }, [completedTasks, syncCode, isConfigured]);
 
   useEffect(() => {
-    if (user?.id) {
-      debouncedSave(saveHistory, user.id, dailyHistory, 1000);
+    if (isConfigured && syncCode) {
+      debouncedSave(saveDailyTasks, syncCode, completedDailyTasks.map(id => ({ id, completed: true })), 1000);
     }
-  }, [dailyHistory, user?.id]);
+  }, [completedDailyTasks, syncCode, isConfigured]);
+
+  useEffect(() => {
+    if (isConfigured && syncCode) {
+      debouncedSave(saveHistory, syncCode, dailyHistory, 1000);
+    }
+  }, [dailyHistory, syncCode, isConfigured]);
+
+  // Handle sync code change
+  const handleSyncCodeChange = async () => {
+    if (syncCodeInput.trim().length >= 4) {
+      setSyncCode(syncCodeInput);
+      setShowSyncModal(false);
+      setSyncCodeInput('');
+      // Reload the page to fetch new data
+      window.location.reload();
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
+      {/* Sync Code Modal */}
+      <AnimatePresence>
+        {showSyncModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowSyncModal(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Sync Your Data</h3>
+              <p className="text-sm text-slate-500 mb-4">
+                Use this code on any device to sync your progress. Same code = Same data!
+              </p>
+              
+              <div className="bg-indigo-50 p-4 rounded-xl mb-4">
+                <p className="text-xs text-indigo-600 font-semibold mb-1">Your Current Code</p>
+                <p className="text-2xl font-mono font-bold text-indigo-800 tracking-widest">{syncCode}</p>
+              </div>
+
+              <div className="border-t border-slate-200 pt-4 mt-4">
+                <p className="text-xs text-slate-500 font-semibold mb-2">Or enter existing code:</p>
+                <input
+                  type="text"
+                  value={syncCodeInput}
+                  onChange={(e) => setSyncCodeInput(e.target.value.toUpperCase())}
+                  placeholder="Enter 6-char code"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-center text-lg tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  maxLength={6}
+                />
+                <button
+                  onClick={handleSyncCodeChange}
+                  disabled={syncCodeInput.trim().length < 4}
+                  className="w-full mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors"
+                >
+                  Use This Code
+                </button>
+              </div>
+
+              <button
+                onClick={() => setShowSyncModal(false)}
+                className="w-full mt-3 px-4 py-2 text-slate-500 hover:text-slate-700 text-sm"
+              >
+                Close
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="w-full flex-1 bg-white">
         <div className="max-w-6xl mx-auto h-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 lg:py-12">
           {/* Navigation Rail / Header */}
           <header className="mb-4 sm:mb-6 md:mb-8 lg:mb-12 border-b border-slate-200 pb-4 sm:pb-6 md:pb-8 lg:pb-10">
-            {/* Top Row: Logo */}
-            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-              <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover flex-shrink-0" />
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
+            {/* Top Row: Logo + Sync Code */}
+            <div className="flex items-center justify-between gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <img src="/logo.jpg" alt="SSC To-Do Logo" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg shadow-indigo-200 object-cover flex-shrink-0" />
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">SSC TO <span className="text-indigo-600">- DO</span></h1>
+              </div>
+              {/* Sync Code Badge - Clickable */}
+              <button 
+                onClick={() => setShowSyncModal(true)}
+                className="flex items-center gap-2 bg-indigo-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-indigo-200 hover:bg-indigo-100 transition-colors"
+              >
+                <span className="text-[9px] sm:text-xs font-semibold text-indigo-600">Sync:</span>
+                <span className="text-[10px] sm:text-sm font-mono font-bold text-indigo-800 tracking-wider">{syncCode}</span>
+              </button>
             </div>
 
             {/* Description Text */}

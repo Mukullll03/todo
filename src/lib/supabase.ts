@@ -36,7 +36,7 @@ export { supabase };
 
 export type Task = {
   id: string;
-  user_id: string;
+  sync_code: string;
   subject_id: string;
   task_id: string;
   text: string;
@@ -47,7 +47,7 @@ export type Task = {
 
 export type DailyTask = {
   id: string;
-  user_id: string;
+  sync_code: string;
   daily_task_id: string;
   title: string;
   completed: boolean;
@@ -57,7 +57,7 @@ export type DailyTask = {
 
 export type HistoryEntry = {
   id: string;
-  user_id: string;
+  sync_code: string;
   date: string;
   stats: Record<string, any>;
   created_at: string;
