@@ -1,0 +1,7 @@
+{
+  "name": "Daily Prep Checklist",
+  "description": "A daily preparation checklist application that tracks daily preparation items and progress.",
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

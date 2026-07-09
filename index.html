@@ -9,7 +9,7 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <!-- App Icons & PWA Settings -->
     <link rel="icon" type="image/jpeg" href="https://framerusercontent.com/images/DGPdl3nBCOFyGKcpCA3RRw5QM2M.jpg?scale-down-to=512&width=1200&height=1200">
@@ -80,34 +80,48 @@
     </div>
 
     <!-- Header -->
-    <header class="w-full max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 pt-8 sm:pt-12 z-10">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+    <header class="w-full max-w-4xl mx-auto p-3.5 sm:p-6 lg:p-8 pt-5 sm:pt-10 z-10">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
             <div>
                 <h1 class="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-blue-600 tracking-tight">
                     Daily Prep
                 </h1>
-                <p class="text-sky-700/80 font-medium mt-1 text-lg" id="currentDateDisplay">Loading date...</p>
+                <p class="text-sky-700/80 font-medium mt-0.5 text-base sm:text-lg" id="currentDateDisplay">Loading date...</p>
             </div>
-            <div class="glass-panel px-5 py-2.5 rounded-2xl flex items-center gap-3 w-full sm:w-auto justify-center">
-                <div class="w-2 h-2 rounded-full bg-emerald-400 transition-colors duration-300" id="syncDot"></div>
-                <span class="text-sm font-bold tracking-wide text-sky-800" id="progressText">0 / 6 Completed</span>
+            <div class="flex flex-col sm:items-end gap-2.5 w-full sm:w-auto">
+                <a id="streakDisplay" href="https://docs.google.com/spreadsheets/d/1W0tnRXomGUHBU3sEPWN4jbm_VcA5r0n5kRXJHMGmsTU/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="glass-panel px-4 py-2 rounded-xl flex items-center gap-2.5 w-full justify-center sm:justify-start border border-sky-100 bg-white/30 hover:bg-sky-50/50 active:bg-sky-100/50 text-sky-700 hover:text-sky-900 font-bold shadow-sm transition-all duration-300">
+                    <i class="fa-solid fa-fire text-sky-500" id="streakFireIcon"></i>
+                    <span class="text-sm font-bold tracking-wide">Track Data</span>
+                </a>
+                <div class="flex gap-2 w-full sm:w-auto flex-wrap">
+                    <button onclick="openConfigureModal()" class="glass-panel bg-white/30 hover:bg-sky-50/50 active:bg-sky-100/50 text-sky-700 hover:text-sky-900 border-sky-100 px-4 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow flex-1 sm:flex-none">
+                        <i class="fa-solid fa-sliders text-xs text-sky-500"></i>
+                        <span>Configure</span>
+                    </button>
+                    <button onclick="resetToday()" class="glass-panel bg-white/30 hover:bg-sky-50/50 active:bg-sky-100/50 text-sky-600 hover:text-sky-800 border-sky-100 px-4 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow flex-1 sm:flex-none">
+                        <i class="fa-solid fa-trash-can text-xs text-sky-500"></i>
+                        <span>Reset Today</span>
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Progress Bar -->
-        <div class="w-full bg-white/50 rounded-full h-3 backdrop-blur-sm shadow-inner p-0.5 overflow-hidden border border-white">
+        <div class="w-full bg-white/50 rounded-full h-2.5 backdrop-blur-sm shadow-inner p-0.5 overflow-hidden border border-white">
             <div id="progressBar" class="h-full rounded-full bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-500 transition-all duration-700 ease-out shadow-sm" style="width: 0%"></div>
         </div>
     </header>
 
     <!-- Main Content: Task List -->
-    <main class="flex-1 w-full max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 z-10 pb-20">
-        <div id="taskGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+    <main class="flex-1 w-full max-w-4xl mx-auto p-3.5 sm:p-6 lg:p-8 z-10 pb-16">
+        <div id="taskGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
             <!-- Tasks injected via JS -->
         </div>
+
+
     </main>
 
-    <!-- Modal Overlay for Loading & Result -->
+    <!-- Modal Overlay for Loading & Result & Confirmations -->
     <div id="modalOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-sky-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none hidden px-4">
         
         <!-- Loading Spinner State -->
@@ -127,7 +141,139 @@
                 OK
             </button>
         </div>
+
+        <!-- Custom Confirmation Dialog Box -->
+        <div id="confirmBox" class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col items-center text-center gap-4 hidden transform scale-95 transition-transform duration-300">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-2 bg-red-100 text-red-500 shadow-inner">
+                <i class="fa-solid fa-triangle-exclamation text-2xl animate-bounce"></i>
+            </div>
+            <h3 class="text-xl font-extrabold text-sky-900">Reset Today?</h3>
+            <p class="text-sky-700 font-medium text-sm">This will clear all checked tasks, stopwatch timers, and logged notes for today. This action cannot be undone.</p>
+            <div class="flex gap-3 w-full mt-2">
+                <button onclick="closeConfirmModal()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold py-3 px-4 rounded-xl transition-all">
+                    Cancel
+                </button>
+                <button onclick="executeResetToday()" class="flex-1 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md">
+                    Yes, Reset
+                </button>
+            </div>
+        </div>
     </div>
+
+    <!-- Task Session Modal (Stopwatch Timer + Notes) -->
+    <div id="taskSessionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-sky-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none hidden px-4">
+        <div id="taskSessionBox" class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full flex flex-col gap-6 transform scale-95 transition-all duration-300">
+            <!-- Header -->
+            <div class="flex justify-between items-start">
+                <div class="flex items-center gap-4">
+                    <div id="modalTaskIconWrapper" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white bg-sky-500 shadow-md">
+                        <i id="modalTaskIcon" class="fa-solid text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 id="modalTaskTitle" class="text-xl font-extrabold text-sky-900">Task Name</h3>
+                        <p class="text-xs font-bold text-sky-500 uppercase tracking-wider">Session Tracker</p>
+                    </div>
+                </div>
+                <button onclick="closeTaskSessionModal()" class="w-8 h-8 rounded-full bg-sky-50 hover:bg-sky-100 active:bg-sky-200 text-sky-500 flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Timer Section -->
+            <div class="glass-panel p-5 rounded-2xl flex flex-col items-center gap-3 border border-sky-100 bg-sky-50/30">
+                <span class="text-xs font-bold text-sky-500 uppercase tracking-widest">Stopwatch</span>
+                <div id="stopwatchDisplay" class="text-4xl font-extrabold text-sky-900 tracking-widest font-['Montserrat',_sans-serif] tabular-nums">00:00</div>
+                <div class="flex gap-3">
+                    <button id="timerPlayBtn" onclick="toggleStopwatch()" class="w-10 h-10 rounded-full bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white flex items-center justify-center transition-all shadow-sm">
+                        <i class="fa-solid fa-play text-sm"></i>
+                    </button>
+                    <button id="timerResetBtn" onclick="resetStopwatch()" class="w-10 h-10 rounded-full bg-sky-100 hover:bg-sky-200 active:bg-sky-300 text-sky-700 flex items-center justify-center transition-all">
+                        <i class="fa-solid fa-rotate-left text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="flex flex-col gap-2">
+                <label for="taskNotesInput" class="text-sm font-extrabold text-sky-800">Session Notes & Scores</label>
+                <textarea id="taskNotesInput" rows="3" placeholder="Log WPM, mock test scores, or words learned today..." class="w-full bg-sky-50/50 hover:bg-white border-2 border-sky-100 rounded-2xl p-4 text-sky-900 placeholder-sky-400/60 font-medium text-sm focus:border-sky-400 focus:bg-white outline-none transition-all shadow-inner"></textarea>
+                <div id="quickTagsContainer" class="flex gap-2 flex-wrap mt-1">
+                    <!-- Quick tags injected here based on task context -->
+                </div>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="flex gap-3">
+                <button onclick="closeTaskSessionModal()" class="flex-1 bg-sky-50 hover:bg-sky-100 active:bg-sky-200 text-sky-700 font-bold py-3.5 px-4 rounded-xl transition-all">
+                    Cancel
+                </button>
+                <button id="modalCompleteBtn" onclick="saveTaskSession()" class="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 active:from-sky-700 active:to-blue-800 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Complete Task</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configure Checklist Modal -->
+    <div id="configureModal" class="fixed inset-0 z-50 flex items-center justify-center bg-sky-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none hidden px-4">
+        <div id="configureBox" class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl max-w-lg w-full flex flex-col gap-6 transform scale-95 transition-all duration-300">
+            <!-- Header -->
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="text-xl font-extrabold text-sky-900">Configure Prep Routine</h3>
+                    <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap mt-1">
+                        <p class="text-xs sm:text-sm text-sky-500 font-medium">Add, delete, or reorder tasks</p>
+                        <span class="text-sky-200 text-xs hidden sm:inline">|</span>
+                        <button onclick="resetToDefaultTasks()" class="text-xs text-sky-600 hover:text-sky-800 font-bold flex items-center gap-1 transition-colors bg-sky-50 hover:bg-sky-100 px-2 py-0.5 rounded-md" title="Restore original default checklist">
+                            <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                            <span>Restore Defaults</span>
+                        </button>
+                    </div>
+                </div>
+                <button onclick="closeConfigureModal()" class="w-8 h-8 rounded-full bg-sky-50 hover:bg-sky-100 active:bg-sky-200 text-sky-500 flex items-center justify-center transition-all shrink-0">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Task List Config -->
+            <div class="flex flex-col gap-3 max-h-[220px] overflow-y-auto pr-1" id="configTasksList">
+                <!-- Config items injected here -->
+            </div>
+
+            <!-- Divider -->
+            <div class="h-px bg-sky-100 w-full"></div>
+
+            <!-- Add Task Section -->
+            <div class="flex flex-col gap-3">
+                <h4 class="text-sm font-extrabold text-sky-800 uppercase tracking-wider">Add Custom Task</h4>
+                <div class="flex flex-col sm:flex-row gap-3 items-stretch">
+                    <input id="newCustomTaskLabel" type="text" placeholder="e.g., Code 1 Leetcode" class="flex-1 bg-sky-50/50 hover:bg-white border-2 border-sky-100 rounded-2xl px-4 py-3 text-sky-900 placeholder-sky-400/60 font-semibold text-sm focus:border-sky-400 focus:bg-white outline-none transition-all shadow-inner">
+                    
+                    <!-- Icon selection dropdown or inline grid -->
+                    <div class="relative">
+                        <button id="iconDropdownBtn" onclick="toggleIconSelect()" class="w-full sm:w-14 h-[48px] rounded-2xl border-2 border-sky-100 bg-sky-50/50 hover:bg-white flex items-center justify-center gap-2 sm:gap-0 text-sky-600 transition-all font-semibold">
+                            <i id="selectedIconDisplay" class="fa-solid fa-book-open text-lg"></i>
+                            <i class="fa-solid fa-chevron-down text-xs sm:hidden ml-1"></i>
+                        </button>
+                        
+                        <!-- Mini Icon Grid Popover -->
+                        <div id="iconGridContainer" class="absolute right-0 bottom-full sm:bottom-auto sm:top-full mt-2 bg-white border border-sky-100 p-3 rounded-2xl shadow-xl z-20 grid grid-cols-4 gap-2 hidden w-[200px]">
+                            <!-- Icons injected here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="addCustomTask()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 active:from-sky-700 active:to-blue-800 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add to Checklist</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
     <script>
         // ==========================================
@@ -136,7 +282,7 @@
         const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz6nCMRlnIN24Eyk3rqKmBBO1-nJ7OCqV27xXJ6KLsV08S6b-xV5Jv0SK_u2uu239eoUw/exec"; 
         
         // --- App Data ---
-        const tasks = [
+        const DEFAULT_TASKS = [
             { id: 'vocab', label: 'Daily Vocabulary', icon: 'fa-book-open' },
             { id: 'editorial', label: 'Read Editorial', icon: 'fa-align-left' },
             { id: 'pqrs', label: 'PQRS Jumbles', icon: 'fa-pen-nib' },
@@ -146,16 +292,17 @@
         ];
 
         let state = {
-            completed: []
+            tasks: [],
+            completed: [],
+            taskDetails: {}
         };
 
         // --- DOM Elements ---
         const els = {
             grid: document.getElementById('taskGrid'),
             progressBar: document.getElementById('progressBar'),
-            progressText: document.getElementById('progressText'),
             dateDisplay: document.getElementById('currentDateDisplay'),
-            syncDot: document.getElementById('syncDot'),
+            syncDot: null, // Removed
             // Modal Elements
             modalOverlay: document.getElementById('modalOverlay'),
             loadingBox: document.getElementById('loadingBox'),
@@ -170,115 +317,256 @@
             const today = new Date();
             els.dateDisplay.textContent = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
             
-            const savedData = localStorage.getItem(`prep_tracker_${today.toDateString()}`);
-            if (savedData) {
-                state.completed = JSON.parse(savedData);
-            }
-
+            loadFromStorage();
             renderTasks();
             updateProgress();
+            updateStreak();
+
+            // Close modals when clicking outside of the modal box (on the backdrop overlay)
+            document.getElementById('configureModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeConfigureModal();
+                }
+            });
+
+            document.getElementById('taskSessionModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeTaskSessionModal();
+                }
+            });
+
+            els.modalOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    const confirmBox = document.getElementById('confirmBox');
+                    const resultBox = document.getElementById('resultBox');
+                    if (confirmBox && !confirmBox.classList.contains('hidden')) {
+                        closeConfirmModal();
+                    } else if (resultBox && !resultBox.classList.contains('hidden')) {
+                        closeModal();
+                    }
+                }
+            });
+        }
+
+        function getTodayDateString() {
+            const today = new Date();
+            return today.getFullYear() + "-" + 
+                   String(today.getMonth() + 1).padStart(2, '0') + "-" + 
+                   String(today.getDate()).padStart(2, '0');
+        }
+
+        // --- Storage Logic ---
+        function loadFromStorage() {
+            const dateKey = getTodayDateString();
+            
+            // Load Tasks list
+            const savedTasks = localStorage.getItem('prep_tracker_tasks');
+            if (savedTasks) {
+                state.tasks = JSON.parse(savedTasks);
+            } else {
+                state.tasks = [...DEFAULT_TASKS];
+            }
+            
+            // Load today's completions
+            const savedCompleted = localStorage.getItem(`prep_tracker_completed_${dateKey}`);
+            if (savedCompleted) {
+                state.completed = JSON.parse(savedCompleted);
+            } else {
+                state.completed = [];
+            }
+            
+            // Load today's task details
+            const savedDetails = localStorage.getItem(`prep_tracker_details_${dateKey}`);
+            if (savedDetails) {
+                state.taskDetails = JSON.parse(savedDetails);
+            } else {
+                state.taskDetails = {};
+            }
+        }
+
+        function saveToStorage() {
+            const dateKey = getTodayDateString();
+            
+            localStorage.setItem(`prep_tracker_completed_${dateKey}`, JSON.stringify(state.completed));
+            localStorage.setItem(`prep_tracker_details_${dateKey}`, JSON.stringify(state.taskDetails));
+            
+            // Sync to consolidated history
+            const history = JSON.parse(localStorage.getItem('prep_tracker_history') || '{}');
+            history[dateKey] = {
+                completed: state.completed,
+                total: state.tasks.length,
+                details: state.taskDetails
+            };
+            localStorage.setItem('prep_tracker_history', JSON.stringify(history));
+            
+            updateStreak();
         }
 
         // --- Render UI ---
         function renderTasks() {
             els.grid.innerHTML = '';
             
-            tasks.forEach(task => {
+            state.tasks.forEach(task => {
                 const isDone = state.completed.includes(task.id);
+                const details = state.taskDetails[task.id] || { notes: '', timeSeconds: 0 };
+                
+                // Format timer display for card
+                let timeStr = '';
+                if (details.timeSeconds > 0) {
+                    const mins = Math.floor(details.timeSeconds / 60);
+                    const secs = details.timeSeconds % 60;
+                    timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+                }
+
+                const hasNote = details.notes && details.notes.trim().length > 0;
                 
                 const card = document.createElement('div');
-                card.className = `task-card cursor-pointer p-5 sm:p-6 rounded-3xl flex items-center justify-between border-2 ${
+                card.className = `task-card cursor-pointer p-3.5 sm:p-5 rounded-2xl flex items-center justify-between border-2 ${
                     isDone 
                         ? 'completed bg-gradient-to-br from-sky-50 to-blue-50 border-sky-200 shadow-sm' 
                         : 'glass-panel border-transparent hover:bg-white hover:shadow-md'
                 }`;
                 
-                card.onclick = () => toggleTask(task.id);
+                card.onclick = (e) => {
+                    if (e.target.closest('.check-trigger')) {
+                        return;
+                    }
+                    openTaskSessionModal(task.id);
+                };
+
+                let displayNote = '';
+                if (hasNote) {
+                    const cleanNote = details.notes.replace(/[\r\n]+/g, ' ').trim();
+                    displayNote = cleanNote.length > 25 ? cleanNote.substring(0, 22) + '...' : cleanNote;
+                }
+
+                let badgeHtml = '';
+                if (timeStr || hasNote) {
+                    badgeHtml = `
+                        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                            ${timeStr ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-bold bg-sky-100 text-sky-700"><i class="fa-solid fa-clock text-[9px]"></i> ${timeStr}</span>` : ''}
+                            ${hasNote ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-bold bg-blue-100 text-blue-700 max-w-[130px] truncate"><i class="fa-solid fa-note-sticky text-[9px]"></i> ${displayNote}</span>` : ''}
+                        </div>
+                    `;
+                }
 
                 card.innerHTML = `
-                    <div class="flex items-center gap-4 sm:gap-5">
-                        <div class="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-2xl transition-colors ${
+                    <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl shrink-0 transition-colors ${
                             isDone ? 'bg-sky-500 text-white shadow-md' : 'bg-sky-100 text-sky-600'
                         }">
-                            <i class="fa-solid ${task.icon} text-xl sm:text-2xl"></i>
+                            <i class="fa-solid ${task.icon} text-lg sm:text-xl"></i>
                         </div>
-                        <span class="font-bold text-lg sm:text-xl ${isDone ? 'text-sky-900' : 'text-sky-800'}">${task.label}</span>
+                        <div class="min-w-0 flex-1">
+                            <span class="font-bold text-base sm:text-lg ${isDone ? 'text-sky-900' : 'text-sky-800'} block truncate">${task.label}</span>
+                            ${badgeHtml}
+                        </div>
                     </div>
-                    <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
-                        isDone ? 'border-sky-500 bg-sky-500 text-white' : 'border-sky-200 bg-white/50'
-                    }">
-                        ${isDone ? '<i class="fa-solid fa-check text-sm animate-pop"></i>' : ''}
+                    <div class="check-trigger w-9 h-9 -mr-1.5 flex items-center justify-center rounded-full hover:bg-sky-100/50 active:bg-sky-100 shrink-0 transition-all">
+                        <div class="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
+                            isDone ? 'border-sky-500 bg-sky-500 text-white' : 'border-sky-200 bg-white/50'
+                        }">
+                            ${isDone ? '<i class="fa-solid fa-check text-xs animate-pop"></i>' : ''}
+                        </div>
                     </div>
                 `;
                 
+                card.querySelector('.check-trigger').onclick = (e) => {
+                    e.stopPropagation();
+                    toggleTask(task.id);
+                };
+
                 els.grid.appendChild(card);
             });
         }
 
-        // --- Logic ---
+        // --- Toggle Logic ---
         function toggleTask(id) {
-            const taskObj = tasks.find(t => t.id === id);
+            const taskObj = state.tasks.find(t => t.id === id);
+            if (!taskObj) return;
             const isCurrentlyChecked = state.completed.includes(id);
             const status = isCurrentlyChecked ? 'unchecked' : 'checked';
 
-            // 1. Show the loading modal immediately during the time gap
             showLoadingModal();
 
-            // 2. Sync to server and wait for it to finish
             syncSpecificTask(taskObj.label, status).then(() => {
-                // 3. Update the state AFTER sync completes successfully
                 if (status === 'checked') {
-                    state.completed.push(id);
+                    if (!state.completed.includes(id)) {
+                        state.completed.push(id);
+                    }
                 } else {
                     state.completed = state.completed.filter(taskId => taskId !== id);
                 }
                 
-                // Save locally so a page refresh doesn't clear the list
-                localStorage.setItem(`prep_tracker_${new Date().toDateString()}`, JSON.stringify(state.completed));
-                
-                // Update UI visually (Checkmarks & Progress)
+                saveToStorage();
                 renderTasks();
                 updateProgress();
-                
-                // 4. Transform loading circle into the success modal with OK button
                 showResultModal(taskObj.label, status);
             });
         }
 
         function updateProgress() {
             const count = state.completed.length;
-            const total = tasks.length;
-            const percentage = (count / total) * 100;
+            const total = state.tasks.length;
+            const percentage = total > 0 ? (count / total) * 100 : 0;
             
             els.progressBar.style.width = `${percentage}%`;
-            els.progressText.textContent = `${count} / ${total} Completed`;
         }
 
-        // --- Modal Display Logic ---
+        // --- Webhook Sync ---
+        function syncSpecificTask(taskName, status) {
+            const streakFireIcon = document.getElementById('streakFireIcon');
+            streakFireIcon.classList.replace('text-emerald-500', 'text-amber-500');
+            streakFireIcon.classList.add('animate-pulse');
+
+            const dateString = getTodayDateString();
+            const payload = {
+                date: dateString,
+                taskName: taskName,
+                status: status
+            };
+
+            return fetch(WEBHOOK_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                setTimeout(() => {
+                    streakFireIcon.classList.replace('text-amber-500', 'text-emerald-500');
+                    streakFireIcon.classList.remove('animate-pulse');
+                }, 800);
+            }).catch(error => {
+                console.error("Error sending to sheets:", error);
+                setTimeout(() => {
+                    streakFireIcon.classList.replace('text-amber-500', 'text-emerald-500');
+                    streakFireIcon.classList.remove('animate-pulse');
+                }, 800);
+            });
+        }
+
+        // --- Modals Display Logic ---
         function showLoadingModal() {
             els.modalOverlay.classList.remove('hidden');
             els.modalOverlay.classList.remove('pointer-events-none');
-            
-            // Allow display block to apply before fading in
             requestAnimationFrame(() => {
                 els.modalOverlay.classList.remove('opacity-0');
             });
-            
             els.loadingBox.classList.remove('hidden');
             els.resultBox.classList.add('hidden');
+            document.getElementById('confirmBox').classList.add('hidden');
         }
 
         function showResultModal(taskName, status) {
             els.loadingBox.classList.add('hidden');
             els.resultBox.classList.remove('hidden');
             
-            // Pop animation on result box
             els.resultBox.classList.remove('scale-95');
             els.resultBox.classList.add('scale-100');
 
             const isDone = status === 'checked';
-            
-            // Update styling based on action
             if (isDone) {
                 els.resultIconWrapper.className = 'w-16 h-16 rounded-full flex items-center justify-center mb-2 bg-emerald-100 text-emerald-500 shadow-inner';
                 els.resultIcon.className = 'fa-solid fa-check text-3xl animate-pop';
@@ -295,47 +583,478 @@
             els.resultBox.classList.remove('scale-100');
             els.resultBox.classList.add('scale-95');
             els.modalOverlay.classList.add('pointer-events-none');
+            setTimeout(() => {
+                els.modalOverlay.classList.add('hidden');
+            }, 300);
+        }
+
+        // --- Custom Toast Notifications ---
+        function showToast(message, icon = 'fa-circle-info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'glass-panel px-5 py-3.5 rounded-2xl flex items-center gap-3 border border-sky-100 bg-white/95 text-sky-900 shadow-xl pointer-events-auto animate-toast';
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-sky-500 text-lg"></i>
+                <span class="font-bold text-sm tracking-wide">${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 2500);
+        }
+
+        // --- Reset Today Flow (Modal) ---
+        function resetToday() {
+            if (state.completed.length === 0 && Object.keys(state.taskDetails).length === 0) {
+                showToast("Checklist is already clean!", "fa-circle-info");
+                return;
+            }
+            
+            els.modalOverlay.classList.remove('hidden');
+            els.modalOverlay.classList.remove('pointer-events-none');
+            requestAnimationFrame(() => {
+                els.modalOverlay.classList.remove('opacity-0');
+            });
+            els.loadingBox.classList.add('hidden');
+            els.resultBox.classList.add('hidden');
+            
+            const confirmBox = document.getElementById('confirmBox');
+            confirmBox.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                confirmBox.classList.remove('scale-95');
+                confirmBox.classList.add('scale-100');
+            });
+        }
+
+        function closeConfirmModal() {
+            const confirmBox = document.getElementById('confirmBox');
+            confirmBox.classList.add('scale-95');
+            confirmBox.classList.remove('scale-100');
+            
+            els.modalOverlay.classList.add('opacity-0');
+            els.modalOverlay.classList.add('pointer-events-none');
             
             setTimeout(() => {
                 els.modalOverlay.classList.add('hidden');
-            }, 300); // Matches transition duration
+                confirmBox.classList.add('hidden');
+            }, 300);
         }
 
-        // --- Webhook Sync (Targeted) ---
-        function syncSpecificTask(taskName, status) {
-            // Give visual feedback (yellow = syncing)
-            els.syncDot.classList.replace('bg-emerald-400', 'bg-amber-400');
-            els.syncDot.classList.add('animate-pulse');
+        function executeResetToday() {
+            state.completed = [];
+            state.taskDetails = {};
+            
+            const dateKey = getTodayDateString();
+            localStorage.removeItem(`prep_tracker_completed_${dateKey}`);
+            localStorage.removeItem(`prep_tracker_details_${dateKey}`);
+            
+            saveToStorage();
+            renderTasks();
+            updateProgress();
+            
+            closeConfirmModal();
+            showToast("Today's checklist reset completed.", "fa-arrow-rotate-left");
+        }
 
-            // Format date strictly as YYYY-MM-DD so sheets never gets confused
-            const today = new Date();
-            const dateString = today.getFullYear() + "-" + 
-                               String(today.getMonth() + 1).padStart(2, '0') + "-" + 
-                               String(today.getDate()).padStart(2, '0');
+        // --- Task Session Modal & Stopwatch Timer ---
+        let activeTaskId = null;
+        let stopwatchInterval = null;
+        let stopwatchTime = 0;
+        let isStopwatchRunning = false;
 
-            const payload = {
-                date: dateString,
-                taskName: taskName,
-                status: status // 'checked' or 'unchecked'
+        function openTaskSessionModal(taskId) {
+            activeTaskId = taskId;
+            const taskObj = state.tasks.find(t => t.id === taskId);
+            if (!taskObj) return;
+            
+            const details = state.taskDetails[taskId] || { notes: '', timeSeconds: 0 };
+            stopwatchTime = details.timeSeconds || 0;
+            isStopwatchRunning = false;
+            
+            document.getElementById('modalTaskTitle').textContent = taskObj.label;
+            document.getElementById('modalTaskIcon').className = `fa-solid ${taskObj.icon} text-xl`;
+            
+            const isDone = state.completed.includes(taskId);
+            const iconWrapper = document.getElementById('modalTaskIconWrapper');
+            if (isDone) {
+                iconWrapper.className = 'w-12 h-12 rounded-2xl flex items-center justify-center text-white bg-sky-500 shadow-md';
+                document.getElementById('modalCompleteBtn').innerHTML = '<i class="fa-solid fa-check"></i> <span>Update Details</span>';
+            } else {
+                iconWrapper.className = 'w-12 h-12 rounded-2xl flex items-center justify-center text-sky-600 bg-sky-100';
+                document.getElementById('modalCompleteBtn').innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Complete Task</span>';
+            }
+            
+            document.getElementById('taskNotesInput').value = details.notes || '';
+            updateStopwatchDisplay();
+            
+            const playBtn = document.getElementById('timerPlayBtn');
+            playBtn.innerHTML = '<i class="fa-solid fa-play text-sm"></i>';
+            playBtn.className = 'w-10 h-10 rounded-full bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white flex items-center justify-center transition-all shadow-sm';
+            
+            const quickTagsContainer = document.getElementById('quickTagsContainer');
+            quickTagsContainer.innerHTML = '';
+            
+            let tags = ["Notes: "];
+            const labelLower = taskObj.label.toLowerCase();
+            if (labelLower.includes('vocab') || labelLower.includes('word')) {
+                tags = ["Words: ", "Learned: ", "Daily word: "];
+            } else if (labelLower.includes('typing')) {
+                tags = ["WPM: ", "Accuracy: %", "Mistakes: "];
+            } else if (labelLower.includes('math') || labelLower.includes('calc')) {
+                tags = ["Score: ", "Drill Time: ", "Mistakes: "];
+            } else if (labelLower.includes('mock') || labelLower.includes('test')) {
+                tags = ["Score: ", "Accuracy: %", "Mistakes: ", "Rank: "];
+            } else if (labelLower.includes('read') || labelLower.includes('editorial')) {
+                tags = ["Topic: ", "Insights: "];
+            } else {
+                tags = ["Completed: ", "Duration: ", "Score: "];
+            }
+            
+            tags.forEach(tag => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'bg-sky-50 hover:bg-sky-100 active:bg-sky-200 text-sky-700 text-xs font-bold px-2.5 py-1 rounded-lg transition-all border border-sky-100/50';
+                btn.textContent = tag.replace(': ', '');
+                btn.onclick = () => addQuickTag(tag);
+                quickTagsContainer.appendChild(btn);
+            });
+            
+            const modal = document.getElementById('taskSessionModal');
+            modal.classList.remove('hidden');
+            modal.classList.remove('pointer-events-none');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                const box = document.getElementById('taskSessionBox');
+                box.classList.remove('scale-95');
+                box.classList.add('scale-100');
+            });
+        }
+
+        function closeTaskSessionModal() {
+            if (stopwatchInterval) {
+                clearInterval(stopwatchInterval);
+                stopwatchInterval = null;
+            }
+            isStopwatchRunning = false;
+            
+            const modal = document.getElementById('taskSessionModal');
+            const box = document.getElementById('taskSessionBox');
+            box.classList.remove('scale-100');
+            box.classList.add('scale-95');
+            modal.classList.add('opacity-0');
+            modal.classList.add('pointer-events-none');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function toggleStopwatch() {
+            const playBtn = document.getElementById('timerPlayBtn');
+            if (isStopwatchRunning) {
+                clearInterval(stopwatchInterval);
+                stopwatchInterval = null;
+                isStopwatchRunning = false;
+                playBtn.innerHTML = '<i class="fa-solid fa-play text-sm"></i>';
+                playBtn.className = 'w-10 h-10 rounded-full bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white flex items-center justify-center transition-all shadow-sm';
+            } else {
+                isStopwatchRunning = true;
+                stopwatchInterval = setInterval(() => {
+                    stopwatchTime++;
+                    updateStopwatchDisplay();
+                }, 1000);
+                playBtn.innerHTML = '<i class="fa-solid fa-pause text-sm"></i>';
+                playBtn.className = 'w-10 h-10 rounded-full bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white flex items-center justify-center transition-all shadow-sm animate-pulse';
+            }
+        }
+
+        function resetStopwatch() {
+            if (isStopwatchRunning) {
+                toggleStopwatch();
+            }
+            stopwatchTime = 0;
+            updateStopwatchDisplay();
+        }
+
+        function updateStopwatchDisplay() {
+            const mins = String(Math.floor(stopwatchTime / 60)).padStart(2, '0');
+            const secs = String(stopwatchTime % 60).padStart(2, '0');
+            document.getElementById('stopwatchDisplay').textContent = `${mins}:${secs}`;
+        }
+
+        function addQuickTag(tag) {
+            const notesInput = document.getElementById('taskNotesInput');
+            const currentValue = notesInput.value;
+            if (currentValue.includes(tag)) return;
+            if (currentValue.trim().length === 0) {
+                notesInput.value = tag;
+            } else {
+                notesInput.value = currentValue.trim() + " | " + tag;
+            }
+            notesInput.focus();
+        }
+
+        function saveTaskSession() {
+            const notes = document.getElementById('taskNotesInput').value;
+            const isCompleted = state.completed.includes(activeTaskId);
+            
+            if (isStopwatchRunning) {
+                toggleStopwatch();
+            }
+            
+            if (!state.taskDetails[activeTaskId]) {
+                state.taskDetails[activeTaskId] = {};
+            }
+            state.taskDetails[activeTaskId].notes = notes;
+            state.taskDetails[activeTaskId].timeSeconds = stopwatchTime;
+            
+            saveToStorage();
+            
+            if (!isCompleted) {
+                closeTaskSessionModal();
+                toggleTask(activeTaskId);
+            } else {
+                closeTaskSessionModal();
+                renderTasks();
+                updateProgress();
+                showToast("Session details updated!", "fa-circle-check");
+            }
+        }
+
+        // --- Configure Checklist Modal (Custom Tasks, Order, Delete) ---
+        let selectedIcon = 'fa-book-open';
+
+        function openConfigureModal() {
+            renderConfigTasks();
+            populateIconGrid();
+            
+            const modal = document.getElementById('configureModal');
+            modal.classList.remove('hidden');
+            modal.classList.remove('pointer-events-none');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                const box = document.getElementById('configureBox');
+                box.classList.remove('scale-95');
+                box.classList.add('scale-100');
+            });
+        }
+
+        function closeConfigureModal() {
+            const modal = document.getElementById('configureModal');
+            const box = document.getElementById('configureBox');
+            box.classList.remove('scale-100');
+            box.classList.add('scale-95');
+            modal.classList.add('opacity-0');
+            modal.classList.add('pointer-events-none');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function renderConfigTasks() {
+            const listContainer = document.getElementById('configTasksList');
+            listContainer.innerHTML = '';
+            
+            state.tasks.forEach((task, index) => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-3.5 bg-sky-50/40 border border-sky-100 rounded-2xl gap-2';
+                item.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
+                            <i class="fa-solid ${task.icon} text-sm"></i>
+                        </div>
+                        <span class="font-bold text-sky-900 text-sm sm:text-base truncate">${task.label}</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button onclick="moveTask(${index}, -1)" class="w-8 h-8 rounded-lg bg-white hover:bg-sky-50 text-sky-500 flex items-center justify-center transition-all border border-sky-100/50" ${index === 0 ? 'disabled opacity-30 cursor-not-allowed' : ''}>
+                            <i class="fa-solid fa-chevron-up text-xs"></i>
+                        </button>
+                        <button onclick="moveTask(${index}, 1)" class="w-8 h-8 rounded-lg bg-white hover:bg-sky-50 text-sky-500 flex items-center justify-center transition-all border border-sky-100/50" ${index === state.tasks.length - 1 ? 'disabled opacity-30 cursor-not-allowed' : ''}>
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </button>
+                        <button onclick="deleteTask('${task.id}')" class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 active:bg-red-200 text-red-500 flex items-center justify-center transition-all" title="Delete task">
+                            <i class="fa-solid fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function moveTask(index, direction) {
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= state.tasks.length) return;
+            
+            const temp = state.tasks[index];
+            state.tasks[index] = state.tasks[targetIndex];
+            state.tasks[targetIndex] = temp;
+            
+            localStorage.setItem('prep_tracker_tasks', JSON.stringify(state.tasks));
+            renderConfigTasks();
+            renderTasks();
+            saveToStorage();
+            showToast("Task reordered!", "fa-up-down");
+        }
+
+        function deleteTask(id) {
+            if (state.tasks.length <= 1) {
+                showToast("Keep at least one daily prep task!", "fa-circle-exclamation");
+                return;
+            }
+            
+            state.tasks = state.tasks.filter(t => t.id !== id);
+            state.completed = state.completed.filter(taskId => taskId !== id);
+            if (state.taskDetails[id]) {
+                delete state.taskDetails[id];
+            }
+            
+            localStorage.setItem('prep_tracker_tasks', JSON.stringify(state.tasks));
+            renderConfigTasks();
+            renderTasks();
+            saveToStorage();
+            showToast("Task removed from list", "fa-trash-can");
+        }
+
+        function toggleIconSelect() {
+            const container = document.getElementById('iconGridContainer');
+            container.classList.toggle('hidden');
+        }
+
+        function selectIcon(iconName) {
+            selectedIcon = iconName;
+            document.getElementById('selectedIconDisplay').className = `fa-solid ${iconName} text-lg`;
+            document.getElementById('iconGridContainer').classList.add('hidden');
+        }
+
+        function populateIconGrid() {
+            const container = document.getElementById('iconGridContainer');
+            container.innerHTML = '';
+            
+            const icons = [
+                'fa-book-open',
+                'fa-align-left',
+                'fa-pen-nib',
+                'fa-keyboard',
+                'fa-calculator',
+                'fa-bullseye',
+                'fa-code',
+                'fa-language',
+                'fa-briefcase',
+                'fa-brain',
+                'fa-dumbbell',
+                'fa-lightbulb'
+            ];
+            
+            icons.forEach(ico => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'w-10 h-10 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 flex items-center justify-center transition-all border border-sky-100/50';
+                btn.innerHTML = `<i class="fa-solid ${ico} text-base"></i>`;
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    selectIcon(ico);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function addCustomTask() {
+            const labelInput = document.getElementById('newCustomTaskLabel');
+            const label = labelInput.value.trim();
+            if (!label) {
+                showToast("Please write a task name!", "fa-circle-exclamation");
+                return;
+            }
+            
+            const id = `custom_${Date.now()}`;
+            const newTask = {
+                id: id,
+                label: label,
+                icon: selectedIcon
+            };
+            
+            state.tasks.push(newTask);
+            localStorage.setItem('prep_tracker_tasks', JSON.stringify(state.tasks));
+            
+            labelInput.value = '';
+            document.getElementById('iconGridContainer').classList.add('hidden');
+            
+            renderConfigTasks();
+            renderTasks();
+            saveToStorage();
+            showToast("Added custom prep task!", "fa-circle-plus");
+        }
+
+        function resetToDefaultTasks() {
+            state.tasks = [...DEFAULT_TASKS];
+            localStorage.setItem('prep_tracker_tasks', JSON.stringify(state.tasks));
+            renderConfigTasks();
+            renderTasks();
+            saveToStorage();
+            updateProgress();
+            updateStreak();
+            showToast("Restored default prep checklist!", "fa-rotate-left");
+        }
+
+        // --- Streak Counter Logic ---
+        function calculateStreak() {
+            const history = JSON.parse(localStorage.getItem('prep_tracker_history') || '{}');
+            let streak = 0;
+            let today = new Date();
+            
+            const formatDate = (date) => {
+                return date.getFullYear() + "-" + 
+                       String(date.getMonth() + 1).padStart(2, '0') + "-" + 
+                       String(date.getDate()).padStart(2, '0');
             };
 
-            // Send to Google Sheets AND return the promise to wait for completion
-            return fetch(WEBHOOK_URL, {
-                method: 'POST',
-                mode: 'no-cors', 
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            }).then(() => {
-                // Visual feedback (green = success)
+            let checkDate = new Date(today);
+            let todayStr = formatDate(checkDate);
+            
+            let didToday = history[todayStr] && history[todayStr].completed && history[todayStr].completed.length > 0;
+            
+            if (!didToday) {
+                checkDate.setDate(checkDate.getDate() - 1);
+                let yesterdayStr = formatDate(checkDate);
+                let didYesterday = history[yesterdayStr] && history[yesterdayStr].completed && history[yesterdayStr].completed.length > 0;
+                if (!didYesterday) {
+                    return 0;
+                }
+            }
+            
+            while (true) {
+                let dateStr = formatDate(checkDate);
+                let completedToday = history[dateStr] && history[dateStr].completed && history[dateStr].completed.length > 0;
+                if (completedToday) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            return streak;
+        }
+
+        function scrollToTasks() {
+            const grid = document.getElementById('taskGrid');
+            if (grid) {
+                grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                grid.classList.add('ring-2', 'ring-sky-300', 'ring-offset-4');
                 setTimeout(() => {
-                    els.syncDot.classList.replace('bg-amber-400', 'bg-emerald-400');
-                    els.syncDot.classList.remove('animate-pulse');
-                }, 800);
-            }).catch(error => {
-                console.error("Error sending to sheets:", error);
-            });
+                    grid.classList.remove('ring-2', 'ring-sky-300', 'ring-offset-4');
+                }, 1000);
+            }
+        }
+
+        function updateStreak() {
+            // Day streak removed, replaced with Track Data button in header.
+            // Highlight fire icon if all tasks are complete today.
+            const completedToday = state.completed ? state.completed.length : 0;
+            const totalTasks = state.tasks ? state.tasks.length : 0;
+            const streakFireIcon = document.getElementById('streakFireIcon');
+            if (streakFireIcon) {
+                // Bounce animation removed as requested.
+            }
         }
 
         // Start App
