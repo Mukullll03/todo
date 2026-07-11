@@ -9,7 +9,7 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- App Icons & PWA Settings -->
     <link rel="icon" type="image/jpeg" href="https://framerusercontent.com/images/DGPdl3nBCOFyGKcpCA3RRw5QM2M.jpg?scale-down-to=512&width=1200&height=1200">
@@ -147,14 +147,38 @@
             </div>
             <h3 class="text-xl font-extrabold text-sky-900">Reset Today?</h3>
             <p class="text-sky-700 font-medium text-sm">This will clear all checked tasks, stopwatch timers, and logged notes for today. This action cannot be undone.</p>
-            <div class="flex gap-3 w-full mt-2">
-                <button onclick="closeConfirmModal()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold py-3 px-4 rounded-xl transition-all">
-                    Cancel
+            <div class="flex flex-col gap-2 w-full mt-2">
+                <button onclick="openSelectiveRemoveModal()" class="w-full bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold py-3 px-4 rounded-xl transition-all border border-amber-200 shadow-sm flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Select Specific to Remove</span>
                 </button>
-                <button onclick="executeResetToday()" class="flex-1 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md">
-                    Yes, Reset
+                <div class="flex gap-2 w-full">
+                    <button onclick="closeConfirmModal()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold py-3 px-4 rounded-xl transition-all">
+                        Cancel
+                    </button>
+                    <button onclick="executeResetToday()" class="flex-1 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md">
+                        Reset All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selective Remove Box -->
+        <div id="selectiveRemoveBox" class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col items-center gap-4 hidden transform scale-95 transition-transform duration-300 max-h-[85vh] flex-shrink">
+            <div class="w-full flex justify-between items-center mb-2">
+                <h3 class="text-xl font-extrabold text-sky-900">Remove Data</h3>
+                <button onclick="closeSelectiveRemoveModal()" class="w-8 h-8 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
+            <p class="text-sky-700 font-medium text-sm text-left w-full -mt-2">Select completed tasks or notes to remove them locally and from the tracking sheet.</p>
+            <div id="selectiveRemoveList" class="w-full flex flex-col overflow-y-auto pr-1 flex-1 min-h-[150px]">
+                <!-- Checkboxes injected here -->
+            </div>
+            <button onclick="executeSelectiveRemove()" class="mt-4 w-full bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Remove Selected</span>
+            </button>
         </div>
     </div>
 
@@ -181,7 +205,17 @@
             <div class="flex flex-col gap-4">
                 <div class="flex flex-col gap-2">
                     <label for="taskNotesInput" class="text-sm font-extrabold text-sky-800">Add Session Note</label>
-                    <textarea id="taskNotesInput" rows="2" placeholder="Write a note here..." class="w-full bg-sky-50/50 hover:bg-white border-2 border-sky-100 rounded-2xl p-4 text-sky-900 placeholder-sky-400/60 font-medium text-sm focus:border-sky-400 focus:bg-white outline-none transition-all shadow-inner resize-none"></textarea>
+                    
+                    <!-- Quick Save Input Wrapper -->
+                    <div class="relative w-full">
+                        <textarea id="taskNotesInput" rows="3" placeholder="Write a note here..." class="w-full bg-sky-50/50 hover:bg-white border-2 border-sky-100 rounded-2xl p-3 pr-12 text-sky-900 placeholder-sky-400/60 font-medium text-sm focus:border-sky-400 focus:bg-white outline-none transition-all shadow-inner resize-none"></textarea>
+                        
+                        <!-- Quick Save Icon Button -->
+                        <button onclick="quickSaveNote()" class="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center text-sky-500 hover:text-sky-700 hover:bg-sky-100/50 rounded-full transition-all active:scale-95" title="Save note without closing">
+                            <i class="fa-solid fa-arrow-down text-base"></i>
+                        </button>
+                    </div>
+                    
                     <div id="quickTagsContainer" class="flex gap-2 flex-wrap mt-1">
                         <!-- Quick tags injected here based on task context -->
                     </div>
@@ -318,15 +352,36 @@
             });
 
             document.getElementById('taskSessionModal').addEventListener('click', function(e) {
-                if (e.target === this) closeTaskSessionModal();
+                if (e.target === this) {
+                    // Check for unsaved text or existing notes before allowing click-outside to close
+                    const notesInput = document.getElementById('taskNotesInput');
+                    const hasUnsavedText = notesInput.value.trim().length > 0;
+                    
+                    const details = state.taskDetails[activeTaskId];
+                    const hasSavedNotes = details && details.notes && details.notes.length > 0;
+
+                    if (hasUnsavedText || hasSavedNotes) {
+                        // Optionally shake the modal to indicate they need to use the buttons
+                        const box = document.getElementById('taskSessionBox');
+                        box.classList.add('animate-pulse'); // Using tailwind's pulse for a quick visual feedback
+                        setTimeout(() => box.classList.remove('animate-pulse'), 500);
+                        return; // Prevent closing
+                    }
+                    
+                    closeTaskSessionModal();
+                }
             });
 
             els.modalOverlay.addEventListener('click', function(e) {
                 if (e.target === this) {
                     const confirmBox = document.getElementById('confirmBox');
                     const resultBox = document.getElementById('resultBox');
+                    const srBox = document.getElementById('selectiveRemoveBox');
+                    
                     if (confirmBox && !confirmBox.classList.contains('hidden')) {
                         closeConfirmModal();
+                    } else if (srBox && !srBox.classList.contains('hidden')) {
+                        closeSelectiveRemoveModal();
                     } else if (resultBox && !resultBox.classList.contains('hidden')) {
                         closeModal();
                     }
@@ -544,6 +599,9 @@
             els.loadingBox.classList.remove('hidden');
             els.resultBox.classList.add('hidden');
             document.getElementById('confirmBox').classList.add('hidden');
+            
+            const srBox = document.getElementById('selectiveRemoveBox');
+            if (srBox) srBox.classList.add('hidden');
         }
 
         function hideLoadingModalWithoutResult() {
@@ -650,6 +708,151 @@
             showToast("Today's checklist reset completed.", "fa-arrow-rotate-left");
         }
 
+        // --- Selective Remove Flow ---
+        let selectiveRemoveIds = new Set();
+
+        function openSelectiveRemoveModal() {
+            document.getElementById('confirmBox').classList.add('hidden');
+            
+            const srBox = document.getElementById('selectiveRemoveBox');
+            srBox.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                srBox.classList.remove('scale-95');
+                srBox.classList.add('scale-100');
+            });
+            
+            selectiveRemoveIds.clear();
+            renderSelectiveRemoveList();
+        }
+        
+        function closeSelectiveRemoveModal() {
+            const srBox = document.getElementById('selectiveRemoveBox');
+            srBox.classList.remove('scale-100');
+            srBox.classList.add('scale-95');
+            
+            els.modalOverlay.classList.add('opacity-0');
+            els.modalOverlay.classList.add('pointer-events-none');
+            
+            setTimeout(() => {
+                els.modalOverlay.classList.add('hidden');
+                srBox.classList.add('hidden');
+            }, 300);
+        }
+        
+        function renderSelectiveRemoveList() {
+            const list = document.getElementById('selectiveRemoveList');
+            list.innerHTML = '';
+            
+            const completedTasks = state.tasks.filter(t => state.completed.includes(t.id));
+            const tasksWithNotes = state.tasks.filter(t => state.taskDetails[t.id] && state.taskDetails[t.id].notes && state.taskDetails[t.id].notes.length > 0);
+            
+            if (completedTasks.length === 0 && tasksWithNotes.length === 0) {
+                list.innerHTML = '<p class="text-sm text-sky-600/70 text-center py-4 italic">No completed tasks or notes to remove.</p>';
+                return;
+            }
+
+            if (completedTasks.length > 0) {
+                const header = document.createElement('h4');
+                header.className = 'text-xs font-bold text-sky-800 uppercase mt-1 mb-2 px-1';
+                header.textContent = 'Completed Tasks (Uncheck)';
+                list.appendChild(header);
+
+                completedTasks.forEach(task => {
+                    const item = document.createElement('label');
+                    item.className = 'flex items-center gap-3 p-3 bg-sky-50/50 hover:bg-sky-100 rounded-xl cursor-pointer transition-colors border border-sky-100/80 shadow-sm mb-2';
+                    item.innerHTML = `
+                        <input type="checkbox" value="task:${task.id}" class="w-5 h-5 rounded border-sky-300 text-red-500 focus:ring-red-500 bg-white" onchange="toggleSelectiveRemove('task:${task.id}', this.checked)">
+                        <div class="flex-1 flex items-center min-w-0">
+                            <span class="font-bold text-sky-900 text-sm truncate">${task.label}</span>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+
+            if (tasksWithNotes.length > 0) {
+                const header = document.createElement('h4');
+                header.className = `text-xs font-bold text-sky-800 uppercase ${completedTasks.length > 0 ? 'mt-4' : 'mt-1'} mb-2 px-1`;
+                header.textContent = 'Saved Notes (Clear)';
+                list.appendChild(header);
+
+                tasksWithNotes.forEach(task => {
+                    const item = document.createElement('label');
+                    item.className = 'flex items-center gap-3 p-3 bg-sky-50/50 hover:bg-sky-100 rounded-xl cursor-pointer transition-colors border border-sky-100/80 shadow-sm mb-2';
+                    item.innerHTML = `
+                        <input type="checkbox" value="note:${task.id}" class="w-5 h-5 rounded border-sky-300 text-red-500 focus:ring-red-500 bg-white" onchange="toggleSelectiveRemove('note:${task.id}', this.checked)">
+                        <div class="flex-1 flex items-center justify-between min-w-0">
+                            <span class="font-bold text-sky-900 text-sm truncate">${task.label}</span>
+                            <span class="ml-2 text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">Clear Notes</span>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+        }
+        
+        function toggleSelectiveRemove(key, isChecked) {
+            if (isChecked) {
+                selectiveRemoveIds.add(key);
+            } else {
+                selectiveRemoveIds.delete(key);
+            }
+        }
+        
+        function executeSelectiveRemove() {
+            if (selectiveRemoveIds.size === 0) {
+                showToast("No items selected", "fa-circle-exclamation");
+                return;
+            }
+            
+            showLoadingModal();
+            
+            const promises = [];
+            let tasksUpdated = 0;
+            const tasksToProcess = new Set();
+            
+            // Gather unique task IDs that need updating
+            selectiveRemoveIds.forEach(key => {
+                const actualId = key.substring(5); // Removes "task:" or "note:" prefix
+                tasksToProcess.add(actualId);
+            });
+            
+            tasksToProcess.forEach(id => {
+                const taskObj = state.tasks.find(t => t.id === id);
+                if (taskObj) {
+                    const removeTask = selectiveRemoveIds.has(`task:${id}`);
+                    const removeNote = selectiveRemoveIds.has(`note:${id}`);
+                    
+                    let newStatus = state.completed.includes(id) ? 'checked' : 'unchecked';
+                    let currentNotes = state.taskDetails[id] ? [...(state.taskDetails[id].notes || [])] : [];
+                    
+                    if (removeTask) {
+                        newStatus = 'unchecked';
+                        state.completed = state.completed.filter(tId => tId !== id);
+                    }
+                    
+                    if (removeNote) {
+                        currentNotes = [];
+                        if (state.taskDetails[id]) {
+                            state.taskDetails[id].notes = [];
+                        }
+                    }
+                    
+                    promises.push(syncSpecificTask(taskObj.label, newStatus, { notes: currentNotes }));
+                    tasksUpdated++;
+                }
+            });
+            
+            Promise.allSettled(promises).then(() => {
+                saveToStorage();
+                renderTasks();
+                updateProgress();
+                
+                hideLoadingModalWithoutResult();
+                showToast(`Removed data for ${tasksUpdated} task(s)!`, "fa-trash-can");
+            });
+        }
+
         // --- Task Session Modal & Notes ---
         let activeTaskId = null;
 
@@ -709,6 +912,42 @@
             });
         }
 
+        // NEW: Inline Quick Save logic for notes
+        function quickSaveNote() {
+            const notesInput = document.getElementById('taskNotesInput');
+            const newNote = notesInput.value.trim();
+            
+            if (!newNote) {
+                showToast("Please write something first!", "fa-circle-exclamation");
+                return;
+            }
+            
+            if (!state.taskDetails[activeTaskId]) {
+                state.taskDetails[activeTaskId] = { notes: [] };
+            }
+            
+            let details = state.taskDetails[activeTaskId];
+            if (typeof details.notes === 'string') {
+                details.notes = details.notes.trim() ? [details.notes] : [];
+            }
+            
+            // Push the new note
+            details.notes.push(newNote);
+            notesInput.value = ''; // Clear for next note immediately
+            
+            saveToStorage();
+            renderSavedNotes();
+            renderTasks(); // Update dashboard cards silently
+            
+            // If the task is already completed, silently trigger a sync to sheets
+            if (state.completed.includes(activeTaskId)) {
+                const taskObj = state.tasks.find(t => t.id === activeTaskId);
+                syncSpecificTask(taskObj.label, 'checked', details).catch(e => console.error("Quick sync failed", e));
+            }
+            
+            showToast("Note quickly saved!", "fa-check");
+        }
+
         function renderSavedNotes() {
             const details = state.taskDetails[activeTaskId];
             const section = document.getElementById('savedNotesSection');
@@ -724,13 +963,13 @@
             section.classList.remove('hidden');
             details.notes.forEach((note, index) => {
                 const div = document.createElement('div');
-                div.className = 'flex items-start gap-3 p-3 bg-sky-50/50 rounded-xl border border-sky-100/50 justify-between'; // Added justify-between
+                div.className = 'flex items-start gap-3 p-3 bg-sky-50/50 rounded-xl border border-sky-100/50 justify-between';
                 div.innerHTML = `
                     <span class="text-sm text-sky-900 font-medium whitespace-pre-wrap break-words flex-1 leading-relaxed">${note}</span>
                     <button onclick="deleteSpecificNote(${index})" class="mt-0.5 text-red-400 hover:text-red-600 transition-colors shrink-0" title="Delete note">
                         <i class="fa-solid fa-trash-can text-sm"></i>
                     </button>
-                `; // swapped order of span and button
+                `; 
                 list.appendChild(div);
             });
         }
@@ -751,6 +990,7 @@
                     showToast("Note deleted & synced!", "fa-trash-can");
                 });
             } else {
+                renderTasks();
                 showToast("Note removed.", "fa-trash-can");
             }
         }
@@ -776,10 +1016,8 @@
             const textBefore = currentValue.substring(0, cursorPos);
             const textAfter  = currentValue.substring(cursorPos, currentValue.length);
             
-            // Add the tag, and a space if there wasn't one already.
             notesInput.value = textBefore + tag + textAfter;
             
-            // Move cursor directly after the inserted tag
             const newCursorPos = cursorPos + tag.length;
             notesInput.selectionStart = newCursorPos;
             notesInput.selectionEnd = newCursorPos;
@@ -800,9 +1038,10 @@
                 details.notes = details.notes.trim() ? [details.notes] : [];
             }
             
+            // Only add note if something is typed and not yet quick-saved
             if (newNote) {
                 details.notes.push(newNote);
-                notesInput.value = ''; // Clear for next time
+                notesInput.value = ''; 
             }
             
             saveToStorage();
@@ -812,7 +1051,7 @@
                 closeTaskSessionModal();
                 toggleTask(activeTaskId);
             } else {
-                // Already completed - manually sync the updated notes
+                // Already completed - manually sync the updated state
                 closeTaskSessionModal();
                 showLoadingModal();
                 
