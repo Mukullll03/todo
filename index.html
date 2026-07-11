@@ -301,7 +301,7 @@
     </div>
 
     <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toastContainer" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none w-max max-w-[90vw]"></div>
 
     <script>
         // ==========================================
@@ -479,7 +479,7 @@
                             ${badgeHtml}
                         </div>
                     </div>
-                    <div class="check-trigger w-9 h-9 -mr-1.5 flex items-center justify-center rounded-full hover:bg-sky-100/50 active:bg-sky-100 shrink-0 transition-all">
+                    <div class="check-trigger w-9 h-9 -mr-1.5 flex items-center justify-center rounded-full ${isDone ? 'cursor-default' : 'hover:bg-sky-100/50 active:bg-sky-100 cursor-pointer'} shrink-0 transition-all">
                         <div class="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
                             isDone ? 'border-sky-500 bg-sky-500 text-white' : 'border-sky-200 bg-white/50'
                         }">
@@ -488,8 +488,13 @@
                     </div>
                 `;
                 
+                // Modification: Check if task is already done before toggling
                 card.querySelector('.check-trigger').onclick = (e) => {
                     e.stopPropagation();
+                    if (isDone) {
+                        showToast("Cannot untick from here. Use 'Reset Today'.", "fa-lock");
+                        return;
+                    }
                     toggleTask(task.id);
                 };
 
@@ -644,10 +649,10 @@
         function showToast(message, icon = 'fa-circle-info') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
-            toast.className = 'glass-panel px-5 py-3.5 rounded-2xl flex items-center gap-3 border border-sky-100 bg-white/95 text-sky-900 shadow-xl pointer-events-auto animate-toast';
+            toast.className = 'glass-panel px-4 py-2.5 rounded-xl flex items-center gap-2.5 border border-sky-100 bg-white/95 text-sky-900 shadow-xl pointer-events-auto animate-toast';
             toast.innerHTML = `
-                <i class="fa-solid ${icon} text-sky-500 text-lg"></i>
-                <span class="font-bold text-sm tracking-wide">${message}</span>
+                <i class="fa-solid ${icon} text-sky-500 text-base"></i>
+                <span class="font-semibold text-xs sm:text-sm tracking-wide">${message}</span>
             `;
             container.appendChild(toast);
             setTimeout(() => {
