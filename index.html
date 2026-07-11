@@ -232,12 +232,12 @@
 
             <!-- Footer Buttons -->
             <div class="flex gap-3">
-                <button onclick="closeTaskSessionModal()" class="flex-1 bg-sky-50 hover:bg-sky-100 active:bg-sky-200 text-sky-700 font-bold py-3.5 px-4 rounded-xl transition-all">
+                <button onclick="cancelTaskSession()" class="flex-1 bg-sky-50 hover:bg-sky-100 active:bg-sky-200 text-sky-700 font-bold py-3.5 px-4 rounded-xl transition-all">
                     Cancel
                 </button>
                 <button id="modalCompleteBtn" onclick="saveTaskSession()" class="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 active:from-sky-700 active:to-blue-800 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
                     <i class="fa-solid fa-circle-check"></i>
-                    <span>Complete Task</span>
+                    <span>Complete</span>
                 </button>
             </div>
         </div>
@@ -325,6 +325,12 @@
             taskDetails: {}
         };
 
+        // NEW: Shadow state to track what was actually synced to Google Sheets today
+        let sheetState = {
+            completed: [],
+            notes: {}
+        };
+
         // --- DOM Elements ---
         const els = {
             grid: document.getElementById('taskGrid'),
@@ -353,21 +359,6 @@
 
             document.getElementById('taskSessionModal').addEventListener('click', function(e) {
                 if (e.target === this) {
-                    // Check for unsaved text or existing notes before allowing click-outside to close
-                    const notesInput = document.getElementById('taskNotesInput');
-                    const hasUnsavedText = notesInput.value.trim().length > 0;
-                    
-                    const details = state.taskDetails[activeTaskId];
-                    const hasSavedNotes = details && details.notes && details.notes.length > 0;
-
-                    if (hasUnsavedText || hasSavedNotes) {
-                        // Optionally shake the modal to indicate they need to use the buttons
-                        const box = document.getElementById('taskSessionBox');
-                        box.classList.add('animate-pulse'); // Using tailwind's pulse for a quick visual feedback
-                        setTimeout(() => box.classList.remove('animate-pulse'), 500);
-                        return; // Prevent closing
-                    }
-                    
                     closeTaskSessionModal();
                 }
             });
@@ -409,6 +400,27 @@
             
             const savedDetails = localStorage.getItem(`prep_tracker_details_${dateKey}`);
             state.taskDetails = savedDetails ? JSON.parse(savedDetails) : {};
+
+            // Load Sheet State Tracker
+            const savedSheetState = localStorage.getItem(`prep_tracker_sheet_state_${dateKey}`);
+            if (savedSheetState) {
+                sheetState = JSON.parse(savedSheetState);
+            } else {
+                sheetState = {
+                    completed: [...state.completed],
+                    notes: {}
+                };
+                Object.keys(state.taskDetails).forEach(id => {
+                    const n = state.taskDetails[id].notes;
+                    sheetState.notes[id] = Array.isArray(n) ? [...n] : (typeof n === 'string' && n.trim() ? [n] : []);
+                });
+                saveSheetState();
+            }
+        }
+
+        function saveSheetState() {
+            const dateKey = getTodayDateString();
+            localStorage.setItem(`prep_tracker_sheet_state_${dateKey}`, JSON.stringify(sheetState));
         }
 
         function saveToStorage() {
@@ -512,7 +524,7 @@
 
             showLoadingModal();
 
-            syncSpecificTask(taskObj.label, status, details).then(() => {
+            syncSpecificTask(id, taskObj.label, status, details).then(() => {
                 if (status === 'checked') {
                     if (!state.completed.includes(id)) {
                         state.completed.push(id);
@@ -536,12 +548,21 @@
         }
 
         // --- Webhook Sync ---
-        function syncSpecificTask(taskName, status, details = {}) {
+        function syncSpecificTask(taskId, taskName, status, details = {}) {
             const streakFireIcon = document.getElementById('streakFireIcon');
             if (streakFireIcon) {
                 streakFireIcon.classList.replace('text-emerald-500', 'text-amber-500');
                 streakFireIcon.classList.add('animate-pulse');
             }
+
+            // Update local sheet state to mirror what we successfully sent
+            if (status === 'checked') {
+                if (!sheetState.completed.includes(taskId)) sheetState.completed.push(taskId);
+            } else {
+                sheetState.completed = sheetState.completed.filter(id => id !== taskId);
+            }
+            sheetState.notes[taskId] = Array.isArray(details.notes) ? [...details.notes] : (typeof details.notes === 'string' && details.notes.trim() ? [details.notes] : []);
+            saveSheetState();
 
             // Generate payload date exactly as DD/MM/YYYY
             const today = new Date();
@@ -573,7 +594,7 @@
                 method: 'POST',
                 mode: 'no-cors', 
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'text/plain;charset=utf-8'
                 },
                 body: JSON.stringify(payload)
             }).then(() => {
@@ -584,13 +605,14 @@
                     }
                 }, 800);
             }).catch(error => {
-                console.error("Error sending to sheets:", error);
+                console.warn("Network sync failed, saving locally:", error);
                 setTimeout(() => {
                     if (streakFireIcon) {
                         streakFireIcon.classList.replace('text-amber-500', 'text-emerald-500');
                         streakFireIcon.classList.remove('animate-pulse');
                     }
                 }, 800);
+                return Promise.resolve(); // Ensure UI continues even if offline
             });
         }
 
@@ -662,7 +684,10 @@
 
         // --- Reset Today Flow ---
         function resetToday() {
-            if (state.completed.length === 0 && Object.keys(state.taskDetails).length === 0) {
+            const hasLocalData = state.completed.length > 0 || Object.keys(state.taskDetails).length > 0;
+            const hasSheetData = sheetState && (sheetState.completed.length > 0 || Object.keys(sheetState.notes).length > 0);
+
+            if (!hasLocalData && !hasSheetData) {
                 showToast("Checklist is already clean!", "fa-circle-info");
                 return;
             }
@@ -748,11 +773,12 @@
             const list = document.getElementById('selectiveRemoveList');
             list.innerHTML = '';
             
-            const completedTasks = state.tasks.filter(t => state.completed.includes(t.id));
-            const tasksWithNotes = state.tasks.filter(t => state.taskDetails[t.id] && state.taskDetails[t.id].notes && state.taskDetails[t.id].notes.length > 0);
+            // Use sheetState instead of standard UI state to survive a 'Reset Today'
+            const completedTasks = state.tasks.filter(t => sheetState.completed.includes(t.id));
+            const tasksWithNotes = state.tasks.filter(t => sheetState.notes[t.id] && sheetState.notes[t.id].length > 0);
             
             if (completedTasks.length === 0 && tasksWithNotes.length === 0) {
-                list.innerHTML = '<p class="text-sm text-sky-600/70 text-center py-4 italic">No completed tasks or notes to remove.</p>';
+                list.innerHTML = '<p class="text-sm text-sky-600/70 text-center py-4 italic">No synced data to remove.</p>';
                 return;
             }
 
@@ -828,8 +854,9 @@
                     const removeTask = selectiveRemoveIds.has(`task:${id}`);
                     const removeNote = selectiveRemoveIds.has(`note:${id}`);
                     
-                    let newStatus = state.completed.includes(id) ? 'checked' : 'unchecked';
-                    let currentNotes = state.taskDetails[id] ? [...(state.taskDetails[id].notes || [])] : [];
+                    // Base the starting removal status on what the sheet knows
+                    let newStatus = sheetState.completed.includes(id) ? 'checked' : 'unchecked';
+                    let currentNotes = sheetState.notes[id] ? [...sheetState.notes[id]] : [];
                     
                     if (removeTask) {
                         newStatus = 'unchecked';
@@ -843,7 +870,7 @@
                         }
                     }
                     
-                    promises.push(syncSpecificTask(taskObj.label, newStatus, { notes: currentNotes }));
+                    promises.push(syncSpecificTask(id, taskObj.label, newStatus, { notes: currentNotes }));
                     tasksUpdated++;
                 }
             });
@@ -860,6 +887,7 @@
 
         // --- Task Session Modal & Notes ---
         let activeTaskId = null;
+        let sessionOriginalNotes = null;
 
         function openTaskSessionModal(taskId) {
             activeTaskId = taskId;
@@ -872,6 +900,9 @@
                 state.taskDetails[taskId] = details; // fix state in place
             }
             
+            // Snapshot of notes before any session changes are made
+            sessionOriginalNotes = [...details.notes];
+            
             document.getElementById('modalTaskTitle').textContent = taskObj.label;
             document.getElementById('modalTaskIcon').className = `fa-solid ${taskObj.icon} text-xl`;
             
@@ -882,7 +913,7 @@
                 document.getElementById('modalCompleteBtn').innerHTML = '<i class="fa-solid fa-check"></i> <span>Update</span>';
             } else {
                 iconWrapper.className = 'w-12 h-12 rounded-2xl flex items-center justify-center text-sky-600 bg-sky-100';
-                document.getElementById('modalCompleteBtn').innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Complete Task</span>';
+                document.getElementById('modalCompleteBtn').innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Complete</span>';
             }
             
             document.getElementById('taskNotesInput').value = '';
@@ -944,13 +975,7 @@
             renderSavedNotes();
             renderTasks(); // Update dashboard cards silently
             
-            // If the task is already completed, silently trigger a sync to sheets
-            if (state.completed.includes(activeTaskId)) {
-                const taskObj = state.tasks.find(t => t.id === activeTaskId);
-                syncSpecificTask(taskObj.label, 'checked', details).catch(e => console.error("Quick sync failed", e));
-            }
-            
-            showToast("Note quickly saved!", "fa-check");
+            showToast("Note locally saved!", "fa-check");
         }
 
         function renderSavedNotes() {
@@ -984,23 +1009,33 @@
             if (!details || !Array.isArray(details.notes)) return;
             
             details.notes.splice(index, 1);
+            
             saveToStorage();
             renderSavedNotes();
+            renderTasks();
             
-            // If the task is checked, sync the removal immediately to the sheet
-            if (state.completed.includes(activeTaskId)) {
-                const taskObj = state.tasks.find(t => t.id === activeTaskId);
-                syncSpecificTask(taskObj.label, 'checked', details).then(() => {
-                    renderTasks(); 
-                    showToast("Note deleted & synced!", "fa-trash-can");
-                });
-            } else {
-                renderTasks();
-                showToast("Note removed.", "fa-trash-can");
-            }
+            showToast("Note removed.", "fa-trash-can");
         }
 
         function closeTaskSessionModal() {
+            // Check if notes were modified (added or removed) during this session
+            if (activeTaskId && sessionOriginalNotes !== null) {
+                const currentNotes = state.taskDetails[activeTaskId]?.notes || [];
+                const notesChanged = JSON.stringify(currentNotes) !== JSON.stringify(sessionOriginalNotes);
+                
+                // If a note is locally saved (changed), block the X and side-click
+                if (notesChanged) {
+                    const box = document.getElementById('taskSessionBox');
+                    box.classList.add('animate-pulse');
+                    setTimeout(() => box.classList.remove('animate-pulse'), 500);
+                    showToast("Click Complete to save, or Cancel to discard.", "fa-lock");
+                    return; // Prevent closing
+                }
+            }
+            
+            // Clear input field so discarded text doesn't show next time (closes normally if just text)
+            document.getElementById('taskNotesInput').value = '';
+
             const modal = document.getElementById('taskSessionModal');
             const box = document.getElementById('taskSessionBox');
             box.classList.remove('scale-100');
@@ -1010,6 +1045,38 @@
             setTimeout(() => {
                 modal.classList.add('hidden');
             }, 300);
+        }
+
+        function cancelTaskSession() {
+            // Rollback changes if any were locally made
+            if (activeTaskId && sessionOriginalNotes !== null) {
+                if (!state.taskDetails[activeTaskId]) {
+                    state.taskDetails[activeTaskId] = { notes: [] };
+                }
+                state.taskDetails[activeTaskId].notes = [...sessionOriginalNotes];
+                saveToStorage(); 
+                renderTasks(); 
+            }
+            
+            document.getElementById('taskNotesInput').value = '';
+
+            const modal = document.getElementById('taskSessionModal');
+            const box = document.getElementById('taskSessionBox');
+            box.classList.remove('scale-100');
+            box.classList.add('scale-95');
+            modal.classList.add('opacity-0');
+            modal.classList.add('pointer-events-none');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+            
+            // Optional: Show feedback if they actually reverted something
+            if (sessionOriginalNotes !== null) {
+                const currentNotes = state.taskDetails[activeTaskId]?.notes || [];
+                if (JSON.stringify(currentNotes) !== JSON.stringify(sessionOriginalNotes)) {
+                     showToast("Changes discarded", "fa-arrow-rotate-left");
+                }
+            }
         }
 
         function addQuickTag(tag) {
@@ -1049,6 +1116,7 @@
                 notesInput.value = ''; 
             }
             
+            sessionOriginalNotes = [...details.notes];
             saveToStorage();
             
             if (!isCompleted) {
@@ -1062,7 +1130,7 @@
                 
                 const taskObj = state.tasks.find(t => t.id === activeTaskId);
                 
-                syncSpecificTask(taskObj.label, 'checked', details).then(() => {
+                syncSpecificTask(activeTaskId, taskObj.label, 'checked', details).then(() => {
                     renderTasks();
                     hideLoadingModalWithoutResult();
                     showToast("Session details synced to sheet!", "fa-circle-check");
