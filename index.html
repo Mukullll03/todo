@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Prep & Flow Soundscape</title>
+    <title>Daily Prep</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
@@ -136,24 +136,24 @@
 
         <!-- Flow Soundscape Section -->
         <div class="mt-12 pt-8 border-t-2 border-sky-100/60">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-5 gap-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-5 gap-3 sm:gap-4">
                 <div>
-                    <h2 class="text-2xl font-extrabold text-sky-900 flex items-center gap-2.5">
+                    <h2 class="text-lg sm:text-2xl font-extrabold text-sky-900 flex items-center gap-1.5 sm:gap-2.5">
                         <i class="fa-solid fa-headphones-simple text-sky-500"></i> Flow Soundscape
                     </h2>
-                    <p class="text-sm text-sky-600 font-medium mt-1">Clear your mind instantly. Synthesized locally.</p>
+                    <p class="text-xs sm:text-sm text-sky-600 font-medium mt-0.5 sm:mt-1">Clear your mind instantly. Synthesized locally.</p>
                 </div>
                 
                 <!-- Change Sounds Button -->
-                <div class="flex items-center gap-3 w-full sm:w-auto">
-                    <button onclick="cycleSounds()" class="w-full sm:w-auto bg-white/60 hover:bg-white active:bg-sky-50 p-2.5 px-5 rounded-2xl border border-sky-100 shadow-sm backdrop-blur-md text-sky-700 font-bold text-sm flex items-center justify-center gap-2 transition-all">
-                        <i class="fa-solid fa-shuffle text-sky-500"></i>
+                <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    <button onclick="cycleSounds()" class="w-full sm:w-auto bg-white/60 hover:bg-white active:bg-sky-50 py-2 px-4 sm:p-2.5 sm:px-5 rounded-xl sm:rounded-2xl border border-sky-100 shadow-sm backdrop-blur-md text-sky-700 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all">
+                        <i class="fa-solid fa-shuffle text-sky-500 text-xs sm:text-sm"></i>
                         <span>Change Sounds</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Sound Cards Grid: Updated to 3 columns across all devices -->
+            <!-- Sound Cards Grid: Forced 3 columns on all devices -->
             <div class="grid grid-cols-3 gap-2 sm:gap-4" id="soundGrid">
                 <!-- Sound cards injected dynamically via JS -->
             </div>
@@ -393,12 +393,10 @@
     <div id="toastContainer" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none w-max max-w-[90vw]"></div>
 
     <script>
-        //        // ==========================================
+        // ==========================================
         // 🚀 INDEPENDENT TASK SYNC URL
         // ==========================================
         const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzrlVtOFf5F-uw8VPCr7U7QPU9uCkwDfVYBUy5RoRtG0FC4TNCBahizTYCjd2zQdv5mWg/exec"; 
-        
-        // NEW: Separate Webhook for Subjects Logic (Replace with your actual link)
         const SUBJECTS_WEBHOOK_URL = "YOUR_SUBJECTS_WEBHOOK_URL_HERE"; 
         
         // --- App Data ---
@@ -411,33 +409,59 @@
             { id: 'mock', label: 'Practice Mock', icon: 'fa-bullseye' }
         ];
 
+        // --- Soundscapes Configuration ---
+        const SOUNDSCAPES = [
+            { id: 'binaural', title: 'Zen Mind', subtitle: 'Theta Waves', icon: 'fa-brain', color: 'indigo', synth: playBinauralBeats },
+            { id: 'reset174', title: 'Nervous Reset', subtitle: '174 Hz', icon: 'fa-heart-pulse', color: 'emerald', synth: play174Hz },
+            { id: 'sacred', title: 'Sacred Acoustic', subtitle: 'Singing Bowls', icon: 'fa-bell', color: 'yellow', synth: playSacredAcoustic },
+            { id: 'solfeggio', title: 'The Sacred Scale', subtitle: '528 Hz Miracle', icon: 'fa-music', color: 'purple', synth: playSolfeggio },
+            { id: 'mantras', title: 'Cosmic Mantras', subtitle: 'Vocal Resonance', icon: 'fa-om', color: 'orange', synth: playMantras },
+            { id: 'brown', title: 'Deep Focus', subtitle: 'Brown Noise', icon: 'fa-water', color: 'amber', synth: playBrownNoise },
+            { id: 'pink', title: 'Gentle Sweep', subtitle: 'Pink Noise', icon: 'fa-wind', color: 'pink', synth: playPinkNoiseSweep },
+            { id: 'transit', title: 'Transit Drones', subtitle: 'Deep Propulsion', icon: 'fa-rocket', color: 'slate', synth: playTransitDrones },
+            { id: 'biophilic', title: 'Biophilic Patterns', subtitle: 'Nature Synth', icon: 'fa-leaf', color: 'green', synth: playBiophilic }
+        ];
+
+        const colorMap = {
+            amber: { bg: 'bg-amber-100', text: 'text-amber-600', hover: 'from-amber-50 to-orange-50', activeBg: 'bg-amber-500', activeText: 'text-white' },
+            indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600', hover: 'from-indigo-50 to-purple-50', activeBg: 'bg-indigo-500', activeText: 'text-white' },
+            pink: { bg: 'bg-pink-100', text: 'text-pink-600', hover: 'from-pink-50 to-rose-50', activeBg: 'bg-pink-500', activeText: 'text-white' },
+            yellow: { bg: 'bg-yellow-100', text: 'text-yellow-600', hover: 'from-yellow-50 to-amber-50', activeBg: 'bg-yellow-500', activeText: 'text-white' },
+            purple: { bg: 'bg-purple-100', text: 'text-purple-600', hover: 'from-purple-50 to-fuchsia-50', activeBg: 'bg-purple-500', activeText: 'text-white' },
+            orange: { bg: 'bg-orange-100', text: 'text-orange-600', hover: 'from-orange-50 to-red-50', activeBg: 'bg-orange-500', activeText: 'text-white' },
+            slate: { bg: 'bg-slate-100', text: 'text-slate-600', hover: 'from-slate-50 to-gray-50', activeBg: 'bg-slate-500', activeText: 'text-white' },
+            emerald: { bg: 'bg-emerald-100', text: 'text-emerald-600', hover: 'from-emerald-50 to-teal-50', activeBg: 'bg-emerald-500', activeText: 'text-white' },
+            green: { bg: 'bg-green-100', text: 'text-green-600', hover: 'from-green-50 to-lime-50', activeBg: 'bg-green-500', activeText: 'text-white' }
+        };
+
+        // --- App State ---
         let state = {
             tasks: [],
             completed: [],
             taskDetails: {}
         };
-
-        // Shadow state to track what was actually synced to Google Sheets today
         let sheetState = {
             completed: [],
             notes: {}
         };
+        
+        let els = {}; // Defined inside init to guarantee DOM existence
 
-        // --- DOM Elements ---
-        const els = {
-            grid: document.getElementById('taskGrid'),
-            progressBar: document.getElementById('progressBar'),
-            dateDisplay: document.getElementById('currentDateDisplay'),
-            modalOverlay: document.getElementById('modalOverlay'),
-            loadingBox: document.getElementById('loadingBox'),
-            resultBox: document.getElementById('resultBox'),
-            resultIconWrapper: document.getElementById('resultIconWrapper'),
-            resultIcon: document.getElementById('resultIcon'),
-            resultMessage: document.getElementById('resultMessage')
-        };
-
-        //        // --- Initialize ---
+        // --- Initialize ---
         function init() {
+            // Re-select DOM elements strictly when DOM is ready
+            els = {
+                grid: document.getElementById('taskGrid'),
+                progressBar: document.getElementById('progressBar'),
+                dateDisplay: document.getElementById('currentDateDisplay'),
+                modalOverlay: document.getElementById('modalOverlay'),
+                loadingBox: document.getElementById('loadingBox'),
+                resultBox: document.getElementById('resultBox'),
+                resultIconWrapper: document.getElementById('resultIconWrapper'),
+                resultIcon: document.getElementById('resultIcon'),
+                resultMessage: document.getElementById('resultMessage')
+            };
+
             const today = new Date();
             els.dateDisplay.textContent = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
             
@@ -451,23 +475,20 @@
                 document.getElementById('mainContent').classList.remove('opacity-0');
             });
 
+            // Set up modal listeners
             document.getElementById('configureModal').addEventListener('click', function(e) {
                 if (e.target === this) closeConfigureModal();
             });
-
             document.getElementById('taskSessionModal').addEventListener('click', function(e) {
                 if (e.target === this) {
                     closeTaskSessionModal();
                 }
             });
-
-            // NEW: Close Subjects modal on outside click
             document.getElementById('subjectsModal').addEventListener('click', function(e) {
                 if (e.target === this) {
                     closeSubjectsModal();
                 }
             });
-
             els.modalOverlay.addEventListener('click', function(e) {
                 if (e.target === this) {
                     const confirmBox = document.getElementById('confirmBox');
@@ -485,7 +506,9 @@
             });
         }
 
-        // Used for localstorage keys (standardized to YYYY-MM-DD for sorting/saving internally)
+        // Run Init Safely when DOM is loaded completely
+        document.addEventListener('DOMContentLoaded', init);
+
         function getTodayDateString() {
             const today = new Date();
             return today.getFullYear() + "-" + 
@@ -493,33 +516,40 @@
                    String(today.getDate()).padStart(2, '0');
         }
 
-        // --- Storage Logic ---
+        // --- Storage Logic with Fallbacks ---
         function loadFromStorage() {
             const dateKey = getTodayDateString();
             
-            const savedTasks = localStorage.getItem('prep_tracker_tasks');
-            state.tasks = savedTasks ? JSON.parse(savedTasks) : [...DEFAULT_TASKS];
-            
-            const savedCompleted = localStorage.getItem(`prep_tracker_completed_${dateKey}`);
-            state.completed = savedCompleted ? JSON.parse(savedCompleted) : [];
-            
-            const savedDetails = localStorage.getItem(`prep_tracker_details_${dateKey}`);
-            state.taskDetails = savedDetails ? JSON.parse(savedDetails) : {};
+            try {
+                const savedTasks = localStorage.getItem('prep_tracker_tasks');
+                state.tasks = savedTasks ? JSON.parse(savedTasks) : [...DEFAULT_TASKS];
+                
+                const savedCompleted = localStorage.getItem(`prep_tracker_completed_${dateKey}`);
+                state.completed = savedCompleted ? JSON.parse(savedCompleted) : [];
+                
+                const savedDetails = localStorage.getItem(`prep_tracker_details_${dateKey}`);
+                state.taskDetails = savedDetails ? JSON.parse(savedDetails) : {};
 
-            // Load Sheet State Tracker
-            const savedSheetState = localStorage.getItem(`prep_tracker_sheet_state_${dateKey}`);
-            if (savedSheetState) {
-                sheetState = JSON.parse(savedSheetState);
-            } else {
-                sheetState = {
-                    completed: [...state.completed],
-                    notes: {}
-                };
-                Object.keys(state.taskDetails).forEach(id => {
-                    const n = state.taskDetails[id].notes;
-                    sheetState.notes[id] = Array.isArray(n) ? [...n] : (typeof n === 'string' && n.trim() ? [n] : []);
-                });
-                saveSheetState();
+                const savedSheetState = localStorage.getItem(`prep_tracker_sheet_state_${dateKey}`);
+                if (savedSheetState) {
+                    sheetState = JSON.parse(savedSheetState);
+                } else {
+                    sheetState = {
+                        completed: [...state.completed],
+                        notes: {}
+                    };
+                    Object.keys(state.taskDetails).forEach(id => {
+                        const n = state.taskDetails[id].notes;
+                        sheetState.notes[id] = Array.isArray(n) ? [...n] : (typeof n === 'string' && n.trim() ? [n] : []);
+                    });
+                    saveSheetState();
+                }
+            } catch (error) {
+                console.error("Local storage parsing error. Resetting internal state safely.", error);
+                // Fallback if local storage string is corrupted
+                state.tasks = [...DEFAULT_TASKS];
+                state.completed = [];
+                state.taskDetails = {};
             }
         }
 
@@ -530,31 +560,35 @@
 
         function saveToStorage() {
             const dateKey = getTodayDateString();
-            localStorage.setItem(`prep_tracker_completed_${dateKey}`, JSON.stringify(state.completed));
-            localStorage.setItem(`prep_tracker_details_${dateKey}`, JSON.stringify(state.taskDetails));
-            
-            const history = JSON.parse(localStorage.getItem('prep_tracker_history') || '{}');
-            history[dateKey] = {
-                completed: state.completed,
-                total: state.tasks.length,
-                details: state.taskDetails
-            };
-            localStorage.setItem('prep_tracker_history', JSON.stringify(history));
+            try {
+                localStorage.setItem(`prep_tracker_completed_${dateKey}`, JSON.stringify(state.completed));
+                localStorage.setItem(`prep_tracker_details_${dateKey}`, JSON.stringify(state.taskDetails));
+                
+                const historyStr = localStorage.getItem('prep_tracker_history');
+                const history = historyStr ? JSON.parse(historyStr) : {};
+                history[dateKey] = {
+                    completed: state.completed,
+                    total: state.tasks.length,
+                    details: state.taskDetails
+                };
+                localStorage.setItem('prep_tracker_history', JSON.stringify(history));
+            } catch (error) {
+                console.error("Storage save error", error);
+            }
         }
 
-        //        // --- Render UI ---
+        // --- Render UI ---
         function renderTasks() {
+            if (!els.grid) return;
             els.grid.innerHTML = '';
             
             state.tasks.forEach(task => {
                 const isDone = state.completed.includes(task.id);
                 const details = state.taskDetails[task.id] || { notes: [] };
                 
-                // Migrate legacy string notes to array on the fly
                 if (typeof details.notes === 'string') {
                     details.notes = details.notes.trim() ? [details.notes] : [];
                 }
-
                 const hasNote = details.notes && details.notes.length > 0;
                 
                 const card = document.createElement('div');
@@ -605,7 +639,6 @@
                     </div>
                 `;
                 
-                // Modification: Check if task is already done before toggling
                 card.querySelector('.check-trigger').onclick = (e) => {
                     e.stopPropagation();
                     if (isDone) {
@@ -619,7 +652,6 @@
             });
         }
 
-        //        // --- Toggle Logic ---
         function toggleTask(id) {
             const taskObj = state.tasks.find(t => t.id === id);
             if (!taskObj) return;
@@ -646,6 +678,7 @@
         }
 
         function updateProgress() {
+            if (!els.progressBar) return;
             const count = state.completed.length;
             const total = state.tasks.length;
             const percentage = total > 0 ? (count / total) * 100 : 0;
@@ -660,7 +693,6 @@
                 streakFireIcon.classList.add('animate-pulse');
             }
 
-            // Update local sheet state to mirror what we successfully sent
             if (status === 'checked') {
                 if (!sheetState.completed.includes(taskId)) sheetState.completed.push(taskId);
             } else {
@@ -669,14 +701,12 @@
             sheetState.notes[taskId] = Array.isArray(details.notes) ? [...details.notes] : (typeof details.notes === 'string' && details.notes.trim() ? [details.notes] : []);
             saveSheetState();
 
-            // Generate payload date exactly as DD/MM/YYYY
             const today = new Date();
             const dd = String(today.getDate()).padStart(2, '0');
             const mm = String(today.getMonth() + 1).padStart(2, '0');
             const yyyy = today.getFullYear();
             const displayDate = `${dd}/${mm}/${yyyy}`;
 
-            // Format notes for Google Sheets (bulleted list if multiple)
             let notesStr = "";
             if (Array.isArray(details.notes) && details.notes.length > 0) {
                 if (details.notes.length === 1) {
@@ -717,11 +747,11 @@
                         streakFireIcon.classList.remove('animate-pulse');
                     }
                 }, 800);
-                return Promise.resolve(); // Ensure UI continues even if offline
+                return Promise.resolve();
             });
         }
 
-        //        // --- Modals Display Logic ---
+        // --- Modals Display Logic ---
         function showLoadingModal() {
             els.modalOverlay.classList.remove('hidden');
             els.modalOverlay.classList.remove('pointer-events-none');
@@ -787,7 +817,6 @@
             }, 2500);
         }
 
-        //        // --- Reset Today Flow ---
         function resetToday() {
             const hasLocalData = state.completed.length > 0 || Object.keys(state.taskDetails).length > 0;
             const hasSheetData = sheetState && (sheetState.completed.length > 0 || Object.keys(sheetState.notes).length > 0);
@@ -843,8 +872,6 @@
             showToast("Today's checklist reset completed.", "fa-arrow-rotate-left");
         }
 
-        //        // --- NEW: Subjects Tracker Logic ---
-        
         function openSubjectsModal() {
             const modal = document.getElementById('subjectsModal');
             modal.classList.remove('hidden', 'pointer-events-none');
@@ -878,7 +905,6 @@
                 return;
             }
 
-            // Close Subjects modal and show main loading overlay
             closeSubjectsModal();
             showLoadingModal();
 
@@ -892,7 +918,6 @@
                 notes: notes || "No notes added."
             };
 
-            // Using the designated SUBJECTS_WEBHOOK_URL
             fetch(SUBJECTS_WEBHOOK_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -902,7 +927,6 @@
                 hideLoadingModalWithoutResult();
                 showToast(`Saved progress for ${name}!`, "fa-cloud-arrow-up");
                 
-                // Clear the form for next time
                 document.getElementById('subjName').value = '';
                 document.getElementById('subjTopic').value = '';
                 document.getElementById('subjNotes').value = '';
@@ -948,7 +972,6 @@
             const list = document.getElementById('selectiveRemoveList');
             list.innerHTML = '';
             
-            // Use sheetState instead of standard UI state to survive a 'Reset Today'
             const completedTasks = state.tasks.filter(t => sheetState.completed.includes(t.id));
             const tasksWithNotes = state.tasks.filter(t => sheetState.notes[t.id] && sheetState.notes[t.id].length > 0);
             
@@ -1017,9 +1040,8 @@
             let tasksUpdated = 0;
             const tasksToProcess = new Set();
             
-            // Gather unique task IDs that need updating
             selectiveRemoveIds.forEach(key => {
-                const actualId = key.substring(5); // Removes "task:" or "note:" prefix
+                const actualId = key.substring(5);
                 tasksToProcess.add(actualId);
             });
             
@@ -1029,7 +1051,6 @@
                     const removeTask = selectiveRemoveIds.has(`task:${id}`);
                     const removeNote = selectiveRemoveIds.has(`note:${id}`);
                     
-                    // Base the starting removal status on what the sheet knows
                     let newStatus = sheetState.completed.includes(id) ? 'checked' : 'unchecked';
                     let currentNotes = sheetState.notes[id] ? [...sheetState.notes[id]] : [];
                     
@@ -1060,7 +1081,7 @@
             });
         }
 
-        //        // --- Task Session Modal & Notes ---
+        // --- Task Session Modal & Notes ---
         let activeTaskId = null;
         let sessionOriginalNotes = null;
 
@@ -1072,10 +1093,9 @@
             let details = state.taskDetails[taskId] || { notes: [] };
             if (typeof details.notes === 'string') {
                 details.notes = details.notes.trim() ? [details.notes] : [];
-                state.taskDetails[taskId] = details; // fix state in place
+                state.taskDetails[taskId] = details; 
             }
             
-            // Snapshot of notes before any session changes are made
             sessionOriginalNotes = [...details.notes];
             
             document.getElementById('modalTaskTitle').textContent = taskObj.label;
@@ -1123,7 +1143,6 @@
             });
         }
 
-        // Inline Quick Save logic for notes
         function quickSaveNote() {
             const notesInput = document.getElementById('taskNotesInput');
             const newNote = notesInput.value.trim();
@@ -1142,13 +1161,12 @@
                 details.notes = details.notes.trim() ? [details.notes] : [];
             }
             
-            // Push the new note
             details.notes.push(newNote);
-            notesInput.value = ''; // Clear for next note immediately
+            notesInput.value = ''; 
             
             saveToStorage();
             renderSavedNotes();
-            renderTasks(); // Update dashboard cards silently
+            renderTasks(); 
             
             showToast("Note locally saved!", "fa-check");
         }
@@ -1193,22 +1211,19 @@
         }
 
         function closeTaskSessionModal() {
-            // Check if notes were modified (added or removed) during this session
             if (activeTaskId && sessionOriginalNotes !== null) {
                 const currentNotes = state.taskDetails[activeTaskId]?.notes || [];
                 const notesChanged = JSON.stringify(currentNotes) !== JSON.stringify(sessionOriginalNotes);
                 
-                // If a note is locally saved (changed), block the X and side-click
                 if (notesChanged) {
                     const box = document.getElementById('taskSessionBox');
                     box.classList.add('animate-pulse');
                     setTimeout(() => box.classList.remove('animate-pulse'), 500);
                     showToast("Click Complete to save, or Cancel to discard.", "fa-lock");
-                    return; // Prevent closing
+                    return; 
                 }
             }
             
-            // Clear input field so discarded text doesn't show next time (closes normally if just text)
             document.getElementById('taskNotesInput').value = '';
 
             const modal = document.getElementById('taskSessionModal');
@@ -1223,7 +1238,6 @@
         }
 
         function cancelTaskSession() {
-            // Rollback changes if any were locally made
             if (activeTaskId && sessionOriginalNotes !== null) {
                 if (!state.taskDetails[activeTaskId]) {
                     state.taskDetails[activeTaskId] = { notes: [] };
@@ -1245,7 +1259,6 @@
                 modal.classList.add('hidden');
             }, 300);
             
-            // Optional: Show feedback if they actually reverted something
             if (sessionOriginalNotes !== null) {
                 const currentNotes = state.taskDetails[activeTaskId]?.notes || [];
                 if (JSON.stringify(currentNotes) !== JSON.stringify(sessionOriginalNotes)) {
@@ -1258,7 +1271,6 @@
             const notesInput = document.getElementById('taskNotesInput');
             const currentValue = notesInput.value;
             
-            // We want to append at the cursor position if possible
             const cursorPos = notesInput.selectionStart;
             const textBefore = currentValue.substring(0, cursorPos);
             const textAfter  = currentValue.substring(cursorPos, currentValue.length);
@@ -1285,7 +1297,6 @@
                 details.notes = details.notes.trim() ? [details.notes] : [];
             }
             
-            // Only add note if something is typed and not yet quick-saved
             if (newNote) {
                 details.notes.push(newNote);
                 notesInput.value = ''; 
@@ -1295,11 +1306,9 @@
             saveToStorage();
             
             if (!isCompleted) {
-                // Not completed yet - marking it will sync everything automatically
                 closeTaskSessionModal();
                 toggleTask(activeTaskId);
             } else {
-                // Already completed - manually sync the updated state
                 closeTaskSessionModal();
                 showLoadingModal();
                 
@@ -1313,7 +1322,7 @@
             }
         }
 
-        //        // --- Configure Checklist Modal (Custom Tasks, Order, Delete) ---
+        // --- Configure Checklist Modal ---
         let selectedIcon = 'fa-book-open';
 
         function openConfigureModal() {
@@ -1484,7 +1493,7 @@
             showToast("Restored default prep checklist!", "fa-rotate-left");
         }
 
-        //        // ==========================================
+        // ==========================================
         // Soundscape Synthesizer & UI Logic
         // ==========================================
         
@@ -1494,32 +1503,6 @@
         let currentSoundId = null;
         let currentSoundPage = 0;
 
-        const SOUNDSCAPES = [
-            { id: 'binaural', title: 'Zen Mind', subtitle: 'Theta Waves', icon: 'fa-brain', color: 'indigo', synth: playBinauralBeats },
-            { id: 'reset174', title: 'Nervous Reset', subtitle: '174 Hz', icon: 'fa-heart-pulse', color: 'emerald', synth: play174Hz },
-            { id: 'sacred', title: 'Sacred Acoustic', subtitle: 'Singing Bowls', icon: 'fa-bell', color: 'yellow', synth: playSacredAcoustic },
-            { id: 'solfeggio', title: 'The Sacred Scale', subtitle: '528 Hz Miracle', icon: 'fa-music', color: 'purple', synth: playSolfeggio },
-            { id: 'mantras', title: 'Cosmic Mantras', subtitle: 'Vocal Resonance', icon: 'fa-om', color: 'orange', synth: playMantras },
-            { id: 'brown', title: 'Deep Focus', subtitle: 'Brown Noise', icon: 'fa-water', color: 'amber', synth: playBrownNoise },
-            { id: 'pink', title: 'Gentle Sweep', subtitle: 'Pink Noise', icon: 'fa-wind', color: 'pink', synth: playPinkNoiseSweep },
-            { id: 'transit', title: 'Transit Drones', subtitle: 'Deep Propulsion', icon: 'fa-rocket', color: 'slate', synth: playTransitDrones },
-            { id: 'biophilic', title: 'Biophilic Patterns', subtitle: 'Nature Synth', icon: 'fa-leaf', color: 'green', synth: playBiophilic }
-        ];
-
-        // Mapping for dynamic tailwind classes to prevent JIT purging issues
-        const colorMap = {
-            amber: { bg: 'bg-amber-100', text: 'text-amber-600', hover: 'from-amber-50 to-orange-50', activeBg: 'bg-amber-500', activeText: 'text-white' },
-            indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600', hover: 'from-indigo-50 to-purple-50', activeBg: 'bg-indigo-500', activeText: 'text-white' },
-            pink: { bg: 'bg-pink-100', text: 'text-pink-600', hover: 'from-pink-50 to-rose-50', activeBg: 'bg-pink-500', activeText: 'text-white' },
-            yellow: { bg: 'bg-yellow-100', text: 'text-yellow-600', hover: 'from-yellow-50 to-amber-50', activeBg: 'bg-yellow-500', activeText: 'text-white' },
-            purple: { bg: 'bg-purple-100', text: 'text-purple-600', hover: 'from-purple-50 to-fuchsia-50', activeBg: 'bg-purple-500', activeText: 'text-white' },
-            orange: { bg: 'bg-orange-100', text: 'text-orange-600', hover: 'from-orange-50 to-red-50', activeBg: 'bg-orange-500', activeText: 'text-white' },
-            slate: { bg: 'bg-slate-100', text: 'text-slate-600', hover: 'from-slate-50 to-gray-50', activeBg: 'bg-slate-500', activeText: 'text-white' },
-            emerald: { bg: 'bg-emerald-100', text: 'text-emerald-600', hover: 'from-emerald-50 to-teal-50', activeBg: 'bg-emerald-500', activeText: 'text-white' },
-            green: { bg: 'bg-green-100', text: 'text-green-600', hover: 'from-green-50 to-lime-50', activeBg: 'bg-green-500', activeText: 'text-white' }
-        };
-
-        // --- Modified: UI adjusted slightly to support 3 cards strictly in one row on mobile screens ---
         function renderSoundGrid() {
             const grid = document.getElementById('soundGrid');
             if (!grid) return;
@@ -1536,22 +1519,21 @@
 
                 const btn = document.createElement('button');
                 btn.onclick = () => toggleSound(sound.id);
-                // Changed padding and border radius to look good when squished on mobile
-                btn.className = `sound-card glass-panel group relative overflow-hidden flex flex-col items-center justify-center p-3 sm:p-6 rounded-2xl sm:rounded-3xl transition-all duration-300 hover:bg-white hover:shadow-md border-2 ${isActive ? 'ring-2 sm:ring-4 ring-sky-400 bg-white shadow-lg border-transparent' : 'border-transparent'}`;
+                // Adjusting padding and typography sizes heavily to allow 3-in-a-row on mobile screens without breaking
+                btn.className = `sound-card glass-panel group relative overflow-hidden flex flex-col items-center justify-center p-2.5 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-white hover:shadow-md border-2 ${isActive ? 'ring-2 sm:ring-4 ring-sky-400 bg-white shadow-lg border-transparent' : 'border-transparent'}`;
                 
-                // Adjusted internal spacing and text sizes to allow 3 cards to fit perfectly on small devices
                 btn.innerHTML = `
                     <div class="absolute inset-0 bg-gradient-to-br ${c.hover} opacity-0 group-hover:opacity-100 transition-opacity z-0"></div>
                     <div class="z-10 flex flex-col items-center gap-1.5 sm:gap-3 w-full">
-                        <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-inner transition-colors duration-300 sound-icon-wrapper shrink-0 ${isActive ? `${c.activeBg} ${c.activeText}` : `${c.bg} ${c.text}`}">
-                            <i class="fa-solid ${sound.icon} text-sm sm:text-2xl sound-icon ${isActive ? 'hidden' : ''}"></i>
+                        <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-inner transition-colors duration-300 sound-icon-wrapper ${isActive ? `${c.activeBg} ${c.activeText}` : `${c.bg} ${c.text}`}">
+                            <i class="fa-solid ${sound.icon} text-base sm:text-2xl sound-icon ${isActive ? 'hidden' : ''}"></i>
                             <div class="equalizer flex gap-0.5 sm:gap-1 h-3 sm:h-4 items-center justify-center ${isActive ? 'text-white' : 'hidden'}">
                                 <div class="eq-bar w-[2px] sm:w-1"></div><div class="eq-bar w-[2px] sm:w-1"></div><div class="eq-bar w-[2px] sm:w-1"></div><div class="eq-bar w-[2px] sm:w-1"></div>
                             </div>
                         </div>
                         <div class="text-center w-full px-1">
-                            <h3 class="font-extrabold text-sky-900 text-[10px] sm:text-base leading-tight truncate">${sound.title}</h3>
-                            <p class="text-[8px] sm:text-xs font-semibold text-sky-600 mt-0.5 leading-tight truncate">${sound.subtitle}</p>
+                            <h3 class="font-extrabold text-sky-900 text-[10px] sm:text-base leading-tight truncate w-full block">${sound.title}</h3>
+                            <p class="text-[9px] sm:text-xs font-semibold text-sky-600 mt-0.5 truncate w-full block hidden sm:block">${sound.subtitle}</p>
                         </div>
                     </div>
                 `;
@@ -1569,7 +1551,7 @@
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 masterGain = audioCtx.createGain();
-                masterGain.gain.value = 0.5; // Default ambient volume
+                masterGain.gain.value = 0.5; 
                 masterGain.connect(audioCtx.destination);
             }
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -1587,7 +1569,6 @@
             initAudio();
             
             if (currentSoundId === soundId) {
-                // Pause current sound
                 stopAllSounds();
                 currentSoundId = null;
                 renderSoundGrid();
@@ -1595,10 +1576,9 @@
                 return;
             }
             
-            // Switch to new sound
             stopAllSounds();
             currentSoundId = soundId;
-            renderSoundGrid(); // Update UI to active state
+            renderSoundGrid(); 
             
             const soundDef = SOUNDSCAPES.find(s => s.id === soundId);
             if (soundDef) {
@@ -1608,7 +1588,6 @@
         }
 
         // --- Synthesizer Helpers ---
-
         function createNoiseBuffer(type) {
             const bufferSize = audioCtx.sampleRate * 2;
             const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -1643,7 +1622,6 @@
         }
 
         // --- Sound Generation Functions ---
-        
         function playBrownNoise() {
             const noise = createNoiseBuffer('brown');
             const lpf = audioCtx.createBiquadFilter();
@@ -1653,7 +1631,7 @@
         }
 
         function playBinauralBeats() {
-            const baseFreq = 200, beatFreq = 6; // Theta 6Hz
+            const baseFreq = 200, beatFreq = 6; 
             const oscLeft = audioCtx.createOscillator();
             const oscRight = audioCtx.createOscillator();
             oscLeft.type = 'sine'; oscRight.type = 'sine';
@@ -1688,7 +1666,7 @@
         }
 
         function playSacredAcoustic() {
-            const freqs = [200, 540, 900]; // Bell/Bowl overtones
+            const freqs = [200, 540, 900]; 
             freqs.forEach((f, i) => {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
@@ -1708,7 +1686,7 @@
         }
 
         function playSolfeggio() {
-            const freqs = [528, 639, 417]; // The Sacred Scale focus
+            const freqs = [528, 639, 417]; 
             freqs.forEach((f, i) => {
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
@@ -1784,14 +1762,12 @@
         }
 
         function playBiophilic() {
-            // Ambient Stream
             const stream = createNoiseBuffer('pink');
             const streamFilter = audioCtx.createBiquadFilter();
             streamFilter.type = 'lowpass'; streamFilter.frequency.value = 500;
             const streamGain = audioCtx.createGain(); streamGain.gain.value = 0.5;
             stream.connect(streamFilter).connect(streamGain).connect(masterGain);
             
-            // Subtle crickets/insects
             const cricket = createNoiseBuffer('white');
             const cricketFilter = audioCtx.createBiquadFilter();
             cricketFilter.type = 'bandpass'; cricketFilter.frequency.value = 4500; cricketFilter.Q.value = 15;
@@ -1799,7 +1775,7 @@
             const amLfo = audioCtx.createOscillator();
             amLfo.type = 'square'; amLfo.frequency.value = 20; 
             const amGain = audioCtx.createGain();
-            amLfo.connect(amGain.gain); amGain.gain.value = 0.5; // modulate volume
+            amLfo.connect(amGain.gain); amGain.gain.value = 0.5; 
             
             const envLfo = audioCtx.createOscillator();
             envLfo.type = 'sine'; envLfo.frequency.value = 0.2; 
@@ -1811,9 +1787,6 @@
             stream.start(); cricket.start(); amLfo.start(); envLfo.start();
             activeSources.push(stream, cricket, amLfo, envLfo);
         }
-
-        // Start App
-        init();
     </script>
 </body>
 </html>
