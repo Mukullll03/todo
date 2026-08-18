@@ -2,1791 +2,601 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Prep</title>
-    <!-- Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mission90 Pro</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!-- App Icons & PWA Settings -->
-    <link rel="icon" type="image/jpeg" href="https://framerusercontent.com/images/DGPdl3nBCOFyGKcpCA3RRw5QM2M.jpg?scale-down-to=512&width=1200&height=1200">
-    <link rel="apple-touch-icon" href="https://framerusercontent.com/images/DGPdl3nBCOFyGKcpCA3RRw5QM2M.jpg?scale-down-to=512&width=1200&height=1200">
-    <meta name="theme-color" content="#f0f9ff">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f9ff;
-            color: #0c4a6e;
+        @font-face {
+            font-family: 'Google Sans';
+            src: url('https://fonts.gstatic.com/s/googlesans/v14/4UaGrENHsxJlGDuGo1OIlL3Owp4.woff2') format('woff2');
+            font-weight: 400;
         }
-
-        /* Ambient Background Animations */
-        @keyframes blob {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0px, 0px) scale(1); }
+        @font-face {
+            font-family: 'Google Sans';
+            src: url('https://fonts.gstatic.com/s/googlesans/v14/4UaZrENHsxJlGDuGo1OIlL3Owp5eKT8.woff2') format('woff2');
+            font-weight: 500;
         }
-        .animate-blob { animation: blob 7s infinite; }
-        .animation-delay-2000 { animation-delay: 2s; }
+        @font-face {
+            font-family: 'Google Sans';
+            src: url('https://fonts.gstatic.com/s/googlesans/v14/4UabrENHsxJlGDuGo1OIlLU94YtzCwI.woff2') format('woff2');
+            font-weight: 700;
+        }
+        @font-face {
+            font-family: 'Google Sans';
+            src: url('https://fonts.gstatic.com/s/googlesans/v14/4UaZrENHsxJlGDuGo1OIlL3OwphdKT8.woff2') format('woff2');
+            font-weight: 800;
+        }
         
-        /* Glass styling */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 10px 40px -10px rgba(2, 132, 199, 0.1);
+        body { 
+            font-family: 'Google Sans', sans-serif; 
+            background-color: #f8fafc; 
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
 
-        /* Task Card Animations */
-        .task-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .task-card:active { transform: scale(0.98); }
-        .task-card.completed {
-            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-            border-color: #7dd3fc;
+        .checkbox-pop {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
-
-        /* Pop Animation for Checkmark */
+        
         @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.2); }
+            0% { transform: scale(0.5); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        .animate-pop { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-        /* Toast Notification Animation */
-        @keyframes toastFadeInOut {
-            0% { opacity: 0; transform: translateY(20px) scale(0.9); }
-            15% { opacity: 1; transform: translateY(0) scale(1); }
-            85% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(15px) scale(0.95); }
-        }
-        .animate-toast { animation: toastFadeInOut 2.5s ease-in-out forwards; }
-
-        /* Soundscape Equalizer Animation */
-        @keyframes eq {
-            0%, 100% { height: 4px; }
-            50% { height: 16px; }
-        }
-        .eq-bar {
-            width: 4px;
-            background-color: currentColor;
-            border-radius: 2px;
-            animation: eq 1s infinite ease-in-out;
-            display: inline-block;
-        }
-        .eq-bar:nth-child(2) { animation-delay: 0.2s; }
-        .eq-bar:nth-child(3) { animation-delay: 0.4s; }
-        .eq-bar:nth-child(4) { animation-delay: 0.6s; }
     </style>
 </head>
-<body class="relative min-h-screen overflow-x-hidden flex flex-col selection:bg-sky-200 selection:text-sky-900">
+<body class="text-slate-800 antialiased h-screen w-screen overflow-hidden">
+    <div id="root" class="h-full w-full"></div>
 
-    <!-- Ambient Light Blue Background -->
-    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
-        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-        <div class="absolute top-[20%] right-[-10%] w-96 h-96 bg-sky-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
-        <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-    </div>
+    <script type="text/babel">
+        const START_DATE = new Date('2026-08-18T00:00:00');
+        const TOTAL_DAYS = 90;
 
-    <!-- Header -->
-    <header class="w-full max-w-4xl mx-auto p-3.5 sm:p-6 lg:p-8 pt-5 sm:pt-10 z-10">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
-            <div>
-                <h1 class="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-blue-600 tracking-tight">
-                    Daily Prep
-                </h1>
-                <p class="text-sky-700/80 font-medium mt-0.5 text-base sm:text-lg" id="currentDateDisplay">Loading date...</p>
-            </div>
-            <div class="flex flex-col sm:items-end gap-2.5 w-full sm:w-auto">
-                <a id="streakDisplay" href="https://docs.google.com/spreadsheets/d/1W0tnRXomGUHBU3sEPWN4jbm_VcA5r0n5kRXJHMGmsTU/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="glass-panel px-4 py-2 rounded-xl flex items-center gap-2.5 w-full justify-center sm:justify-start border border-sky-100 bg-white/30 hover:bg-sky-50/50 active:bg-sky-100/50 text-sky-700 hover:text-sky-900 font-bold shadow-sm transition-all duration-300">
-                    <i class="fa-solid fa-fire text-sky-500" id="streakFireIcon"></i>
-                    <span class="text-sm font-bold tracking-wide">Track Data</span>
-                </a>
-                <div class="flex gap-2 w-full sm:w-auto flex-wrap">
-                    <button onclick="openConfigureModal()" class="glass-panel bg-white/30 hover:bg-sky-50/50 active:bg-sky-100/50 text-sky-700 hover:text-sky-900 border-sky-100 px-4 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow flex-1 sm:flex-none">
-                        <i class="fa-solid fa-sliders text-xs text-sky-500"></i>
-                        <span>Configure</span>
-                    </button>
-                    <button onclick="resetToday()" class="glass-panel bg-white/30 hover:bg-sky-50/50 active:bg-sky-100/50 text-sky-600 hover:text-sky-800 border-sky-100 px-4 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow flex-1 sm:flex-none">
-                        <i class="fa-solid fa-trash-can text-xs text-sky-500"></i>
-                        <span>Reset Today</span>
-                    </button>
-                </div>
-            </div>
-        </div>
+        const mathsTopics = [
+            "Percentage: Basics & Fractions", "Percentage: Elections & Exams", "Percentage: Successive Changes", "Percentage: PYQ Practice",
+            "Ratio & Prop: Concepts & Coins", "Ratio & Prop: Income & Exp", "Ratio & Prop: Mixtures Basic", "Ratio: PYQ Practice",
+            "Profit & Loss: Basics & Articles", "Profit & Loss: Dishonest Dealer", "Profit & Loss: Discount Concepts", "Profit & Loss: PYQ Practice",
+            "Simple Interest: Concepts & Formulae", "Compound Interest: Successive Method", "SI & CI: Difference & Installments", "Interest: Mix PYQ",
+            "Time & Work: Efficiency Concept", "Time & Work: Men, Women & Boys", "Pipe & Cistern: Fill & Empty", "Time & Work: PYQ Practice",
+            "Speed Time Dist: Basics & Trains", "Speed Time Dist: Relative Speed", "Boat & Stream: Concepts", "TSD & Boats: Mix PYQ",
+            "Number System: Divisibility Rules", "Number System: Remainder Theorem", "Number System: Unit Digit & Zeroes", "Number System: Mix PYQ",
+            "Algebra: Basic Identities (a+b)^2", "Algebra: x + 1/x Concept", "Algebra: Value Putting", "Algebra: Mix PYQ",
+            "Geometry: Lines, Angles & Triangles", "Geometry: Centers of Triangle", "Geometry: Circles & Tangents", "Geometry: Mix PYQ",
+            "Mensuration 2D: Triangles & Quads", "Mensuration 2D: Circles", "Mensuration 3D: Cube, Cuboid, Cylinder", "Mensuration 3D: Cone & Sphere",
+            "Trigonometry: Ratios & Identities", "Trigonometry: Max/Min & Value Putting", "Height & Distance", "Trigo: Mix PYQ"
+        ]; 
 
-        <!-- Progress Bar -->
-        <div class="w-full bg-white/50 rounded-full h-2.5 backdrop-blur-sm shadow-inner p-0.5 overflow-hidden border border-white">
-            <div id="progressBar" class="h-full rounded-full bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-500 transition-all duration-700 ease-out shadow-sm" style="width: 0%"></div>
-        </div>
-    </header>
-
-    <!-- Main Content: Task List & Soundscape -->
-    <main id="mainContent" class="flex-1 w-full max-w-4xl mx-auto p-3.5 sm:p-6 lg:p-8 z-10 pb-16 opacity-0 transition-opacity duration-500">
-        <div id="taskGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
-            <!-- Tasks injected via JS -->
-        </div>
-
-        <!-- Flow Soundscape Section -->
-        <div class="mt-12 pt-8 border-t-2 border-sky-100/60">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-5 gap-3 sm:gap-4">
-                <div>
-                    <h2 class="text-lg sm:text-2xl font-extrabold text-sky-900 flex items-center gap-1.5 sm:gap-2.5">
-                        <i class="fa-solid fa-headphones-simple text-sky-500"></i> Flow Soundscape
-                    </h2>
-                    <p class="text-xs sm:text-sm text-sky-600 font-medium mt-0.5 sm:mt-1">Clear your mind instantly. Synthesized locally.</p>
-                </div>
-                
-                <!-- Change Sounds Button -->
-                <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                    <button onclick="cycleSounds()" class="w-full sm:w-auto bg-white/60 hover:bg-white active:bg-sky-50 py-2 px-4 sm:p-2.5 sm:px-5 rounded-xl sm:rounded-2xl border border-sky-100 shadow-sm backdrop-blur-md text-sky-700 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all">
-                        <i class="fa-solid fa-shuffle text-sky-500 text-xs sm:text-sm"></i>
-                        <span>Change Sounds</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Sound Cards Grid: Forced 3 columns on all devices -->
-            <div class="grid grid-cols-3 gap-2 sm:gap-4" id="soundGrid">
-                <!-- Sound cards injected dynamically via JS -->
-            </div>
-        </div>
-    </main>
-
-    <!-- Modal Overlay for Loading & Result & Confirmations -->
-    <div id="modalOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-sky-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none hidden px-4">
-        
-        <!-- Loading Spinner State -->
-        <div id="loadingBox" class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4 hidden">
-            <i class="fa-solid fa-circle-notch fa-spin text-4xl text-sky-500"></i>
-            <span class="text-sky-800 font-medium text-lg animate-pulse">Syncing with server...</span>
-        </div>
-        
-        <!-- Result/Action Modal State -->
-        <div id="resultBox" class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col items-center text-center gap-4 hidden transform scale-95 transition-transform duration-300">
-            <div id="resultIconWrapper" class="w-16 h-16 rounded-full flex items-center justify-center mb-2">
-                <i id="resultIcon" class="fa-solid text-2xl"></i>
-            </div>
-            <h3 id="resultTitle" class="text-xl font-extrabold text-sky-900">Updated</h3>
-            <p id="resultMessage" class="text-sky-700 font-medium"></p>
-            <button onclick="closeModal()" class="mt-4 w-full bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md hover:shadow-lg">
-                OK
-            </button>
-        </div>
-
-        <!-- Custom Confirmation Dialog Box -->
-        <div id="confirmBox" class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col items-center text-center gap-4 hidden transform scale-95 transition-transform duration-300">
-            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-2 bg-red-100 text-red-500 shadow-inner">
-                <i class="fa-solid fa-triangle-exclamation text-2xl animate-bounce"></i>
-            </div>
-            <h3 class="text-xl font-extrabold text-sky-900">Reset Today?</h3>
-            <p class="text-sky-700 font-medium text-sm">This will clear all checked tasks, stopwatch timers, and logged notes for today. This action cannot be undone.</p>
-            <div class="flex flex-col gap-2 w-full mt-2">
-                <button onclick="openSelectiveRemoveModal()" class="w-full bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold py-3 px-4 rounded-xl transition-all border border-amber-200 shadow-sm flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-list-check"></i>
-                    <span>Select Specific to Remove</span>
-                </button>
-                <div class="flex gap-2 w-full">
-                    <button onclick="closeConfirmModal()" class="flex-1 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold py-3 px-4 rounded-xl transition-all">
-                        Cancel
-                    </button>
-                    <button onclick="executeResetToday()" class="flex-1 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md">
-                        Reset All
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Selective Remove Box -->
-        <div id="selectiveRemoveBox" class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col items-center gap-4 hidden transform scale-95 transition-transform duration-300 max-h-[85vh] flex-shrink">
-            <div class="w-full flex justify-between items-center mb-2">
-                <h3 class="text-xl font-extrabold text-sky-900">Remove Data</h3>
-                <button onclick="closeSelectiveRemoveModal()" class="w-8 h-8 rounded-full bg-sky-50 hover:bg-sky-100 text-sky-500 flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <p class="text-sky-700 font-medium text-sm text-left w-full -mt-2">Select completed tasks or notes to remove them locally and from the tracking sheet.</p>
-            <div id="selectiveRemoveList" class="w-full flex flex-col overflow-y-auto pr-1 flex-1 min-h-[150px]">
-                <!-- Checkboxes injected here -->
-            </div>
-            <button onclick="executeSelectiveRemove()" class="mt-4 w-full bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-                <i class="fa-solid fa-trash-can"></i>
-                <span>Remove Selected</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Task Session Modal (Notes) -->
-    <div id="taskSessionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-sky-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none hidden px-4">
-        <div id="taskSessionBox" class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full flex flex-col gap-6 transform scale-95 transition-all duration-300">
-            <!-- Header -->
-            <div class="flex justify-between items-start">
-                <div class="flex items-center gap-4">
-                    <div id="modalTaskIconWrapper" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white bg-sky-500 shadow-md">
-                        <i id="modalTaskIcon" class="fa-solid text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 id="modalTaskTitle" class="text-xl font-extrabold text-sky-900">Task Name</h3>
-                        <p class="text-xs font-bold text-sky-500 uppercase tracking-wider">Session Tracker</p>
-                    </div>
-                </div>
-                <button onclick="closeTaskSessionModal()" class="w-8 h-8 rounded-full bg-sky-50 hover:bg-sky-100 active:bg-sky-200 text-sky-500 flex items-center justify-center transition-all">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Notes Section -->
-            <div class="flex flex-col gap-4">
-                <div class="flex flex-col gap-2">
-                    <label for="taskNotesInput" class="text-sm font-extrabold text-sky-800">Add Session Note</label>
-                    
-                    <!-- Quick Save Input Wrapper -->
-                    <div class="relative w-full">
-                        <textarea id="taskNotesInput" rows="3" placeholder="Write a note here..." class="w-full bg-sky-50/50 hover:bg-white border-2 border-sky-100 rounded-2xl p-3 pr-12 text-sky-900 placeholder-sky-400/60 font-medium text-sm focus:border-sky-400 focus:bg-white outline-none transition-all shadow-inner resize-none"></textarea>
-                        
-                        <!-- Quick Save Icon Button -->
-                        <button onclick="quickSaveNote()" class="absolute bottom-2 right-2 w-8 h-8 flex items-center justify-center text-sky-500 hover:text-sky-700 hover:bg-sky-100/50 rounded-full transition-all active:scale-95" title="Save note without closing">
-                            <i class="fa-solid fa-arrow-down text-base"></i>
-                        </button>
-                    </div>
-                    
-                    <div id="quickTagsContainer" class="flex gap-2 flex-wrap mt-1">
-                        <!-- Quick tags injected here based on task context -->
-                    </div>
-                </div>
-
-                <!-- Saved Notes List -->
-                <div id="savedNotesSection" class="flex flex-col gap-2 hidden">
-                    <label class="text-sm font-extrabold text-sky-800">Saved Notes</label>
-                    <div id="savedNotesList" class="flex flex-col gap-2 max-h-[150px] overflow-y-auto pr-1">
-                        <!-- Notes injected here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer Buttons -->
-            <div class="flex gap-3">
-                <button onclick="cancelTaskSession()" class="flex-1 bg-sky-50 hover:bg-sky-100 active:bg-sky-200 text-sky-700 font-bold py-3.5 px-4 rounded-xl transition-all">
-                    Cancel
-                </button>
-                <button id="modalCompleteBtn" onclick="saveTaskSession()" class="flex-1 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 active:from-sky-700 active:to-blue-800 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <span>Complete</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- NEW: Dedicated Subjects Log Modal -->
-    <div id="subjectsModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-indigo-950/50 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none hidden px-4">
-        <div id="subjectsBox" class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full flex flex-col gap-5 transform scale-95 transition-all duration-300">
-            <!-- Header -->
-            <div class="flex justify-between items-start mb-1">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white bg-gradient-to-br from-indigo-500 to-violet-500 shadow-md">
-                        <i class="fa-solid fa-layer-group text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-extrabold text-indigo-950">Subject Tracker</h3>
-                        <p class="text-xs font-bold text-indigo-500 uppercase tracking-wider">Separate Sync Sheet</p>
-                    </div>
-                </div>
-                <button onclick="closeSubjectsModal()" class="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 active:bg-slate-200 text-slate-500 flex items-center justify-center transition-all">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Form -->
-            <div class="flex flex-col gap-4">
-                <div>
-                    <label class="text-xs font-bold text-slate-600 uppercase tracking-wide ml-1">Subject Name <span class="text-red-400">*</span></label>
-                    <input type="text" id="subjName" placeholder="e.g. Mathematics, English" class="w-full mt-1.5 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 font-medium text-sm focus:border-indigo-400 focus:bg-white outline-none transition-all">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-600 uppercase tracking-wide ml-1">Topic / Chapter</label>
-                    <input type="text" id="subjTopic" placeholder="e.g. Percentages, Mock Analysis" class="w-full mt-1.5 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 font-medium text-sm focus:border-indigo-400 focus:bg-white outline-none transition-all">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-600 uppercase tracking-wide ml-1">Progress Notes</label>
-                    <textarea id="subjNotes" rows="3" placeholder="Summary of what you covered..." class="w-full mt-1.5 bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 font-medium text-sm focus:border-indigo-400 focus:bg-white outline-none transition-all resize-none"></textarea>
-                </div>
-            </div>
-
-            <!-- Footer Buttons -->
-            <div class="flex gap-3 mt-2">
-                <button onclick="closeSubjectsModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 px-4 rounded-xl transition-all">
-                    Cancel
-                </button>
-                <button onclick="syncSubjectData()" class="flex-[2] bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 active:from-indigo-700 active:to-violet-800 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>Save to Sheet</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Configure Checklist Modal -->
-    <div id="configureModal" class="fixed inset-0 z-50 flex items-center justify-center bg-sky-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none hidden px-4">
-        <div id="configureBox" class="bg-white p-6 sm:p-8 rounded-3xl shadow-2xl max-w-lg w-full flex flex-col gap-6 transform scale-95 transition-all duration-300">
-            <!-- Header -->
-            <div class="flex justify-between items-start">
-                <div>
-                    <h3 class="text-xl font-extrabold text-sky-900">Configure Prep Routine</h3>
-                    <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap mt-1">
-                        <p class="text-xs sm:text-sm text-sky-500 font-medium">Add, delete, or reorder tasks</p>
-                        <span class="text-sky-200 text-xs hidden sm:inline">|</span>
-                        <button onclick="resetToDefaultTasks()" class="text-xs text-sky-600 hover:text-sky-800 font-bold flex items-center gap-1 transition-colors bg-sky-50 hover:bg-sky-100 px-2 py-0.5 rounded-md" title="Restore original default checklist">
-                            <i class="fa-solid fa-rotate-left text-[10px]"></i>
-                            <span>Restore Defaults</span>
-                        </button>
-                    </div>
-                </div>
-                <button onclick="closeConfigureModal()" class="w-8 h-8 rounded-full bg-sky-50 hover:bg-sky-100 active:bg-sky-200 text-sky-500 flex items-center justify-center transition-all shrink-0">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Task List Config -->
-            <div class="flex flex-col gap-3 max-h-[220px] overflow-y-auto pr-1" id="configTasksList">
-                <!-- Config items injected here -->
-            </div>
-
-            <!-- Divider -->
-            <div class="h-px bg-sky-100 w-full"></div>
-
-            <!-- Add Task Section -->
-            <div class="flex flex-col gap-3">
-                <h4 class="text-sm font-extrabold text-sky-800 uppercase tracking-wider">Add Custom Task</h4>
-                <div class="flex flex-col sm:flex-row gap-3 items-stretch">
-                    <input id="newCustomTaskLabel" type="text" placeholder="e.g., Code 1 Leetcode" class="flex-1 bg-sky-50/50 hover:bg-white border-2 border-sky-100 rounded-2xl px-4 py-3 text-sky-900 placeholder-sky-400/60 font-semibold text-sm focus:border-sky-400 focus:bg-white outline-none transition-all shadow-inner">
-                    
-                    <!-- Icon selection dropdown or inline grid -->
-                    <div class="relative">
-                        <button id="iconDropdownBtn" onclick="toggleIconSelect()" class="w-full sm:w-14 h-[48px] rounded-2xl border-2 border-sky-100 bg-sky-50/50 hover:bg-white flex items-center justify-center gap-2 sm:gap-0 text-sky-600 transition-all font-semibold">
-                            <i id="selectedIconDisplay" class="fa-solid fa-book-open text-lg"></i>
-                            <i class="fa-solid fa-chevron-down text-xs sm:hidden ml-1"></i>
-                        </button>
-                        
-                        <!-- Mini Icon Grid Popover -->
-                        <div id="iconGridContainer" class="absolute right-0 bottom-full sm:bottom-auto sm:top-full mt-2 bg-white border border-sky-100 p-3 rounded-2xl shadow-xl z-20 grid grid-cols-4 gap-2 hidden w-[200px]">
-                            <!-- Icons injected here -->
-                        </div>
-                    </div>
-                </div>
-                
-                <button onclick="addCustomTask()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 active:from-sky-700 active:to-blue-800 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>Add to Checklist</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none w-max max-w-[90vw]"></div>
-
-    <script>
-        // ==========================================
-        // 🚀 INDEPENDENT TASK SYNC URL
-        // ==========================================
-        const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzrlVtOFf5F-uw8VPCr7U7QPU9uCkwDfVYBUy5RoRtG0FC4TNCBahizTYCjd2zQdv5mWg/exec"; 
-        const SUBJECTS_WEBHOOK_URL = "YOUR_SUBJECTS_WEBHOOK_URL_HERE"; 
-        
-        // --- App Data ---
-        const DEFAULT_TASKS = [
-            { id: 'typing', label: 'Typing Practice', icon: 'fa-keyboard' },
-            { id: 'vocab', label: 'BlackBook Vocab', icon: 'fa-book-open' },
-            { id: 'editorial', label: 'PQRS + Close Test', icon: 'fa-align-left' },
-            { id: 'maths', label: 'Quick Maths', icon: 'fa-calculator' },
-            { id: 'pqrs', label: 'Subject Lectures', icon: 'fa-book-open' },
-            { id: 'mock', label: 'Practice Mock', icon: 'fa-bullseye' }
+        const englishTopics = [
+            "Grammar: Noun Rules 1-10", "Grammar: Noun Rules 11-20 + Practice", "Grammar: Noun Exceptions",
+            "Grammar: Pronoun Types", "Grammar: Pronoun Rules + Practice", "Grammar: Pronoun PYQs",
+            "Grammar: Subject-Verb Agreement (Part 1)", "Grammar: Subject-Verb Agreement (Part 2)", "Grammar: Subject-Verb PYQs",
+            "Grammar: Tenses (Present & Past)", "Grammar: Tenses (Future & Conditional)", "Grammar: Tenses PYQs",
+            "Grammar: Prepositions (Fixed)", "Grammar: Prepositions (Confusing Pairs)", "Grammar: Preposition PYQs",
+            "Grammar: Active & Passive Voice Basic", "Grammar: Voice (Interrogative & Imperative)", "Practice: Voice PYQs",
+            "Grammar: Direct & Indirect Speech", "Grammar: Narration Exceptions", "Practice: Narration PYQs",
+            "Grammar: Conjunctions & Rules", "Grammar: Articles (A, An, The)", "Grammar: Adverbs & Adjectives",
+            "Mix Grammar Error Spotting (50 Qs)", "Mix Sentence Improvement (50 Qs)", "Grammar Sectional Revision"
         ];
 
-        // --- Soundscapes Configuration ---
-        const SOUNDSCAPES = [
-            { id: 'binaural', title: 'Zen Mind', subtitle: 'Theta Waves', icon: 'fa-brain', color: 'indigo', synth: playBinauralBeats },
-            { id: 'reset174', title: 'Nervous Reset', subtitle: '174 Hz', icon: 'fa-heart-pulse', color: 'emerald', synth: play174Hz },
-            { id: 'sacred', title: 'Sacred Acoustic', subtitle: 'Singing Bowls', icon: 'fa-bell', color: 'yellow', synth: playSacredAcoustic },
-            { id: 'solfeggio', title: 'The Sacred Scale', subtitle: '528 Hz Miracle', icon: 'fa-music', color: 'purple', synth: playSolfeggio },
-            { id: 'mantras', title: 'Cosmic Mantras', subtitle: 'Vocal Resonance', icon: 'fa-om', color: 'orange', synth: playMantras },
-            { id: 'brown', title: 'Deep Focus', subtitle: 'Brown Noise', icon: 'fa-water', color: 'amber', synth: playBrownNoise },
-            { id: 'pink', title: 'Gentle Sweep', subtitle: 'Pink Noise', icon: 'fa-wind', color: 'pink', synth: playPinkNoiseSweep },
-            { id: 'transit', title: 'Transit Drones', subtitle: 'Deep Propulsion', icon: 'fa-rocket', color: 'slate', synth: playTransitDrones },
-            { id: 'biophilic', title: 'Biophilic Patterns', subtitle: 'Nature Synth', icon: 'fa-leaf', color: 'green', synth: playBiophilic }
+        const reasoningTopics = [
+            "Syllogism: Basic All/Some Concepts", "Syllogism: No/Some Not Concepts", "Syllogism: Possibility Cases & Only",
+            "Direction & Distance: Basics", "Direction: Shadow & Degree Based", "Blood Relation: Family Tree",
+            "Blood Relation: Pointing & Coded", "Venn Diagram: Logical & Data Based", "Coding-Decoding: Letter Shifting",
+            "Coding-Decoding: Number & China Coding", "Number Series: Difference & Square/Cube", "Number Series: Wrong Number",
+            "Alphabet Series & Analogy", "Number Analogy & Classification", "Dice: Standard, Ordinary & Open",
+            "Cube & Cuboid: Cutting & Coloring", "Counting Figures: Triangles", "Counting Figures: Squares & Rectangles",
+            "Mirror & Water Images", "Paper Folding & Cutting", "Embedded Figures & Pattern Completion",
+            "Seating Arrangement: Linear", "Seating Arrangement: Circular", "Syllogism & Direction Mix Practice"
         ];
 
-        const colorMap = {
-            amber: { bg: 'bg-amber-100', text: 'text-amber-600', hover: 'from-amber-50 to-orange-50', activeBg: 'bg-amber-500', activeText: 'text-white' },
-            indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600', hover: 'from-indigo-50 to-purple-50', activeBg: 'bg-indigo-500', activeText: 'text-white' },
-            pink: { bg: 'bg-pink-100', text: 'text-pink-600', hover: 'from-pink-50 to-rose-50', activeBg: 'bg-pink-500', activeText: 'text-white' },
-            yellow: { bg: 'bg-yellow-100', text: 'text-yellow-600', hover: 'from-yellow-50 to-amber-50', activeBg: 'bg-yellow-500', activeText: 'text-white' },
-            purple: { bg: 'bg-purple-100', text: 'text-purple-600', hover: 'from-purple-50 to-fuchsia-50', activeBg: 'bg-purple-500', activeText: 'text-white' },
-            orange: { bg: 'bg-orange-100', text: 'text-orange-600', hover: 'from-orange-50 to-red-50', activeBg: 'bg-orange-500', activeText: 'text-white' },
-            slate: { bg: 'bg-slate-100', text: 'text-slate-600', hover: 'from-slate-50 to-gray-50', activeBg: 'bg-slate-500', activeText: 'text-white' },
-            emerald: { bg: 'bg-emerald-100', text: 'text-emerald-600', hover: 'from-emerald-50 to-teal-50', activeBg: 'bg-emerald-500', activeText: 'text-white' },
-            green: { bg: 'bg-green-100', text: 'text-green-600', hover: 'from-green-50 to-lime-50', activeBg: 'bg-green-500', activeText: 'text-white' }
-        };
+        const gsTopics = [
+            "Geo: Solar System Wrap-up", "Geo: Rivers of India", "Geo: Mountain Passes & Peaks", "Geo: Soils & Climate of India",
+            "Polity: Historical Background & Making", "Polity: Salient Features & Preamble", "Polity: Parts, Schedules & Articles",
+            "Polity: Fundamental Rights (Art 12-35)", "Polity: DPSP & Fundamental Duties", "Polity: President & Vice President",
+            "Polity: Parliament (Lok/Rajya Sabha)", "Polity: Supreme Court & High Courts", "Polity: State Govt & Panchayati Raj",
+            "History: Indus Valley & Vedic Age", "History: Buddhism & Jainism", "History: Mauryan & Gupta Empire",
+            "History: Delhi Sultanate", "History: Mughal Empire", "History: Revolt of 1857 & Social Reforms",
+            "History: Indian National Congress", "History: Gandhian Era (1915-1947)", "History: Important Battles & Treaties",
+            "Science: Biology - Cell & Diseases", "Science: Biology - Vitamins & Human Body", "Science: Physics - Units & Motion",
+            "Science: Physics - Light & Sound", "Science: Chemistry - Acid, Base & Metals", "Static GK: National Parks & Dams",
+            "Static GK: Dances, Festivals & Books", "Current Affairs: Jan-Feb Revision", "Current Affairs: Mar-Apr Revision"
+        ];
 
-        // --- App State ---
-        let state = {
-            tasks: [],
-            completed: [],
-            taskDetails: {}
-        };
-        let sheetState = {
-            completed: [],
-            notes: {}
-        };
-        
-        let els = {}; // Defined inside init to guarantee DOM existence
-
-        // --- Initialize ---
-        function init() {
-            // Re-select DOM elements strictly when DOM is ready
-            els = {
-                grid: document.getElementById('taskGrid'),
-                progressBar: document.getElementById('progressBar'),
-                dateDisplay: document.getElementById('currentDateDisplay'),
-                modalOverlay: document.getElementById('modalOverlay'),
-                loadingBox: document.getElementById('loadingBox'),
-                resultBox: document.getElementById('resultBox'),
-                resultIconWrapper: document.getElementById('resultIconWrapper'),
-                resultIcon: document.getElementById('resultIcon'),
-                resultMessage: document.getElementById('resultMessage')
-            };
-
-            const today = new Date();
-            els.dateDisplay.textContent = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        const generateDetailedSyllabus = () => {
+            const plan = [];
+            let mathIdx = 0, engIdx = 0, reasIdx = 0, gsIdx = 0;
             
-            loadFromStorage();
-            renderTasks();
-            updateProgress();
-            renderSoundGrid(); // Render the soundscape
-
-            // Reveal content smoothly to prevent layout shift (FOUC)
-            requestAnimationFrame(() => {
-                document.getElementById('mainContent').classList.remove('opacity-0');
-            });
-
-            // Set up modal listeners
-            document.getElementById('configureModal').addEventListener('click', function(e) {
-                if (e.target === this) closeConfigureModal();
-            });
-            document.getElementById('taskSessionModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeTaskSessionModal();
-                }
-            });
-            document.getElementById('subjectsModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeSubjectsModal();
-                }
-            });
-            els.modalOverlay.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    const confirmBox = document.getElementById('confirmBox');
-                    const resultBox = document.getElementById('resultBox');
-                    const srBox = document.getElementById('selectiveRemoveBox');
-                    
-                    if (confirmBox && !confirmBox.classList.contains('hidden')) {
-                        closeConfirmModal();
-                    } else if (srBox && !srBox.classList.contains('hidden')) {
-                        closeSelectiveRemoveModal();
-                    } else if (resultBox && !resultBox.classList.contains('hidden')) {
-                        closeModal();
-                    }
-                }
-            });
-        }
-
-        // Run Init Safely when DOM is loaded completely
-        document.addEventListener('DOMContentLoaded', init);
-
-        function getTodayDateString() {
-            const today = new Date();
-            return today.getFullYear() + "-" + 
-                   String(today.getMonth() + 1).padStart(2, '0') + "-" + 
-                   String(today.getDate()).padStart(2, '0');
-        }
-
-        // --- Storage Logic with Fallbacks ---
-        function loadFromStorage() {
-            const dateKey = getTodayDateString();
-            
-            try {
-                const savedTasks = localStorage.getItem('prep_tracker_tasks');
-                state.tasks = savedTasks ? JSON.parse(savedTasks) : [...DEFAULT_TASKS];
+            for (let i = 0; i < TOTAL_DAYS; i++) {
+                const date = new Date(START_DATE.getTime() + i * 24 * 60 * 60 * 1000);
+                const dayOfWeek = date.getDay(); 
+                const isSunday = dayOfWeek === 0;
+                const isSaturday = dayOfWeek === 6;
                 
-                const savedCompleted = localStorage.getItem(`prep_tracker_completed_${dateKey}`);
-                state.completed = savedCompleted ? JSON.parse(savedCompleted) : [];
-                
-                const savedDetails = localStorage.getItem(`prep_tracker_details_${dateKey}`);
-                state.taskDetails = savedDetails ? JSON.parse(savedDetails) : {};
+                const dayPlan = {
+                    dayId: i + 1,
+                    date: date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
+                    dayType: isSunday ? 'sunday' : isSaturday ? 'saturday' : 'weekday',
+                    tasks: []
+                };
 
-                const savedSheetState = localStorage.getItem(`prep_tracker_sheet_state_${dateKey}`);
-                if (savedSheetState) {
-                    sheetState = JSON.parse(savedSheetState);
+                if (isSunday) {
+                    dayPlan.tasks = [
+                        { id: `d${i}-m1`, timeSlot: "09:00 AM - 10:00 AM", subject: "Full Mock Test", topic: "Attempt 100 Qs Pre-Level Full Mock (Strictly timed)", type: "mock", icon: "fa-stopwatch" },
+                        { id: `d${i}-m2`, timeSlot: "10:30 AM - 12:30 PM", subject: "Deep Mock Analysis", topic: "Analyze weak areas, note down unattempted/wrong Qs concepts", type: "mock", icon: "fa-magnifying-glass-chart" },
+                        { id: `d${i}-rev`, timeSlot: "02:00 PM - 05:00 PM", subject: "Weakness Targeting", topic: "Study the specific topics you got wrong in today's mock", type: "revision", icon: "fa-target" },
+                        { id: `d${i}-rest`, timeSlot: "05:00 PM - 10:00 PM", subject: "Brain Rest & Reset", topic: "No studies. Relax, prepare mentally for the upcoming week.", type: "gs", icon: "fa-couch" }
+                    ];
+                } else if (isSaturday) {
+                    dayPlan.tasks = [
+                        { id: `d${i}-s1`, timeSlot: "07:00 AM - 10:00 AM", subject: "Maths Weekly Rev", topic: "Re-solve all marked/hard questions from Mon-Fri. No new topic.", type: "revision", icon: "fa-calculator" },
+                        { id: `d${i}-s2`, timeSlot: "10:30 AM - 01:00 PM", subject: "English Weekly Rev", topic: "Revise Grammar Rules & all Vocab/Idioms learned this week.", type: "revision", icon: "fa-book" },
+                        { id: `d${i}-s3`, timeSlot: "02:00 PM - 05:00 PM", subject: "GS Weekly Rev", topic: "Active Recall & Short Notes revision of Mon-Fri GS topics.", type: "revision", icon: "fa-globe" },
+                        { id: `d${i}-s4`, timeSlot: "05:30 PM - 07:30 PM", subject: "Reasoning & CA", topic: "Revise Reasoning tricks + Weekly Current Affairs reading.", type: "revision", icon: "fa-brain" },
+                        { id: `d${i}-s-type`, timeSlot: "07:30 PM - 08:00 PM", subject: "Typing Speed Test", topic: "Weekly 30-min full typing mock test.", type: "skill", icon: "fa-keyboard" },
+                        { id: `d${i}-s5`, timeSlot: "08:30 PM - 10:30 PM", subject: "Mix Practice Set", topic: "Solve 100 mixed Qs covering all subjects studied this week.", type: "mock", icon: "fa-layer-group" }
+                    ];
                 } else {
-                    sheetState = {
-                        completed: [...state.completed],
-                        notes: {}
+                    const mTopic = i > 75 ? `Maths PYQ Mix Mock (Set ${i-75})` : mathsTopics[mathIdx % mathsTopics.length];
+                    const eTopic = englishTopics[engIdx % englishTopics.length];
+                    const rTopic = i > 75 ? `Reasoning Mix Mock (Set ${i-75})` : reasoningTopics[reasIdx % reasoningTopics.length];
+                    const gTopic = gsTopics[gsIdx % gsTopics.length];
+
+                    dayPlan.tasks = [
+                        { id: `d${i}-t1`, timeSlot: "07:00 AM - 07:15 AM", subject: "Calculation", topic: "Speed Drill: Tables (1-30), Squares (1-50), Cubes (1-20), Fractions", type: "maths", icon: "fa-bolt" },
+                        
+                        { id: `d${i}-t2-rev`, timeSlot: "07:15 AM - 07:30 AM", subject: "Maths Revision", topic: "Quick recall of yesterday's Maths concepts", type: "revision", icon: "fa-clock-rotate-left" },
+                        { id: `d${i}-t2-core`, timeSlot: "07:30 AM - 09:30 AM", subject: "Maths", topic: mTopic, type: "maths", icon: "fa-square-root-variable" },
+                        
+                        { id: `d${i}-t3-rev`, timeSlot: "10:00 AM - 10:15 AM", subject: "English Revision", topic: "Quick recall of yesterday's Grammar rules", type: "revision", icon: "fa-clock-rotate-left" },
+                        { id: `d${i}-t3-core`, timeSlot: "10:15 AM - 11:30 AM", subject: "English Grammar", topic: eTopic, type: "english", icon: "fa-language" },
+                        
+                        { id: `d${i}-t4`, timeSlot: "11:30 AM - 01:00 PM", subject: "Vocab & Comprehension", topic: "Cloze Test, PQRS (Parajumbles) & daily 30 Vocab words practice", type: "english", icon: "fa-book-open" },
+                        
+                        { id: `d${i}-t5-rev`, timeSlot: "02:00 PM - 02:15 PM", subject: "GS Revision", topic: "Quick recall of yesterday's GS facts", type: "revision", icon: "fa-clock-rotate-left" },
+                        { id: `d${i}-t5-core`, timeSlot: "02:15 PM - 04:00 PM", subject: "Gen. Studies", topic: gTopic, type: "gs", icon: "fa-monument" },
+                        
+                        { id: `d${i}-t6-rev`, timeSlot: "04:30 PM - 04:45 PM", subject: "Reasoning Rev", topic: "Quick recall of yesterday's Reasoning tricks", type: "revision", icon: "fa-clock-rotate-left" },
+                        { id: `d${i}-t6-core`, timeSlot: "04:45 PM - 06:00 PM", subject: "Reasoning", topic: rTopic, type: "reasoning", icon: "fa-puzzle-piece" },
+                        
+                        { id: `d${i}-t-ca`, timeSlot: "06:30 PM - 07:00 PM", subject: "Current Affairs", topic: "Daily News/Video & Short Notes", type: "gs", icon: "fa-newspaper" },
+                        { id: `d${i}-t-type`, timeSlot: "07:00 PM - 07:20 PM", subject: "Typing Practice", topic: "Touch typing practice (15-20 mins) to maintain speed.", type: "skill", icon: "fa-keyboard" },
+
+                        { id: `d${i}-t7`, timeSlot: "08:30 PM - 10:30 PM", subject: "Daily Sectional Mock", topic: "Practice MCQs/PYQs exclusively of the topics studied TODAY to lock memory.", type: "mock", icon: "fa-list-check" },
+                        { id: `d${i}-t8`, timeSlot: "10:30 PM - 11:00 PM", subject: "Night Wrap-up", topic: "Plan tomorrow's schedule, brief current affairs reading, sleep.", type: "revision", icon: "fa-moon" }
+                    ];
+
+                    mathIdx++; engIdx++; reasIdx++; gsIdx++;
+                }
+                plan.push(dayPlan);
+            }
+            return plan;
+        };
+
+        const SubjectPill = ({ type, subject, icon }) => {
+            const colors = {
+                maths: 'bg-blue-100 text-blue-700 border-blue-200',
+                english: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+                reasoning: 'bg-orange-100 text-orange-700 border-orange-200',
+                gs: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                revision: 'bg-purple-100 text-purple-700 border-purple-200',
+                mock: 'bg-red-100 text-red-700 border-red-200',
+                skill: 'bg-teal-100 text-teal-700 border-teal-200'
+            };
+            const c = colors[type] || 'bg-gray-100 text-gray-700';
+            
+            return (
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${c}`}>
+                    <i className={`fa-solid ${icon}`}></i> {subject}
+                </span>
+            );
+        };
+
+        const App = () => {
+            const [activeTab, setActiveTab] = React.useState('today');
+            const [syllabus] = React.useState(generateDetailedSyllabus());
+            const [isSyncing, setIsSyncing] = React.useState(false);
+            const [showDaySelector, setShowDaySelector] = React.useState(false);
+            
+            // Calculate actual today index once
+            const getActualDayIndex = () => {
+                const todayDateMidnight = new Date();
+                todayDateMidnight.setHours(0, 0, 0, 0);
+                const startStr = new Date('2026-08-18T00:00:00');
+                startStr.setHours(0, 0, 0, 0);
+                const diffTime = todayDateMidnight - startStr;
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                return Math.max(0, Math.min(diffDays, 89));
+            };
+            const actualDayIndex = getActualDayIndex();
+            const [viewedDayIndex, setViewedDayIndex] = React.useState(actualDayIndex);
+
+            // Load saved progress from local storage
+            const [completedTasks, setCompletedTasks] = React.useState(() => {
+                try {
+                    const saved = localStorage.getItem('mission90_completed_tasks');
+                    return saved ? JSON.parse(saved) : {};
+                } catch (e) {
+                    return {};
+                }
+            });
+
+            // Save to local storage whenever tasks change
+            React.useEffect(() => {
+                localStorage.setItem('mission90_completed_tasks', JSON.stringify(completedTasks));
+            }, [completedTasks]);
+            
+            const todayDate = new Date();
+            const nowTime = todayDate.getHours() * 100 + todayDate.getMinutes(); 
+            
+            const viewedData = syllabus[viewedDayIndex];
+
+            const isCurrentlyActive = (timeSlotStr) => {
+                if (viewedDayIndex !== actualDayIndex) return false;
+                try {
+                    const parts = timeSlotStr.split(' - ');
+                    const parseTime = (str) => {
+                        let [time, modifier] = str.split(' ');
+                        let [hours, minutes] = time.split(':');
+                        hours = parseInt(hours, 10);
+                        if (hours === 12 && modifier === 'AM') hours = 0;
+                        if (modifier === 'PM' && hours < 12) hours += 12;
+                        return hours * 100 + parseInt(minutes, 10);
                     };
-                    Object.keys(state.taskDetails).forEach(id => {
-                        const n = state.taskDetails[id].notes;
-                        sheetState.notes[id] = Array.isArray(n) ? [...n] : (typeof n === 'string' && n.trim() ? [n] : []);
+                    const start = parseTime(parts[0]);
+                    const end = parseTime(parts[1]);
+                    return nowTime >= start && nowTime < end;
+                } catch(e) { return false; }
+            };
+
+            const toggleTask = (task) => {
+                const newStatus = !completedTasks[task.id];
+                setCompletedTasks(prev => ({ ...prev, [task.id]: newStatus }));
+                syncToGoogleSheet(task, newStatus);
+            };
+
+            const syncToGoogleSheet = async (task, isDone) => {
+                setIsSyncing(true);
+                const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzrlVtOFf5F-uw8VPCr7U7QPU9uCkwDfVYBUy5RoRtG0FC4TNCBahizTYCjd2zQdv5mWg/exec";
+                
+                const dayIdxMatch = task.id.match(/^d(\d+)-/);
+                const taskDayIdx = dayIdxMatch ? parseInt(dayIdxMatch[1], 10) : viewedDayIndex;
+                const taskDayId = taskDayIdx + 1;
+
+                const today = new Date();
+                const displayDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+                
+                const payload = {
+                    date: displayDate,
+                    taskName: `[Day ${taskDayId}] ${task.subject}: ${task.topic}`,
+                    status: isDone ? 'checked' : 'unchecked',
+                    notes: `Slot: ${task.timeSlot}`
+                };
+
+                try {
+                    await fetch(WEBHOOK_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload)
                     });
-                    saveSheetState();
+                } catch (error) {
+                    console.error("Failed to sync with Google Sheets:", error);
+                } finally {
+                    setTimeout(() => setIsSyncing(false), 800);
                 }
-            } catch (error) {
-                console.error("Local storage parsing error. Resetting internal state safely.", error);
-                // Fallback if local storage string is corrupted
-                state.tasks = [...DEFAULT_TASKS];
-                state.completed = [];
-                state.taskDetails = {};
-            }
-        }
-
-        function saveSheetState() {
-            const dateKey = getTodayDateString();
-            localStorage.setItem(`prep_tracker_sheet_state_${dateKey}`, JSON.stringify(sheetState));
-        }
-
-        function saveToStorage() {
-            const dateKey = getTodayDateString();
-            try {
-                localStorage.setItem(`prep_tracker_completed_${dateKey}`, JSON.stringify(state.completed));
-                localStorage.setItem(`prep_tracker_details_${dateKey}`, JSON.stringify(state.taskDetails));
-                
-                const historyStr = localStorage.getItem('prep_tracker_history');
-                const history = historyStr ? JSON.parse(historyStr) : {};
-                history[dateKey] = {
-                    completed: state.completed,
-                    total: state.tasks.length,
-                    details: state.taskDetails
-                };
-                localStorage.setItem('prep_tracker_history', JSON.stringify(history));
-            } catch (error) {
-                console.error("Storage save error", error);
-            }
-        }
-
-        // --- Render UI ---
-        function renderTasks() {
-            if (!els.grid) return;
-            els.grid.innerHTML = '';
-            
-            state.tasks.forEach(task => {
-                const isDone = state.completed.includes(task.id);
-                const details = state.taskDetails[task.id] || { notes: [] };
-                
-                if (typeof details.notes === 'string') {
-                    details.notes = details.notes.trim() ? [details.notes] : [];
-                }
-                const hasNote = details.notes && details.notes.length > 0;
-                
-                const card = document.createElement('div');
-                card.className = `task-card cursor-pointer p-3.5 sm:p-5 rounded-2xl flex items-center justify-between border-2 ${
-                    isDone 
-                        ? 'completed bg-gradient-to-br from-sky-50 to-blue-50 border-sky-200 shadow-sm' 
-                        : 'glass-panel border-transparent hover:bg-white hover:shadow-md'
-                }`;
-                
-                card.onclick = (e) => {
-                    if (e.target.closest('.check-trigger')) return;
-                    openTaskSessionModal(task.id);
-                };
-
-                let displayNote = '';
-                if (hasNote) {
-                    const cleanNote = details.notes[details.notes.length - 1].replace(/[\r\n]+/g, ' ').trim();
-                    displayNote = cleanNote.length > 25 ? cleanNote.substring(0, 22) + '...' : cleanNote;
-                }
-
-                let badgeHtml = '';
-                if (hasNote) {
-                    badgeHtml = `
-                        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
-                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-bold bg-blue-100 text-blue-700 max-w-[130px] truncate"><i class="fa-solid fa-note-sticky text-[9px]"></i> ${displayNote}</span>
-                        </div>
-                    `;
-                }
-
-                card.innerHTML = `
-                    <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                        <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl shrink-0 transition-colors ${
-                            isDone ? 'bg-sky-500 text-white shadow-md' : 'bg-sky-100 text-sky-600'
-                        }">
-                            <i class="fa-solid ${task.icon} text-lg sm:text-xl"></i>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <span class="font-bold text-base sm:text-lg ${isDone ? 'text-sky-900' : 'text-sky-800'} block truncate">${task.label}</span>
-                            ${badgeHtml}
-                        </div>
-                    </div>
-                    <div class="check-trigger w-9 h-9 -mr-1.5 flex items-center justify-center rounded-full ${isDone ? 'cursor-default' : 'hover:bg-sky-100/50 active:bg-sky-100 cursor-pointer'} shrink-0 transition-all">
-                        <div class="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
-                            isDone ? 'border-sky-500 bg-sky-500 text-white' : 'border-sky-200 bg-white/50'
-                        }">
-                            ${isDone ? '<i class="fa-solid fa-check text-xs animate-pop"></i>' : ''}
-                        </div>
-                    </div>
-                `;
-                
-                card.querySelector('.check-trigger').onclick = (e) => {
-                    e.stopPropagation();
-                    if (isDone) {
-                        showToast("Cannot untick from here. Use 'Reset Today'.", "fa-lock");
-                        return;
-                    }
-                    toggleTask(task.id);
-                };
-
-                els.grid.appendChild(card);
-            });
-        }
-
-        function toggleTask(id) {
-            const taskObj = state.tasks.find(t => t.id === id);
-            if (!taskObj) return;
-            const isCurrentlyChecked = state.completed.includes(id);
-            const status = isCurrentlyChecked ? 'unchecked' : 'checked';
-            const details = state.taskDetails[id] || { notes: '' };
-
-            showLoadingModal();
-
-            syncSpecificTask(id, taskObj.label, status, details).then(() => {
-                if (status === 'checked') {
-                    if (!state.completed.includes(id)) {
-                        state.completed.push(id);
-                    }
-                } else {
-                    state.completed = state.completed.filter(taskId => taskId !== id);
-                }
-                
-                saveToStorage();
-                renderTasks();
-                updateProgress();
-                showResultModal(taskObj.label, status);
-            });
-        }
-
-        function updateProgress() {
-            if (!els.progressBar) return;
-            const count = state.completed.length;
-            const total = state.tasks.length;
-            const percentage = total > 0 ? (count / total) * 100 : 0;
-            els.progressBar.style.width = `${percentage}%`;
-        }
-
-        // --- Webhook Sync ---
-        function syncSpecificTask(taskId, taskName, status, details = {}) {
-            const streakFireIcon = document.getElementById('streakFireIcon');
-            if (streakFireIcon) {
-                streakFireIcon.classList.replace('text-emerald-500', 'text-amber-500');
-                streakFireIcon.classList.add('animate-pulse');
-            }
-
-            if (status === 'checked') {
-                if (!sheetState.completed.includes(taskId)) sheetState.completed.push(taskId);
-            } else {
-                sheetState.completed = sheetState.completed.filter(id => id !== taskId);
-            }
-            sheetState.notes[taskId] = Array.isArray(details.notes) ? [...details.notes] : (typeof details.notes === 'string' && details.notes.trim() ? [details.notes] : []);
-            saveSheetState();
-
-            const today = new Date();
-            const dd = String(today.getDate()).padStart(2, '0');
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const yyyy = today.getFullYear();
-            const displayDate = `${dd}/${mm}/${yyyy}`;
-
-            let notesStr = "";
-            if (Array.isArray(details.notes) && details.notes.length > 0) {
-                if (details.notes.length === 1) {
-                    notesStr = details.notes[0];
-                } else {
-                    notesStr = "• " + details.notes.join("\n• ");
-                }
-            } else if (typeof details.notes === 'string') {
-                notesStr = details.notes;
-            }
-
-            const payload = {
-                date: displayDate,
-                taskName: taskName,
-                status: status,
-                notes: notesStr
             };
 
-            return fetch(WEBHOOK_URL, {
-                method: 'POST',
-                mode: 'no-cors', 
-                headers: {
-                    'Content-Type': 'text/plain;charset=utf-8'
-                },
-                body: JSON.stringify(payload)
-            }).then(() => {
-                setTimeout(() => {
-                    if (streakFireIcon) {
-                        streakFireIcon.classList.replace('text-amber-500', 'text-emerald-500');
-                        streakFireIcon.classList.remove('animate-pulse');
-                    }
-                }, 800);
-            }).catch(error => {
-                console.warn("Network sync failed, saving locally:", error);
-                setTimeout(() => {
-                    if (streakFireIcon) {
-                        streakFireIcon.classList.replace('text-amber-500', 'text-emerald-500');
-                        streakFireIcon.classList.remove('animate-pulse');
-                    }
-                }, 800);
-                return Promise.resolve();
-            });
-        }
-
-        // --- Modals Display Logic ---
-        function showLoadingModal() {
-            els.modalOverlay.classList.remove('hidden');
-            els.modalOverlay.classList.remove('pointer-events-none');
-            requestAnimationFrame(() => {
-                els.modalOverlay.classList.remove('opacity-0');
-            });
-            els.loadingBox.classList.remove('hidden');
-            els.resultBox.classList.add('hidden');
-            document.getElementById('confirmBox').classList.add('hidden');
-            
-            const srBox = document.getElementById('selectiveRemoveBox');
-            if (srBox) srBox.classList.add('hidden');
-        }
-
-        function hideLoadingModalWithoutResult() {
-            els.modalOverlay.classList.add('opacity-0');
-            els.modalOverlay.classList.add('pointer-events-none');
-            setTimeout(() => {
-                els.modalOverlay.classList.add('hidden');
-                els.loadingBox.classList.add('hidden');
-            }, 300);
-        }
-
-        function showResultModal(taskName, status) {
-            els.loadingBox.classList.add('hidden');
-            els.resultBox.classList.remove('hidden');
-            els.resultBox.classList.remove('scale-95');
-            els.resultBox.classList.add('scale-100');
-
-            const isDone = status === 'checked';
-            if (isDone) {
-                els.resultIconWrapper.className = 'w-16 h-16 rounded-full flex items-center justify-center mb-2 bg-emerald-100 text-emerald-500 shadow-inner';
-                els.resultIcon.className = 'fa-solid fa-check text-3xl animate-pop';
-                els.resultMessage.innerHTML = `<b>${taskName}</b> has been saved as completed.`;
-            } else {
-                els.resultIconWrapper.className = 'w-16 h-16 rounded-full flex items-center justify-center mb-2 bg-sky-100 text-sky-500 shadow-inner';
-                els.resultIcon.className = 'fa-solid fa-arrow-rotate-left text-3xl animate-pop';
-                els.resultMessage.innerHTML = `<b>${taskName}</b> has been unchecked.`;
-            }
-        }
-
-        function closeModal() {
-            els.modalOverlay.classList.add('opacity-0');
-            els.resultBox.classList.remove('scale-100');
-            els.resultBox.classList.add('scale-95');
-            els.modalOverlay.classList.add('pointer-events-none');
-            setTimeout(() => {
-                els.modalOverlay.classList.add('hidden');
-            }, 300);
-        }
-
-        function showToast(message, icon = 'fa-circle-info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = 'glass-panel px-4 py-2.5 rounded-xl flex items-center gap-2.5 border border-sky-100 bg-white/95 text-sky-900 shadow-xl pointer-events-auto animate-toast';
-            toast.innerHTML = `
-                <i class="fa-solid ${icon} text-sky-500 text-base"></i>
-                <span class="font-semibold text-xs sm:text-sm tracking-wide">${message}</span>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.remove();
-            }, 2500);
-        }
-
-        function resetToday() {
-            const hasLocalData = state.completed.length > 0 || Object.keys(state.taskDetails).length > 0;
-            const hasSheetData = sheetState && (sheetState.completed.length > 0 || Object.keys(sheetState.notes).length > 0);
-
-            if (!hasLocalData && !hasSheetData) {
-                showToast("Checklist is already clean!", "fa-circle-info");
-                return;
-            }
-            
-            els.modalOverlay.classList.remove('hidden');
-            els.modalOverlay.classList.remove('pointer-events-none');
-            requestAnimationFrame(() => {
-                els.modalOverlay.classList.remove('opacity-0');
-            });
-            els.loadingBox.classList.add('hidden');
-            els.resultBox.classList.add('hidden');
-            
-            const confirmBox = document.getElementById('confirmBox');
-            confirmBox.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                confirmBox.classList.remove('scale-95');
-                confirmBox.classList.add('scale-100');
-            });
-        }
-
-        function closeConfirmModal() {
-            const confirmBox = document.getElementById('confirmBox');
-            confirmBox.classList.add('scale-95');
-            confirmBox.classList.remove('scale-100');
-            
-            els.modalOverlay.classList.add('opacity-0');
-            els.modalOverlay.classList.add('pointer-events-none');
-            
-            setTimeout(() => {
-                els.modalOverlay.classList.add('hidden');
-                confirmBox.classList.add('hidden');
-            }, 300);
-        }
-
-        function executeResetToday() {
-            state.completed = [];
-            state.taskDetails = {};
-            
-            const dateKey = getTodayDateString();
-            localStorage.removeItem(`prep_tracker_completed_${dateKey}`);
-            localStorage.removeItem(`prep_tracker_details_${dateKey}`);
-            
-            saveToStorage();
-            renderTasks();
-            updateProgress();
-            
-            closeConfirmModal();
-            showToast("Today's checklist reset completed.", "fa-arrow-rotate-left");
-        }
-
-        function openSubjectsModal() {
-            const modal = document.getElementById('subjectsModal');
-            modal.classList.remove('hidden', 'pointer-events-none');
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0');
-                const box = document.getElementById('subjectsBox');
-                box.classList.remove('scale-95');
-                box.classList.add('scale-100');
-            });
-        }
-
-        function closeSubjectsModal() {
-            const modal = document.getElementById('subjectsModal');
-            const box = document.getElementById('subjectsBox');
-            box.classList.remove('scale-100');
-            box.classList.add('scale-95');
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        function syncSubjectData() {
-            const name = document.getElementById('subjName').value.trim();
-            const topic = document.getElementById('subjTopic').value.trim();
-            const notes = document.getElementById('subjNotes').value.trim();
-
-            if (!name) {
-                showToast("Subject Name is required!", "fa-circle-exclamation");
-                document.getElementById('subjName').focus();
-                return;
-            }
-
-            closeSubjectsModal();
-            showLoadingModal();
-
-            const today = new Date();
-            const displayDate = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
-
-            const payload = {
-                date: displayDate,
-                subject: name,
-                topic: topic || "N/A",
-                notes: notes || "No notes added."
+            // Calculate overall and subject-wise stats
+            let totalTasks = 0;
+            let completedCount = 0;
+            const subStats = {
+                maths: { done: 0, total: 0, label: "Mathematics", color: "bg-blue-500" },
+                english: { done: 0, total: 0, label: "English", color: "bg-indigo-500" },
+                reasoning: { done: 0, total: 0, label: "Reasoning", color: "bg-orange-500" },
+                gs: { done: 0, total: 0, label: "Gen. Studies", color: "bg-emerald-500" },
+                mock: { done: 0, total: 0, label: "Mocks/Tests", color: "bg-red-500" },
+                skill: { done: 0, total: 0, label: "Skill/Typing", color: "bg-teal-500" },
+                revision: { done: 0, total: 0, label: "Revision", color: "bg-purple-500" }
             };
 
-            fetch(SUBJECTS_WEBHOOK_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(payload)
-            }).then(() => {
-                hideLoadingModalWithoutResult();
-                showToast(`Saved progress for ${name}!`, "fa-cloud-arrow-up");
-                
-                document.getElementById('subjName').value = '';
-                document.getElementById('subjTopic').value = '';
-                document.getElementById('subjNotes').value = '';
-            }).catch(err => {
-                hideLoadingModalWithoutResult();
-                showToast("Error syncing to sheet (Are you offline?)", "fa-triangle-exclamation");
-                console.error(err);
-            });
-        }
-
-        // --- Selective Remove Flow ---
-        let selectiveRemoveIds = new Set();
-
-        function openSelectiveRemoveModal() {
-            document.getElementById('confirmBox').classList.add('hidden');
-            
-            const srBox = document.getElementById('selectiveRemoveBox');
-            srBox.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                srBox.classList.remove('scale-95');
-                srBox.classList.add('scale-100');
-            });
-            
-            selectiveRemoveIds.clear();
-            renderSelectiveRemoveList();
-        }
-        
-        function closeSelectiveRemoveModal() {
-            const srBox = document.getElementById('selectiveRemoveBox');
-            srBox.classList.remove('scale-100');
-            srBox.classList.add('scale-95');
-            
-            els.modalOverlay.classList.add('opacity-0');
-            els.modalOverlay.classList.add('pointer-events-none');
-            
-            setTimeout(() => {
-                els.modalOverlay.classList.add('hidden');
-                srBox.classList.add('hidden');
-            }, 300);
-        }
-        
-        function renderSelectiveRemoveList() {
-            const list = document.getElementById('selectiveRemoveList');
-            list.innerHTML = '';
-            
-            const completedTasks = state.tasks.filter(t => sheetState.completed.includes(t.id));
-            const tasksWithNotes = state.tasks.filter(t => sheetState.notes[t.id] && sheetState.notes[t.id].length > 0);
-            
-            if (completedTasks.length === 0 && tasksWithNotes.length === 0) {
-                list.innerHTML = '<p class="text-sm text-sky-600/70 text-center py-4 italic">No synced data to remove.</p>';
-                return;
-            }
-
-            if (completedTasks.length > 0) {
-                const header = document.createElement('h4');
-                header.className = 'text-xs font-bold text-sky-800 uppercase mt-1 mb-2 px-1';
-                header.textContent = 'Completed Tasks (Uncheck)';
-                list.appendChild(header);
-
-                completedTasks.forEach(task => {
-                    const item = document.createElement('label');
-                    item.className = 'flex items-center gap-3 p-3 bg-sky-50/50 hover:bg-sky-100 rounded-xl cursor-pointer transition-colors border border-sky-100/80 shadow-sm mb-2';
-                    item.innerHTML = `
-                        <input type="checkbox" value="task:${task.id}" class="w-5 h-5 rounded border-sky-300 text-red-500 focus:ring-red-500 bg-white" onchange="toggleSelectiveRemove('task:${task.id}', this.checked)">
-                        <div class="flex-1 flex items-center min-w-0">
-                            <span class="font-bold text-sky-900 text-sm truncate">${task.label}</span>
-                        </div>
-                    `;
-                    list.appendChild(item);
-                });
-            }
-
-            if (tasksWithNotes.length > 0) {
-                const header = document.createElement('h4');
-                header.className = `text-xs font-bold text-sky-800 uppercase ${completedTasks.length > 0 ? 'mt-4' : 'mt-1'} mb-2 px-1`;
-                header.textContent = 'Saved Notes (Clear)';
-                list.appendChild(header);
-
-                tasksWithNotes.forEach(task => {
-                    const item = document.createElement('label');
-                    item.className = 'flex items-center gap-3 p-3 bg-sky-50/50 hover:bg-sky-100 rounded-xl cursor-pointer transition-colors border border-sky-100/80 shadow-sm mb-2';
-                    item.innerHTML = `
-                        <input type="checkbox" value="note:${task.id}" class="w-5 h-5 rounded border-sky-300 text-red-500 focus:ring-red-500 bg-white" onchange="toggleSelectiveRemove('note:${task.id}', this.checked)">
-                        <div class="flex-1 flex items-center justify-between min-w-0">
-                            <span class="font-bold text-sky-900 text-sm truncate">${task.label}</span>
-                            <span class="ml-2 text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">Clear Notes</span>
-                        </div>
-                    `;
-                    list.appendChild(item);
-                });
-            }
-        }
-        
-        function toggleSelectiveRemove(key, isChecked) {
-            if (isChecked) {
-                selectiveRemoveIds.add(key);
-            } else {
-                selectiveRemoveIds.delete(key);
-            }
-        }
-        
-        function executeSelectiveRemove() {
-            if (selectiveRemoveIds.size === 0) {
-                showToast("No items selected", "fa-circle-exclamation");
-                return;
-            }
-            
-            showLoadingModal();
-            
-            const promises = [];
-            let tasksUpdated = 0;
-            const tasksToProcess = new Set();
-            
-            selectiveRemoveIds.forEach(key => {
-                const actualId = key.substring(5);
-                tasksToProcess.add(actualId);
-            });
-            
-            tasksToProcess.forEach(id => {
-                const taskObj = state.tasks.find(t => t.id === id);
-                if (taskObj) {
-                    const removeTask = selectiveRemoveIds.has(`task:${id}`);
-                    const removeNote = selectiveRemoveIds.has(`note:${id}`);
+            syllabus.forEach(day => {
+                day.tasks.forEach(task => {
+                    totalTasks++;
+                    if (completedTasks[task.id]) completedCount++;
                     
-                    let newStatus = sheetState.completed.includes(id) ? 'checked' : 'unchecked';
-                    let currentNotes = sheetState.notes[id] ? [...sheetState.notes[id]] : [];
-                    
-                    if (removeTask) {
-                        newStatus = 'unchecked';
-                        state.completed = state.completed.filter(tId => tId !== id);
+                    if(subStats[task.type]) {
+                        subStats[task.type].total++;
+                        if (completedTasks[task.id]) subStats[task.type].done++;
                     }
-                    
-                    if (removeNote) {
-                        currentNotes = [];
-                        if (state.taskDetails[id]) {
-                            state.taskDetails[id].notes = [];
-                        }
-                    }
-                    
-                    promises.push(syncSpecificTask(id, taskObj.label, newStatus, { notes: currentNotes }));
-                    tasksUpdated++;
-                }
-            });
-            
-            Promise.allSettled(promises).then(() => {
-                saveToStorage();
-                renderTasks();
-                updateProgress();
-                
-                hideLoadingModalWithoutResult();
-                showToast(`Removed data for ${tasksUpdated} task(s)!`, "fa-trash-can");
-            });
-        }
-
-        // --- Task Session Modal & Notes ---
-        let activeTaskId = null;
-        let sessionOriginalNotes = null;
-
-        function openTaskSessionModal(taskId) {
-            activeTaskId = taskId;
-            const taskObj = state.tasks.find(t => t.id === taskId);
-            if (!taskObj) return;
-            
-            let details = state.taskDetails[taskId] || { notes: [] };
-            if (typeof details.notes === 'string') {
-                details.notes = details.notes.trim() ? [details.notes] : [];
-                state.taskDetails[taskId] = details; 
-            }
-            
-            sessionOriginalNotes = [...details.notes];
-            
-            document.getElementById('modalTaskTitle').textContent = taskObj.label;
-            document.getElementById('modalTaskIcon').className = `fa-solid ${taskObj.icon} text-xl`;
-            
-            const isDone = state.completed.includes(taskId);
-            const iconWrapper = document.getElementById('modalTaskIconWrapper');
-            if (isDone) {
-                iconWrapper.className = 'w-12 h-12 rounded-2xl flex items-center justify-center text-white bg-sky-500 shadow-md';
-                document.getElementById('modalCompleteBtn').innerHTML = '<i class="fa-solid fa-check"></i> <span>Update</span>';
-            } else {
-                iconWrapper.className = 'w-12 h-12 rounded-2xl flex items-center justify-center text-sky-600 bg-sky-100';
-                document.getElementById('modalCompleteBtn').innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Complete</span>';
-            }
-            
-            document.getElementById('taskNotesInput').value = '';
-            renderSavedNotes();
-            
-            const quickTagsContainer = document.getElementById('quickTagsContainer');
-            quickTagsContainer.innerHTML = '';
-            
-            const labelLower = taskObj.label.toLowerCase();
-            let tags = ["Note: "];
-            if (labelLower.includes('mock') || labelLower.includes('test')) {
-                tags = ["Note: ", "Score: "];
-            }
-            
-            tags.forEach(tag => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'bg-sky-50 hover:bg-sky-100 active:bg-sky-200 text-sky-700 text-xs font-bold px-2.5 py-1 rounded-lg transition-all border border-sky-100/50';
-                btn.textContent = tag.replace(': ', '');
-                btn.onclick = () => addQuickTag(tag);
-                quickTagsContainer.appendChild(btn);
-            });
-            
-            const modal = document.getElementById('taskSessionModal');
-            modal.classList.remove('hidden');
-            modal.classList.remove('pointer-events-none');
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0');
-                const box = document.getElementById('taskSessionBox');
-                box.classList.remove('scale-95');
-                box.classList.add('scale-100');
-            });
-        }
-
-        function quickSaveNote() {
-            const notesInput = document.getElementById('taskNotesInput');
-            const newNote = notesInput.value.trim();
-            
-            if (!newNote) {
-                showToast("Please write something first!", "fa-circle-exclamation");
-                return;
-            }
-            
-            if (!state.taskDetails[activeTaskId]) {
-                state.taskDetails[activeTaskId] = { notes: [] };
-            }
-            
-            let details = state.taskDetails[activeTaskId];
-            if (typeof details.notes === 'string') {
-                details.notes = details.notes.trim() ? [details.notes] : [];
-            }
-            
-            details.notes.push(newNote);
-            notesInput.value = ''; 
-            
-            saveToStorage();
-            renderSavedNotes();
-            renderTasks(); 
-            
-            showToast("Note locally saved!", "fa-check");
-        }
-
-        function renderSavedNotes() {
-            const details = state.taskDetails[activeTaskId];
-            const section = document.getElementById('savedNotesSection');
-            const list = document.getElementById('savedNotesList');
-            
-            list.innerHTML = '';
-            
-            if (!details || !details.notes || details.notes.length === 0) {
-                section.classList.add('hidden');
-                return;
-            }
-            
-            section.classList.remove('hidden');
-            details.notes.forEach((note, index) => {
-                const div = document.createElement('div');
-                div.className = 'flex items-start gap-3 p-3 bg-sky-50/50 rounded-xl border border-sky-100/50 justify-between';
-                div.innerHTML = `
-                    <span class="text-sm text-sky-900 font-medium whitespace-pre-wrap break-words flex-1 leading-relaxed">${note}</span>
-                    <button onclick="deleteSpecificNote(${index})" class="mt-0.5 text-red-400 hover:text-red-600 transition-colors shrink-0" title="Delete note">
-                        <i class="fa-solid fa-trash-can text-sm"></i>
-                    </button>
-                `; 
-                list.appendChild(div);
-            });
-        }
-
-        function deleteSpecificNote(index) {
-            let details = state.taskDetails[activeTaskId];
-            if (!details || !Array.isArray(details.notes)) return;
-            
-            details.notes.splice(index, 1);
-            
-            saveToStorage();
-            renderSavedNotes();
-            renderTasks();
-            
-            showToast("Note removed.", "fa-trash-can");
-        }
-
-        function closeTaskSessionModal() {
-            if (activeTaskId && sessionOriginalNotes !== null) {
-                const currentNotes = state.taskDetails[activeTaskId]?.notes || [];
-                const notesChanged = JSON.stringify(currentNotes) !== JSON.stringify(sessionOriginalNotes);
-                
-                if (notesChanged) {
-                    const box = document.getElementById('taskSessionBox');
-                    box.classList.add('animate-pulse');
-                    setTimeout(() => box.classList.remove('animate-pulse'), 500);
-                    showToast("Click Complete to save, or Cancel to discard.", "fa-lock");
-                    return; 
-                }
-            }
-            
-            document.getElementById('taskNotesInput').value = '';
-
-            const modal = document.getElementById('taskSessionModal');
-            const box = document.getElementById('taskSessionBox');
-            box.classList.remove('scale-100');
-            box.classList.add('scale-95');
-            modal.classList.add('opacity-0');
-            modal.classList.add('pointer-events-none');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        function cancelTaskSession() {
-            if (activeTaskId && sessionOriginalNotes !== null) {
-                if (!state.taskDetails[activeTaskId]) {
-                    state.taskDetails[activeTaskId] = { notes: [] };
-                }
-                state.taskDetails[activeTaskId].notes = [...sessionOriginalNotes];
-                saveToStorage(); 
-                renderTasks(); 
-            }
-            
-            document.getElementById('taskNotesInput').value = '';
-
-            const modal = document.getElementById('taskSessionModal');
-            const box = document.getElementById('taskSessionBox');
-            box.classList.remove('scale-100');
-            box.classList.add('scale-95');
-            modal.classList.add('opacity-0');
-            modal.classList.add('pointer-events-none');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-            
-            if (sessionOriginalNotes !== null) {
-                const currentNotes = state.taskDetails[activeTaskId]?.notes || [];
-                if (JSON.stringify(currentNotes) !== JSON.stringify(sessionOriginalNotes)) {
-                     showToast("Changes discarded", "fa-arrow-rotate-left");
-                }
-            }
-        }
-
-        function addQuickTag(tag) {
-            const notesInput = document.getElementById('taskNotesInput');
-            const currentValue = notesInput.value;
-            
-            const cursorPos = notesInput.selectionStart;
-            const textBefore = currentValue.substring(0, cursorPos);
-            const textAfter  = currentValue.substring(cursorPos, currentValue.length);
-            
-            notesInput.value = textBefore + tag + textAfter;
-            
-            const newCursorPos = cursorPos + tag.length;
-            notesInput.selectionStart = newCursorPos;
-            notesInput.selectionEnd = newCursorPos;
-            notesInput.focus();
-        }
-
-        function saveTaskSession() {
-            const notesInput = document.getElementById('taskNotesInput');
-            const newNote = notesInput.value.trim();
-            const isCompleted = state.completed.includes(activeTaskId);
-            
-            if (!state.taskDetails[activeTaskId]) {
-                state.taskDetails[activeTaskId] = { notes: [] };
-            }
-            
-            let details = state.taskDetails[activeTaskId];
-            if (typeof details.notes === 'string') {
-                details.notes = details.notes.trim() ? [details.notes] : [];
-            }
-            
-            if (newNote) {
-                details.notes.push(newNote);
-                notesInput.value = ''; 
-            }
-            
-            sessionOriginalNotes = [...details.notes];
-            saveToStorage();
-            
-            if (!isCompleted) {
-                closeTaskSessionModal();
-                toggleTask(activeTaskId);
-            } else {
-                closeTaskSessionModal();
-                showLoadingModal();
-                
-                const taskObj = state.tasks.find(t => t.id === activeTaskId);
-                
-                syncSpecificTask(activeTaskId, taskObj.label, 'checked', details).then(() => {
-                    renderTasks();
-                    hideLoadingModalWithoutResult();
-                    showToast("Session details synced to sheet!", "fa-circle-check");
                 });
-            }
-        }
-
-        // --- Configure Checklist Modal ---
-        let selectedIcon = 'fa-book-open';
-
-        function openConfigureModal() {
-            renderConfigTasks();
-            populateIconGrid();
-            
-            const modal = document.getElementById('configureModal');
-            modal.classList.remove('hidden');
-            modal.classList.remove('pointer-events-none');
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0');
-                const box = document.getElementById('configureBox');
-                box.classList.remove('scale-95');
-                box.classList.add('scale-100');
             });
-        }
+            const progressVal = Math.round((completedCount / totalTasks) * 100) || 0;
 
-        function closeConfigureModal() {
-            const modal = document.getElementById('configureModal');
-            const box = document.getElementById('configureBox');
-            box.classList.remove('scale-100');
-            box.classList.add('scale-95');
-            modal.classList.add('opacity-0');
-            modal.classList.add('pointer-events-none');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
+            const renderToday = () => {
+                const completedToday = viewedData.tasks.filter(t => completedTasks[t.id]).length;
+                const totalToday = viewedData.tasks.length;
 
-        function renderConfigTasks() {
-            const listContainer = document.getElementById('configTasksList');
-            listContainer.innerHTML = '';
-            
-            state.tasks.forEach((task, index) => {
-                const item = document.createElement('div');
-                item.className = 'flex items-center justify-between p-3.5 bg-sky-50/40 border border-sky-100 rounded-2xl gap-2';
-                item.innerHTML = `
-                    <div class="flex items-center gap-3 min-w-0">
-                        <div class="w-9 h-9 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center shrink-0">
-                            <i class="fa-solid ${task.icon} text-sm"></i>
-                        </div>
-                        <span class="font-bold text-sky-900 text-sm sm:text-base truncate">${task.label}</span>
-                    </div>
-                    
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <button onclick="moveTask(${index}, -1)" class="w-8 h-8 rounded-lg bg-white hover:bg-sky-50 text-sky-500 flex items-center justify-center transition-all border border-sky-100/50" ${index === 0 ? 'disabled opacity-30 cursor-not-allowed' : ''}>
-                            <i class="fa-solid fa-chevron-up text-xs"></i>
-                        </button>
-                        <button onclick="moveTask(${index}, 1)" class="w-8 h-8 rounded-lg bg-white hover:bg-sky-50 text-sky-500 flex items-center justify-center transition-all border border-sky-100/50" ${index === state.tasks.length - 1 ? 'disabled opacity-30 cursor-not-allowed' : ''}>
-                            <i class="fa-solid fa-chevron-down text-xs"></i>
-                        </button>
-                        <button onclick="deleteTask('${task.id}')" class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 active:bg-red-200 text-red-500 flex items-center justify-center transition-all" title="Delete task">
-                            <i class="fa-solid fa-trash text-xs"></i>
-                        </button>
-                    </div>
-                `;
-                listContainer.appendChild(item);
-            });
-        }
-
-        function moveTask(index, direction) {
-            const targetIndex = index + direction;
-            if (targetIndex < 0 || targetIndex >= state.tasks.length) return;
-            
-            const temp = state.tasks[index];
-            state.tasks[index] = state.tasks[targetIndex];
-            state.tasks[targetIndex] = temp;
-            
-            localStorage.setItem('prep_tracker_tasks', JSON.stringify(state.tasks));
-            renderConfigTasks();
-            renderTasks();
-            saveToStorage();
-            showToast("Task reordered!", "fa-up-down");
-        }
-
-        function deleteTask(id) {
-            if (state.tasks.length <= 1) {
-                showToast("Keep at least one daily prep task!", "fa-circle-exclamation");
-                return;
-            }
-            
-            state.tasks = state.tasks.filter(t => t.id !== id);
-            state.completed = state.completed.filter(taskId => taskId !== id);
-            if (state.taskDetails[id]) {
-                delete state.taskDetails[id];
-            }
-            
-            localStorage.setItem('prep_tracker_tasks', JSON.stringify(state.tasks));
-            renderConfigTasks();
-            renderTasks();
-            saveToStorage();
-            showToast("Task removed from list", "fa-trash-can");
-        }
-
-        function toggleIconSelect() {
-            const container = document.getElementById('iconGridContainer');
-            container.classList.toggle('hidden');
-        }
-
-        function selectIcon(iconName) {
-            selectedIcon = iconName;
-            document.getElementById('selectedIconDisplay').className = `fa-solid ${iconName} text-lg`;
-            document.getElementById('iconGridContainer').classList.add('hidden');
-        }
-
-        function populateIconGrid() {
-            const container = document.getElementById('iconGridContainer');
-            container.innerHTML = '';
-            
-            const icons = [
-                'fa-book-open',
-                'fa-align-left',
-                'fa-pen-nib',
-                'fa-keyboard',
-                'fa-calculator',
-                'fa-bullseye',
-                'fa-code',
-                'fa-language',
-                'fa-briefcase',
-                'fa-brain',
-                'fa-dumbbell',
-                'fa-lightbulb'
-            ];
-            
-            icons.forEach(ico => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'w-10 h-10 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 flex items-center justify-center transition-all border border-sky-100/50';
-                btn.innerHTML = `<i class="fa-solid ${ico} text-base"></i>`;
-                btn.onclick = (e) => {
-                    e.stopPropagation();
-                    selectIcon(ico);
-                };
-                container.appendChild(btn);
-            });
-        }
-
-        function addCustomTask() {
-            const labelInput = document.getElementById('newCustomTaskLabel');
-            const label = labelInput.value.trim();
-            if (!label) {
-                showToast("Please write a task name!", "fa-circle-exclamation");
-                return;
-            }
-            
-            const id = `custom_${Date.now()}`;
-            const newTask = { id: id, label: label, icon: selectedIcon };
-            
-            state.tasks.push(newTask);
-            localStorage.setItem('prep_tracker_tasks', JSON.stringify(state.tasks));
-            
-            labelInput.value = '';
-            document.getElementById('iconGridContainer').classList.add('hidden');
-            
-            renderConfigTasks();
-            renderTasks();
-            saveToStorage();
-            showToast("Added custom prep task!", "fa-circle-plus");
-        }
-
-        function resetToDefaultTasks() {
-            state.tasks = [...DEFAULT_TASKS];
-            localStorage.setItem('prep_tracker_tasks', JSON.stringify(state.tasks));
-            renderConfigTasks();
-            renderTasks();
-            saveToStorage();
-            updateProgress();
-            showToast("Restored default prep checklist!", "fa-rotate-left");
-        }
-
-        // ==========================================
-        // Soundscape Synthesizer & UI Logic
-        // ==========================================
-        
-        let audioCtx;
-        let masterGain;
-        let activeSources = [];
-        let currentSoundId = null;
-        let currentSoundPage = 0;
-
-        function renderSoundGrid() {
-            const grid = document.getElementById('soundGrid');
-            if (!grid) return;
-            
-            grid.innerHTML = '';
-            
-            const itemsPerPage = 3;
-            const start = currentSoundPage * itemsPerPage;
-            const displayedSounds = SOUNDSCAPES.slice(start, start + itemsPerPage);
-
-            displayedSounds.forEach(sound => {
-                const isActive = (currentSoundId === sound.id);
-                const c = colorMap[sound.color];
-
-                const btn = document.createElement('button');
-                btn.onclick = () => toggleSound(sound.id);
-                // Adjusting padding and typography sizes heavily to allow 3-in-a-row on mobile screens without breaking
-                btn.className = `sound-card glass-panel group relative overflow-hidden flex flex-col items-center justify-center p-2.5 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-white hover:shadow-md border-2 ${isActive ? 'ring-2 sm:ring-4 ring-sky-400 bg-white shadow-lg border-transparent' : 'border-transparent'}`;
-                
-                btn.innerHTML = `
-                    <div class="absolute inset-0 bg-gradient-to-br ${c.hover} opacity-0 group-hover:opacity-100 transition-opacity z-0"></div>
-                    <div class="z-10 flex flex-col items-center gap-1.5 sm:gap-3 w-full">
-                        <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-inner transition-colors duration-300 sound-icon-wrapper ${isActive ? `${c.activeBg} ${c.activeText}` : `${c.bg} ${c.text}`}">
-                            <i class="fa-solid ${sound.icon} text-base sm:text-2xl sound-icon ${isActive ? 'hidden' : ''}"></i>
-                            <div class="equalizer flex gap-0.5 sm:gap-1 h-3 sm:h-4 items-center justify-center ${isActive ? 'text-white' : 'hidden'}">
-                                <div class="eq-bar w-[2px] sm:w-1"></div><div class="eq-bar w-[2px] sm:w-1"></div><div class="eq-bar w-[2px] sm:w-1"></div><div class="eq-bar w-[2px] sm:w-1"></div>
+                return (
+                    <div className="p-4 md:p-6 pb-8 w-full max-w-2xl mx-auto">
+                        <div className="mb-6 flex justify-between items-end">
+                            <div>
+                                <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
+                                    {viewedDayIndex === actualDayIndex ? "Today's Mission" : `Day ${viewedData.dayId} Mission`}
+                                    {isSyncing && <i className="fa-solid fa-cloud-arrow-up text-sm text-blue-500 animate-bounce"></i>}
+                                </h1>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <p 
+                                        onClick={() => setShowDaySelector(true)}
+                                        className="text-slate-600 font-bold flex items-center gap-1.5 text-sm cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm hover:bg-slate-50 hover:text-blue-600 transition-all active:scale-95 select-none"
+                                    >
+                                        <i className="fa-regular fa-calendar text-blue-500"></i>
+                                        Day {viewedData.dayId} <span className="opacity-60 font-medium text-xs hidden sm:inline">• {viewedData.date}</span>
+                                        <i className="fa-solid fa-caret-down text-[10px] ml-1 opacity-50"></i>
+                                    </p>
+                                    {viewedDayIndex !== actualDayIndex && (
+                                        <button 
+                                            onClick={() => setViewedDayIndex(actualDayIndex)}
+                                            className="text-[10px] bg-blue-100 text-blue-700 px-2.5 py-1.5 rounded-lg font-bold uppercase tracking-wider active:scale-95 transition-all"
+                                        >
+                                            Jump to Today
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="bg-slate-800 text-white px-3 py-1.5 rounded-xl text-sm font-bold shadow-md">
+                                {completedToday}/{totalToday} Done
                             </div>
                         </div>
-                        <div class="text-center w-full px-1">
-                            <h3 class="font-extrabold text-sky-900 text-[10px] sm:text-base leading-tight truncate w-full block">${sound.title}</h3>
-                            <p class="text-[9px] sm:text-xs font-semibold text-sky-600 mt-0.5 truncate w-full block hidden sm:block">${sound.subtitle}</p>
+
+                        {viewedData.dayType === 'saturday' && (
+                            <div className="bg-purple-100 border border-purple-200 text-purple-800 p-4 rounded-2xl mb-6 flex items-start gap-3 shadow-sm">
+                                <i className="fa-solid fa-rotate-left text-xl mt-0.5"></i>
+                                <div>
+                                    <h3 className="font-bold">Weekly Revision Day</h3>
+                                    <p className="text-sm mt-1 opacity-90">No new topics today. Your goal is strictly to revise everything you studied from Monday to Friday.</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {viewedData.dayType === 'sunday' && (
+                            <div className="bg-red-100 border border-red-200 text-red-800 p-4 rounded-2xl mb-6 flex items-start gap-3 shadow-sm">
+                                <i className="fa-solid fa-shield-halved text-xl mt-0.5"></i>
+                                <div>
+                                    <h3 className="font-bold">Mock Test Day</h3>
+                                    <p className="text-sm mt-1 opacity-90">Test day! Attempt the mock in exam-like conditions. Do not skip the analysis part.</p>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="relative pl-4 mt-6 space-y-6">
+                            <div className="absolute left-[27px] top-4 bottom-8 w-[2px] bg-slate-200 rounded-full z-0"></div>
+
+                            {viewedData.tasks.map((task, idx) => {
+                                const isDone = completedTasks[task.id];
+                                const isActive = !isDone && isCurrentlyActive(task.timeSlot);
+                                
+                                return (
+                                    <div key={task.id} className="relative z-10 flex gap-4 items-start group">
+                                        <div className="mt-1 flex flex-col items-center shrink-0">
+                                            <button 
+                                                onClick={() => toggleTask(task)}
+                                                className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all duration-300 ease-out shadow-sm
+                                                    ${isDone 
+                                                        ? 'bg-slate-800 border-slate-800 text-white' 
+                                                        : isActive
+                                                            ? 'bg-blue-50 border-blue-500 animate-pulse'
+                                                            : 'bg-white border-slate-300 group-hover:border-slate-400'
+                                                    }`}
+                                            >
+                                                {isDone && <i className="fa-solid fa-check text-xs checkbox-pop"></i>}
+                                                {isActive && !isDone && <div className="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>}
+                                            </button>
+                                        </div>
+
+                                        <div 
+                                            onClick={() => toggleTask(task)}
+                                            className={`flex-1 rounded-2xl p-4 border transition-all cursor-pointer shadow-sm
+                                                ${isDone ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 hover:shadow-md hover:border-slate-300'}
+                                                ${isActive ? 'ring-2 ring-blue-400 ring-offset-2' : ''}
+                                            `}
+                                        >
+                                            <div className="flex flex-wrap gap-2 justify-between items-center mb-2">
+                                                <div className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 whitespace-nowrap">
+                                                    <i className="fa-regular fa-clock"></i> {task.timeSlot}
+                                                    {isActive && <span className="ml-2 text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest animate-pulse">Now</span>}
+                                                </div>
+                                                <SubjectPill type={task.type} subject={task.subject} icon={task.icon} />
+                                            </div>
+                                            <h3 className={`text-sm md:text-base font-bold mt-1 transition-all ${isDone ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
+                                                {task.topic}
+                                            </h3>
+                                        </div>
+                                    </div>
+                                )
+                            })}
                         </div>
                     </div>
-                `;
-                grid.appendChild(btn);
-            });
-        }
+                );
+            };
 
-        function cycleSounds() {
-            const maxPages = Math.ceil(SOUNDSCAPES.length / 3);
-            currentSoundPage = (currentSoundPage + 1) % maxPages;
-            renderSoundGrid();
-        }
+            const renderSchedule = () => (
+                <div className="p-4 md:p-6 pb-8 w-full max-w-2xl mx-auto">
+                    <h1 className="text-2xl font-extrabold text-slate-800 mb-6 tracking-tight">Master Blueprint</h1>
+                    <div className="space-y-4">
+                        {syllabus.map(day => (
+                            <div key={day.dayId} className={`rounded-xl border p-4 shadow-sm ${day.dayId === actualDayIndex + 1 ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200'}`}>
+                                <div className="flex justify-between items-center mb-3">
+                                    <h3 
+                                        className="font-bold text-slate-800 cursor-pointer hover:text-blue-600 transition-colors flex items-center gap-2"
+                                        onClick={() => {
+                                            setViewedDayIndex(day.dayId - 1);
+                                            setActiveTab('today');
+                                        }}
+                                        title="Jump to this day"
+                                    >
+                                        Day {day.dayId} <span className="text-slate-400 font-normal text-xs ml-2">{day.date}</span>
+                                        <i className="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-50"></i>
+                                    </h3>
+                                    {day.dayId === actualDayIndex + 1 && <span className="text-[10px] bg-blue-600 text-white px-2 py-1 rounded-md font-bold uppercase tracking-wider">Today</span>}
+                                </div>
+                                <div className="space-y-2">
+                                    {day.tasks.map(t => (
+                                        <div key={`sch-${t.id}`} className="text-xs flex items-start gap-2">
+                                            <div className={`mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0 ${completedTasks[t.id] ? 'bg-green-500' : 'bg-slate-300'}`}></div>
+                                            <span className={completedTasks[t.id] ? 'text-slate-400 line-through' : 'text-slate-600'}>
+                                                <span className="font-semibold text-slate-700">{t.subject}:</span> {t.topic.replace(/\[.*?\]/, '')}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
 
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                masterGain = audioCtx.createGain();
-                masterGain.gain.value = 0.5; 
-                masterGain.connect(audioCtx.destination);
-            }
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
+            const renderStats = () => (
+                <div className="p-4 md:p-6 pb-8 w-full max-w-2xl mx-auto flex flex-col items-center">
+                    <h1 className="text-2xl font-extrabold text-slate-800 w-full mb-8 tracking-tight">Detailed Analysis</h1>
+                    
+                    <div className="relative w-40 h-40 mb-8 shrink-0">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#e2e8f0" strokeWidth="8" />
+                            <circle 
+                                cx="50" cy="50" r="40" fill="transparent" 
+                                stroke="#1e293b" strokeWidth="8" strokeLinecap="round"
+                                strokeDasharray={`${2 * Math.PI * 40}`}
+                                strokeDashoffset={`${2 * Math.PI * 40 * (1 - progressVal / 100)}`}
+                                className="transition-all duration-1000 ease-out"
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-4xl font-black text-slate-800 tracking-tighter">{progressVal}%</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total Done</span>
+                        </div>
+                    </div>
 
-        function stopAllSounds() {
-            activeSources.forEach(source => {
-                try { source.stop(); } catch(e){}
-                try { source.disconnect(); } catch(e){}
-            });
-            activeSources = [];
-        }
+                    <div className="grid grid-cols-2 gap-4 w-full mb-8">
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
+                            <div className="text-3xl font-black text-slate-800">{completedCount}</div>
+                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1">Tasks Done</div>
+                        </div>
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
+                            <div className="text-3xl font-black text-slate-800">{totalTasks - completedCount}</div>
+                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1">Remaining</div>
+                        </div>
+                    </div>
 
-        function toggleSound(soundId) {
-            initAudio();
-            
-            if (currentSoundId === soundId) {
-                stopAllSounds();
-                currentSoundId = null;
-                renderSoundGrid();
-                showToast("Soundscape paused", "fa-pause");
-                return;
-            }
-            
-            stopAllSounds();
-            currentSoundId = soundId;
-            renderSoundGrid(); 
-            
-            const soundDef = SOUNDSCAPES.find(s => s.id === soundId);
-            if (soundDef) {
-                soundDef.synth();
-                showToast(`Playing ${soundDef.title}`, soundDef.icon);
-            }
-        }
+                    <div className="w-full bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-8">
+                        <h3 className="font-extrabold text-slate-800 mb-4 tracking-tight">Subject Progress</h3>
+                        {Object.keys(subStats).map(key => {
+                            const stat = subStats[key];
+                            const pct = stat.total === 0 ? 0 : Math.round((stat.done / stat.total) * 100);
+                            return (
+                                <div key={key} className="mb-4 last:mb-0">
+                                    <div className="flex justify-between text-xs font-bold mb-1.5">
+                                        <span className="text-slate-700">{stat.label}</span>
+                                        <span className="text-slate-500">{stat.done}/{stat.total} ({pct}%)</span>
+                                    </div>
+                                    <div className="w-full bg-slate-100 rounded-full h-2">
+                                        <div className={`h-2 rounded-full ${stat.color} transition-all duration-500`} style={{width: `${pct}%`}}></div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
 
-        // --- Synthesizer Helpers ---
-        function createNoiseBuffer(type) {
-            const bufferSize = audioCtx.sampleRate * 2;
-            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const output = noiseBuffer.getChannelData(0);
-            
-            if (type === 'white') {
-                for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
-            } else if (type === 'pink') {
-                let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-                for (let i = 0; i < bufferSize; i++) {
-                    let white = Math.random() * 2 - 1;
-                    b0 = 0.99886 * b0 + white * 0.0555179; b1 = 0.99332 * b1 + white * 0.0750759;
-                    b2 = 0.96900 * b2 + white * 0.1538520; b3 = 0.86650 * b3 + white * 0.3104856;
-                    b4 = 0.55000 * b4 + white * 0.5329522; b5 = -0.7616 * b5 - white * 0.0168980;
-                    output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-                    output[i] *= 0.11; b6 = white * 0.115926;
-                }
-            } else if (type === 'brown') {
-                let lastOut = 0;
-                for (let i = 0; i < bufferSize; i++) {
-                    const white = Math.random() * 2 - 1;
-                    output[i] = (lastOut + (0.02 * white)) / 1.02;
-                    lastOut = output[i];
-                    output[i] *= 3.5; 
-                }
-            }
-            
-            const noiseSource = audioCtx.createBufferSource();
-            noiseSource.buffer = noiseBuffer;
-            noiseSource.loop = true;
-            return noiseSource;
-        }
+                    <a 
+                        href="https://docs.google.com/spreadsheets/d/1W0tnRXomGUHBU3sEPWN4jbm_VcA5r0n5kRXJHMGmsTU/edit?usp=sharing"
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="w-full bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-200 py-4 rounded-2xl font-extrabold text-[15px] transition-all shadow-sm flex items-center justify-center gap-3 active:scale-95 mb-2"
+                    >
+                        <i className="fa-solid fa-fire text-orange-500 text-xl"></i> 
+                        Open Progress sheet
+                    </a>
+                    <p className="text-[11px] font-medium text-slate-400 text-center">Live sync with your central database tracking sheet.</p>
+                </div>
+            );
 
-        // --- Sound Generation Functions ---
-        function playBrownNoise() {
-            const noise = createNoiseBuffer('brown');
-            const lpf = audioCtx.createBiquadFilter();
-            lpf.type = 'lowpass'; lpf.frequency.value = 400;
-            noise.connect(lpf).connect(masterGain);
-            noise.start(); activeSources.push(noise);
-        }
+            return (
+                <div className="h-full w-full flex flex-col bg-slate-50 relative">
+                    {showDaySelector && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4" onClick={() => setShowDaySelector(false)}>
+                            <div className="bg-white rounded-3xl p-6 w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-xl font-extrabold text-slate-800">Select Day</h2>
+                                    <button onClick={() => setShowDaySelector(false)} className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition-colors">
+                                        <i className="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <div className="overflow-y-auto grid grid-cols-5 gap-2 pb-2 hide-scrollbar">
+                                    {syllabus.map((day, idx) => (
+                                        <button 
+                                            key={day.dayId}
+                                            onClick={() => { setViewedDayIndex(idx); setShowDaySelector(false); }}
+                                            className={`py-2.5 rounded-xl text-sm font-bold border transition-all ${
+                                                idx === viewedDayIndex 
+                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-105'
+                                                    : idx === actualDayIndex
+                                                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+                                            }`}
+                                        >
+                                            {day.dayId}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-        function playBinauralBeats() {
-            const baseFreq = 200, beatFreq = 6; 
-            const oscLeft = audioCtx.createOscillator();
-            const oscRight = audioCtx.createOscillator();
-            oscLeft.type = 'sine'; oscRight.type = 'sine';
-            oscLeft.frequency.value = baseFreq; oscRight.frequency.value = baseFreq + beatFreq;
-            
-            const panLeft = audioCtx.createStereoPanner(); const panRight = audioCtx.createStereoPanner();
-            panLeft.pan.value = -1; panRight.pan.value = 1;
-            
-            const localGain = audioCtx.createGain(); localGain.gain.value = 0.5;
-            oscLeft.connect(panLeft).connect(localGain);
-            oscRight.connect(panRight).connect(localGain);
-            localGain.connect(masterGain);
-            
-            oscLeft.start(); oscRight.start();
-            activeSources.push(oscLeft, oscRight);
-        }
+                    {/* Main Scrollable Content Box */}
+                    <div className="flex-1 overflow-y-auto hide-scrollbar w-full">
+                        {activeTab === 'today' && renderToday()}
+                        {activeTab === 'schedule' && renderSchedule()}
+                        {activeTab === 'stats' && renderStats()}
+                    </div>
 
-        function playPinkNoiseSweep() {
-            const noise = createNoiseBuffer('pink');
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = 'lowpass'; filter.frequency.value = 800;
-            
-            const lfo = audioCtx.createOscillator();
-            lfo.type = 'sine'; lfo.frequency.value = 0.1;
-            const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 400;
-            
-            lfo.connect(lfoGain).connect(filter.frequency);
-            noise.connect(filter).connect(masterGain);
-            
-            noise.start(); lfo.start();
-            activeSources.push(noise, lfo);
-        }
+                    {/* Fixed Flex-Shrink Bottom Navigation Bar */}
+                    <div className="glass w-full px-6 pt-3 pb-safe border-t border-slate-200 flex-shrink-0 relative z-50">
+                        <div className="max-w-md mx-auto flex justify-between items-center pb-2">
+                            <button onClick={() => setActiveTab('today')} className={`flex flex-col items-center gap-1 transition-all w-16 ${activeTab === 'today' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}>
+                                <i className="fa-solid fa-calendar-day text-xl"></i>
+                                <span className="text-[10px] font-bold">Today</span>
+                            </button>
+                            <button onClick={() => setActiveTab('schedule')} className={`flex flex-col items-center gap-1 transition-all w-16 ${activeTab === 'schedule' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}>
+                                <i className="fa-solid fa-layer-group text-xl"></i>
+                                <span className="text-[10px] font-bold">Plan</span>
+                            </button>
+                            <button onClick={() => setActiveTab('stats')} className={`flex flex-col items-center gap-1 transition-all w-16 ${activeTab === 'stats' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}>
+                                <i className="fa-solid fa-chart-pie text-xl"></i>
+                                <span className="text-[10px] font-bold">Stats</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
 
-        function playSacredAcoustic() {
-            const freqs = [200, 540, 900]; 
-            freqs.forEach((f, i) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                const lfo = audioCtx.createOscillator();
-                osc.frequency.value = f;
-                lfo.frequency.value = 0.1 + (i * 0.03); 
-                const lfoGain = audioCtx.createGain();
-                lfoGain.gain.value = 0.2; 
-                
-                gain.gain.value = 0.15;
-                lfo.connect(lfoGain).connect(gain.gain);
-                
-                osc.connect(gain).connect(masterGain);
-                osc.start(); lfo.start();
-                activeSources.push(osc, lfo);
-            });
-        }
-
-        function playSolfeggio() {
-            const freqs = [528, 639, 417]; 
-            freqs.forEach((f, i) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = i === 0 ? 'sine' : 'triangle';
-                osc.frequency.value = f;
-                gain.gain.value = i === 0 ? 0.2 : 0.05;
-                
-                const lfo = audioCtx.createOscillator();
-                lfo.frequency.value = 0.05 + (i * 0.01);
-                const lfoGain = audioCtx.createGain();
-                lfoGain.gain.value = 0.05;
-                lfo.connect(lfoGain).connect(gain.gain);
-                
-                osc.connect(gain).connect(masterGain);
-                osc.start(); lfo.start();
-                activeSources.push(osc, lfo);
-            });
-        }
-
-        function playMantras() {
-            const osc = audioCtx.createOscillator();
-            osc.type = 'sawtooth'; osc.frequency.value = 100;
-            
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = 'bandpass'; filter.frequency.value = 700; filter.Q.value = 2.5;
-            
-            const lfo = audioCtx.createOscillator();
-            lfo.frequency.value = 0.08;
-            const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 200;
-            lfo.connect(lfoGain).connect(filter.frequency);
-            
-            const gain = audioCtx.createGain(); gain.gain.value = 0.3;
-            
-            osc.connect(filter).connect(gain).connect(masterGain);
-            osc.start(); lfo.start();
-            activeSources.push(osc, lfo);
-        }
-
-        function playTransitDrones() {
-            const osc = audioCtx.createOscillator();
-            osc.type = 'square'; osc.frequency.value = 50; 
-            
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = 'lowpass'; filter.frequency.value = 150;
-            
-            const lfo = audioCtx.createOscillator();
-            lfo.type = 'triangle'; lfo.frequency.value = 0.15;
-            const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 100;
-            lfo.connect(lfoGain).connect(filter.frequency);
-            
-            const noise = createNoiseBuffer('brown');
-            const noiseGain = audioCtx.createGain(); noiseGain.gain.value = 0.1;
-            noise.connect(noiseGain).connect(filter);
-            
-            const gain = audioCtx.createGain(); gain.gain.value = 0.3;
-            
-            osc.connect(filter).connect(gain).connect(masterGain);
-            osc.start(); lfo.start(); noise.start();
-            activeSources.push(osc, lfo, noise);
-        }
-
-        function play174Hz() {
-            const osc1 = audioCtx.createOscillator(); osc1.frequency.value = 174;
-            const osc2 = audioCtx.createOscillator(); osc2.frequency.value = 174.5;
-            const osc3 = audioCtx.createOscillator(); osc3.type = 'triangle'; osc3.frequency.value = 87;
-            
-            const gain = audioCtx.createGain(); gain.gain.value = 0.2;
-            osc1.connect(gain); osc2.connect(gain); osc3.connect(gain);
-            gain.connect(masterGain);
-            
-            osc1.start(); osc2.start(); osc3.start();
-            activeSources.push(osc1, osc2, osc3);
-        }
-
-        function playBiophilic() {
-            const stream = createNoiseBuffer('pink');
-            const streamFilter = audioCtx.createBiquadFilter();
-            streamFilter.type = 'lowpass'; streamFilter.frequency.value = 500;
-            const streamGain = audioCtx.createGain(); streamGain.gain.value = 0.5;
-            stream.connect(streamFilter).connect(streamGain).connect(masterGain);
-            
-            const cricket = createNoiseBuffer('white');
-            const cricketFilter = audioCtx.createBiquadFilter();
-            cricketFilter.type = 'bandpass'; cricketFilter.frequency.value = 4500; cricketFilter.Q.value = 15;
-            
-            const amLfo = audioCtx.createOscillator();
-            amLfo.type = 'square'; amLfo.frequency.value = 20; 
-            const amGain = audioCtx.createGain();
-            amLfo.connect(amGain.gain); amGain.gain.value = 0.5; 
-            
-            const envLfo = audioCtx.createOscillator();
-            envLfo.type = 'sine'; envLfo.frequency.value = 0.2; 
-            const envGain = audioCtx.createGain();
-            envLfo.connect(envGain.gain); envGain.gain.value = 0.1;
-            
-            cricket.connect(cricketFilter).connect(amGain).connect(envGain).connect(masterGain);
-            
-            stream.start(); cricket.start(); amLfo.start(); envLfo.start();
-            activeSources.push(stream, cricket, amLfo, envLfo);
-        }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
