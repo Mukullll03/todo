@@ -65,7 +65,7 @@
     <div id="root" class="h-full w-full"></div>
 
     <script type="text/babel">
-        const START_DATE = new Date('2026-08-22T00:00:00');
+        const START_DATE = new Date('2026-08-23T00:00:00');
         const TOTAL_DAYS = 90;
 
         const mathsTopics = [
@@ -106,16 +106,60 @@
         ];
 
         const gsTopics = [
-            "Geo: Solar System Wrap-up", "Geo: Rivers of India", "Geo: Mountain Passes & Peaks", "Geo: Soils & Climate of India",
-            "Polity: Historical Background & Making", "Polity: Salient Features & Preamble", "Polity: Parts, Schedules & Articles",
-            "Polity: Fundamental Rights (Art 12-35)", "Polity: DPSP & Fundamental Duties", "Polity: President & Vice President",
-            "Polity: Parliament (Lok/Rajya Sabha)", "Polity: Supreme Court & High Courts", "Polity: State Govt & Panchayati Raj",
-            "History: Indus Valley & Vedic Age", "History: Buddhism & Jainism", "History: Mauryan & Gupta Empire",
-            "History: Delhi Sultanate", "History: Mughal Empire", "History: Revolt of 1857 & Social Reforms",
-            "History: Indian National Congress", "History: Gandhian Era (1915-1947)", "History: Important Battles & Treaties",
-            "Science: Biology - Cell & Diseases", "Science: Biology - Vitamins & Human Body", "Science: Physics - Units & Motion",
-            "Science: Physics - Light & Sound", "Science: Chemistry - Acid, Base & Metals", "Static GK: National Parks & Dams",
-            "Static GK: Dances, Festivals & Books", "Current Affairs: Jan-Feb Revision", "Current Affairs: Mar-Apr Revision"
+            // Geography (8)
+            "Geo: India Location & Himalayas", "Geo: Peninsular Plateau, Northern Plains & Islands",
+            "Geo: Himalayan & Peninsular River Systems", "Geo: Dams, Lakes, Waterfall & Monsoon",
+            "Geo: Forest, Grassland & Soil", "Geo: Agriculture & Minerals",
+            "Geo: World Map", "Geo: Human Geography & Transport",
+            
+            // Ancient History (6)
+            "Ancient: Stone Age & Indus Valley", "Ancient: Vedic Age & Sangam Age",
+            "Ancient: Jainism, Buddhism & Mahajanapadas", "Ancient: Maurya & Post-Maurya",
+            "Ancient: Gupta & Post-Gupta", "Ancient: Tripartite Struggle & Cholas",
+            
+            // Medieval History (3)
+            "Medieval: Delhi Sultanate", "Medieval: Vijayanagara, Bahmani & Mughal Empire",
+            "Medieval: Marathas, Bhakti & Sufi Movements",
+            
+            // Modern History (5)
+            "Modern: Advent of Europeans & Socio-Religious Reforms", "Modern: Revolt of 1857, INC & Bengal Partition",
+            "Modern: Gandhian Era", "Modern: CDM, Simon Commission & Quit India",
+            "Modern: Governor-General and Viceroy",
+            
+            // Polity (11)
+            "Polity: Constitution Making, Features & Preamble", "Polity: Parts 1-2 & Fundamental Rights",
+            "Polity: DPSP & Fundamental Duties", "Polity: President, VP, PM & Council",
+            "Polity: Parliament & State Legislature", "Polity: Centre-State Relations & Emergency",
+            "Polity: Supreme Court & High Court", "Polity: Local Government",
+            "Polity: Const. & Non-Const. Bodies", "Polity: New Criminal Laws 2023 & Important Acts",
+            "Polity: Sources of Const. & Noteworthy Points",
+            
+            // Economics (6)
+            "Eco: Basics of Economy & Microeconomics", "Eco: National Income, Budget & Taxation",
+            "Eco: Inflation, Unemployment & Poverty", "Eco: Banking Part 1 & Monetary Policy",
+            "Eco: Banking Part 2 & Balance of Payment", "Eco: Five Year Plans, Indices & Institutions",
+            
+            // Physics (4)
+            "Physics: Motion, Force & Laws of Motion", "Physics: Gravitation, Work Done & Sound",
+            "Physics: Reflection, Refraction & Human Eye", "Physics: Electricity & Magnetic Effects",
+            
+            // Chemistry (4)
+            "Chem: Matter, Atom & Periodic Table", "Chem: Chem Reactions, Metals & Non-Metals",
+            "Chem: Acid, Base, Salt, Carbon & Compounds", "Chem: Sectional Revision & Mix PYQs",
+            
+            // Biology (6)
+            "Bio: Cell, Plant & Animal Tissue", "Bio: Plant & Animal Kingdom",
+            "Bio: Nervous System, Hormones & Movement", "Bio: Reproduction, Digestion & Respiration",
+            "Bio: Circulatory & Excretory System", "Bio: Diseases, Nutrients, Heredity & Evolution",
+            
+            // Environment (3)
+            "Env: Basics, Ecosystem & Energy Transfer", "Env: Biogeochemical Cycles & Conventions",
+            "Env: National Parks",
+            
+            // Static GK (6)
+            "GK: Music, Paintings & Classical Dance", "GK: Folk Dances & Festivals of India",
+            "GK: Census & Important Days", "GK: Books, Authors & Sports",
+            "GK: National & International Organisations", "GK: Awards and Honours & Miscellaneous"
         ];
 
         const generateDetailedSyllabus = () => {
@@ -148,7 +192,6 @@
                         { id: `d${i}-s2`, timeSlot: "10:30 AM - 01:00 PM", subject: "English Weekly Rev", topic: "Revise Grammar Rules & all Vocab/Idioms learned this week.", type: "revision", icon: "fa-book" },
                         { id: `d${i}-s3`, timeSlot: "02:00 PM - 05:00 PM", subject: "GS Weekly Rev", topic: "Active Recall & Short Notes revision of Mon-Fri GS topics.", type: "revision", icon: "fa-globe" },
                         { id: `d${i}-s4`, timeSlot: "05:30 PM - 07:30 PM", subject: "Reasoning & CA", topic: "Revise Reasoning tricks + Weekly Current Affairs reading.", type: "revision", icon: "fa-brain" },
-                        { id: `d${i}-s-type`, timeSlot: "07:30 PM - 08:00 PM", subject: "Typing Speed Test", topic: "Weekly 30-min full typing mock test.", type: "skill", icon: "fa-keyboard" },
                         { id: `d${i}-s5`, timeSlot: "08:30 PM - 10:30 PM", subject: "Mix Practice Set", topic: "Solve 100 mixed Qs covering all subjects studied this week.", type: "mock", icon: "fa-layer-group" }
                     ];
                 } else {
@@ -160,22 +203,17 @@
                     dayPlan.tasks = [
                         { id: `d${i}-t1`, timeSlot: "07:00 AM - 07:15 AM", subject: "Calculation", topic: "Speed Drill: Tables (1-30), Squares (1-50), Cubes (1-20), Fractions", type: "maths", icon: "fa-bolt" },
                         
-                        { id: `d${i}-t2-rev`, timeSlot: "07:15 AM - 07:30 AM", subject: "Maths Revision", topic: "Quick recall of yesterday's Maths concepts", type: "revision", icon: "fa-clock-rotate-left" },
-                        { id: `d${i}-t2-core`, timeSlot: "07:30 AM - 09:30 AM", subject: "Maths", topic: mTopic, type: "maths", icon: "fa-square-root-variable" },
+                        { id: `d${i}-t2-core`, timeSlot: "07:15 AM - 09:30 AM", subject: "Maths", topic: mTopic, type: "maths", icon: "fa-square-root-variable" },
                         
-                        { id: `d${i}-t3-rev`, timeSlot: "10:00 AM - 10:15 AM", subject: "English Revision", topic: "Quick recall of yesterday's Grammar rules", type: "revision", icon: "fa-clock-rotate-left" },
-                        { id: `d${i}-t3-core`, timeSlot: "10:15 AM - 11:30 AM", subject: "English Grammar", topic: eTopic, type: "english", icon: "fa-language" },
+                        { id: `d${i}-t3-core`, timeSlot: "10:00 AM - 11:30 AM", subject: "English Grammar", topic: eTopic, type: "english", icon: "fa-language" },
                         
                         { id: `d${i}-t4`, timeSlot: "11:30 AM - 01:00 PM", subject: "Vocab & Comprehension", topic: "Cloze Test, PQRS (Parajumbles) & daily 30 Vocab words practice", type: "english", icon: "fa-book-open" },
                         
-                        { id: `d${i}-t5-rev`, timeSlot: "02:00 PM - 02:15 PM", subject: "GS Revision", topic: "Quick recall of yesterday's GS facts", type: "revision", icon: "fa-clock-rotate-left" },
-                        { id: `d${i}-t5-core`, timeSlot: "02:15 PM - 04:00 PM", subject: "Gen. Studies", topic: gTopic, type: "gs", icon: "fa-monument" },
+                        { id: `d${i}-t5-core`, timeSlot: "02:00 PM - 04:00 PM", subject: "Gen. Studies", topic: gTopic, type: "gs", icon: "fa-monument" },
                         
-                        { id: `d${i}-t6-rev`, timeSlot: "04:30 PM - 04:45 PM", subject: "Reasoning Rev", topic: "Quick recall of yesterday's Reasoning tricks", type: "revision", icon: "fa-clock-rotate-left" },
-                        { id: `d${i}-t6-core`, timeSlot: "04:45 PM - 06:00 PM", subject: "Reasoning", topic: rTopic, type: "reasoning", icon: "fa-puzzle-piece" },
+                        { id: `d${i}-t6-core`, timeSlot: "04:30 PM - 06:00 PM", subject: "Reasoning", topic: rTopic, type: "reasoning", icon: "fa-puzzle-piece" },
                         
                         { id: `d${i}-t-ca`, timeSlot: "06:30 PM - 07:00 PM", subject: "Current Affairs", topic: "Daily News/Video & Short Notes", type: "gs", icon: "fa-newspaper" },
-                        { id: `d${i}-t-type`, timeSlot: "07:00 PM - 07:20 PM", subject: "Typing Practice", topic: "Touch typing practice (15-20 mins) to maintain speed.", type: "skill", icon: "fa-keyboard" },
 
                         { id: `d${i}-t7`, timeSlot: "08:30 PM - 10:30 PM", subject: "Daily Sectional Mock", topic: "Practice MCQs/PYQs exclusively of the topics studied TODAY to lock memory.", type: "mock", icon: "fa-list-check" },
                         { id: `d${i}-t8`, timeSlot: "10:30 PM - 11:00 PM", subject: "Night Wrap-up", topic: "Plan tomorrow's schedule, brief current affairs reading, sleep.", type: "revision", icon: "fa-moon" }
@@ -358,51 +396,67 @@
                                     {isSyncing && <i className="fa-solid fa-cloud-arrow-up text-sm text-blue-500 animate-bounce"></i>}
                                 </h1>
                                 <div className="flex items-center gap-2 mt-1.5">
-                                    <p 
-                                        onClick={() => setShowDaySelector(true)}
-                                        className="text-slate-500 font-semibold flex items-center gap-1 text-xs cursor-pointer hover:text-blue-600 transition-all active:scale-95 select-none"
-                                    >
-                                        <i className="fa-regular fa-calendar text-blue-500 mr-0.5"></i>
-                                        Day {viewedData.dayId} <span className="ml-0.5">• {viewedData.date}</span>
-                                        <i className="fa-solid fa-caret-down text-[10px] ml-0.5 opacity-50"></i>
-                                    </p>
-                                    {viewedDayIndex !== actualDayIndex && (
-                                        <button 
-                                            onClick={() => setViewedDayIndex(actualDayIndex)}
-                                            className="text-[10px] bg-blue-100 text-blue-700 px-2.5 py-1.5 rounded-lg font-bold uppercase tracking-wider active:scale-95 transition-all"
+                                    <div className="relative">
+                                        <p 
+                                            onClick={() => setShowDaySelector(!showDaySelector)}
+                                            className="text-slate-500 font-semibold flex items-center gap-1 text-xs cursor-pointer hover:text-blue-600 transition-all active:scale-95 select-none"
                                         >
-                                            Jump to Today
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end gap-2">
-                                <div className="bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-lg text-xs font-bold shadow-sm whitespace-nowrap">
-                                    {completedToday}/{totalToday} Done
-                                </div>
-                                <div className="bg-orange-100 text-orange-700 px-2 py-1 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 border border-orange-200 whitespace-nowrap">
-                                <i className="fa-solid fa-hourglass-half"></i>
-                                {daysLeft} {daysLeft === 1 ? 'Day' : 'Days'} Left
-                            </div>
-                        </div>
-                    </div>
+                                            <i className="fa-regular fa-calendar text-blue-500 mr-0.5"></i>
+                                            Day {viewedData.dayId} <span className="ml-0.5">• {viewedData.date}</span>
+                                            <i className={`fa-solid fa-caret-down text-[10px] ml-0.5 opacity-50 transition-transform ${showDaySelector ? 'rotate-180' : ''}`}></i>
+                                        </p>
+                                        
+                                        {showDaySelector && (
+                                            <>
+                                                <div className="fixed inset-0 z-40" onClick={() => setShowDaySelector(false)}></div>
+                                                <div className="absolute left-0 top-full mt-2 w-52 max-h-64 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl z-50 hide-scrollbar py-1">
+                                                    {syllabus.map((day, idx) => (
+                                                        <button 
+                                                            key={day.dayId}
+                                                            onClick={() => { setViewedDayIndex(idx); setShowDaySelector(false); }}
+                                                            className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors flex justify-between items-center ${
+                                                                idx === viewedDayIndex 
+                                                                    ? 'bg-blue-50 text-blue-700 font-bold'
+                                                                    : idx === actualDayIndex
+                                                                        ? 'text-blue-600 font-semibold bg-white hover:bg-slate-50'
+                                                                        : 'text-slate-600 bg-white hover:bg-slate-50'
+                                                            }`}
+                                                        >
+                                                            <span>Day {day.dayId}</span>
+                                                            <span className="text-[10px] opacity-70 font-normal">{day.date}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                    {viewedDayIndex !== actualDayIndex && (
+                        <button 
+                            onClick={() => setViewedDayIndex(actualDayIndex)}
+                            className="text-[10px] bg-blue-100 text-blue-700 px-2.5 py-1.5 rounded-lg font-bold uppercase tracking-wider active:scale-95 transition-all"
+                        >
+                            Jump to Today
+                        </button>
+                    )}
+                </div>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+                <div className="bg-slate-700 text-slate-100 px-2.5 py-1.5 rounded-lg text-sm font-bold shadow-sm whitespace-nowrap">
+                    {completedToday}/{totalToday} Done
+                </div>
+                <div className="bg-orange-100 text-orange-700 px-2 py-1 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 border border-orange-200 whitespace-nowrap">
+                    <i className="fa-solid fa-hourglass-half"></i>
+                    {daysLeft} {daysLeft === 1 ? 'Day' : 'Days'} Left
+                </div>
+            </div>
+        </div>
 
-                    {viewedData.dayType === 'sunday' && (
-                        <div className="bg-red-100 border border-red-200 text-red-800 p-4 rounded-2xl mb-6 flex items-start gap-3 shadow-sm">
-                            <i className="fa-solid fa-shield-halved text-xl mt-0.5"></i>
-                                <div>
-                                    <h3 className="font-bold">Mock Test Day</h3>
-                                    <p className="text-sm mt-1 opacity-90">Test day! Attempt the mock in exam-like conditions. Do not skip the analysis part.</p>
-                                </div>
-                            </div>
-                        )}
+        <div className="relative mt-6 space-y-6 -ml-2">
+            <div className="absolute left-[9px] top-4 bottom-8 w-[2px] bg-slate-200 rounded-full z-0"></div>
 
-                        <div className="relative pl-4 mt-6 space-y-6">
-                            <div className="absolute left-[27px] top-4 bottom-8 w-[2px] bg-slate-200 rounded-full z-0"></div>
-
-                            {viewedData.tasks.map((task, idx) => {
-                                const isDone = completedTasks[task.id];
-                                const isActive = !isDone && isCurrentlyActive(task.timeSlot);
+            {viewedData.tasks.map((task, idx) => {
+                const isDone = completedTasks[task.id];
+                            const isActive = !isDone && isCurrentlyActive(task.timeSlot);
                                 const isLoading = taskLoading[task.id];
                                 
                                 return (
@@ -411,7 +465,7 @@
                                             <button 
                                                 onClick={() => toggleTask(task)}
                                                 disabled={isLoading}
-                                                className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all duration-300 ease-out shadow-sm
+                                                className={`w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all duration-300 ease-out shadow-sm
                                                     ${isLoading ? 'bg-slate-200 border-slate-300' : 
                                                         isDone 
                                                             ? 'bg-slate-800 border-slate-800 text-white' 
@@ -420,8 +474,8 @@
                                                                 : 'bg-white border-slate-300 group-hover:border-slate-400'
                                                     }`}
                                             >
-                                                {isLoading ? <i className="fa-solid fa-spinner fa-spin text-xs text-slate-500"></i> : (
-                                                    isDone && <i className="fa-solid fa-check text-xs checkbox-pop"></i>
+                                                {isLoading ? <i className="fa-solid fa-spinner fa-spin text-[9px] text-slate-500"></i> : (
+                                                    isDone && <i className="fa-solid fa-check text-[9px] checkbox-pop"></i>
                                                 )}
                                             </button>
                                         </div>
@@ -554,36 +608,6 @@
 
             return (
                 <div className="h-full w-full flex flex-col bg-slate-50 relative">
-                    {showDaySelector && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm px-4" onClick={() => setShowDaySelector(false)}>
-                            <div className="bg-white rounded-3xl p-6 w-full max-w-md max-h-[85vh] flex flex-col shadow-2xl" onClick={e => e.stopPropagation()}>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-extrabold text-slate-800">Select Day</h2>
-                                    <button onClick={() => setShowDaySelector(false)} className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition-colors">
-                                        <i className="fa-solid fa-xmark"></i>
-                                    </button>
-                                </div>
-                                <div className="overflow-y-auto grid grid-cols-5 gap-2 pb-2 hide-scrollbar">
-                                    {syllabus.map((day, idx) => (
-                                        <button 
-                                            key={day.dayId}
-                                            onClick={() => { setViewedDayIndex(idx); setShowDaySelector(false); }}
-                                            className={`py-2.5 rounded-xl text-sm font-bold border transition-all ${
-                                                idx === viewedDayIndex 
-                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-105'
-                                                    : idx === actualDayIndex
-                                                        ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
-                                            }`}
-                                        >
-                                            {day.dayId}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     {/* Main Scrollable Content Box */}
                     <div className="flex-1 overflow-y-auto hide-scrollbar w-full">
                         {activeTab === 'today' && renderToday()}
