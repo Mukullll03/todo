@@ -10,32 +10,13 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
-        @font-face {
-            font-family: 'Google Sans';
-            src: url('https://fonts.gstatic.com/s/googlesans/v14/4UaGrENHsxJlGDuGo1OIlL3Owp4.woff2') format('woff2');
-            font-weight: 400;
-        }
-        @font-face {
-            font-family: 'Google Sans';
-            src: url('https://fonts.gstatic.com/s/googlesans/v14/4UaZrENHsxJlGDuGo1OIlL3Owp5eKT8.woff2') format('woff2');
-            font-weight: 500;
-        }
-        @font-face {
-            font-family: 'Google Sans';
-            src: url('https://fonts.gstatic.com/s/googlesans/v14/4UabrENHsxJlGDuGo1OIlLU94YtzCwI.woff2') format('woff2');
-            font-weight: 700;
-        }
-        @font-face {
-            font-family: 'Google Sans';
-            src: url('https://fonts.gstatic.com/s/googlesans/v14/4UaZrENHsxJlGDuGo1OIlL3OwphdKT8.woff2') format('woff2');
-            font-weight: 800;
-        }
-        
         body { 
-            font-family: 'Google Sans', sans-serif; 
-            background-color: #f8fafc; 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f0f9ff; /* Updated to requested bg color */
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
         }
@@ -46,7 +27,7 @@
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         
         .glass {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.45);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
@@ -59,9 +40,25 @@
             0% { transform: scale(0.5); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
+
+        /* Ambient Background Animations */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
     </style>
 </head>
 <body class="text-slate-800 antialiased h-screen w-screen overflow-hidden">
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div class="absolute top-[20%] right-[-10%] w-96 h-96 bg-sky-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+    </div>
+
     <div id="root" class="h-full w-full"></div>
 
     <script type="text/babel">
@@ -228,15 +225,15 @@
 
         const SubjectPill = ({ type, subject, icon }) => {
             const colors = {
-                maths: 'bg-blue-100 text-blue-700 border-blue-200',
-                english: 'bg-indigo-100 text-indigo-700 border-indigo-200',
-                reasoning: 'bg-orange-100 text-orange-700 border-orange-200',
-                gs: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                revision: 'bg-purple-100 text-purple-700 border-purple-200',
-                mock: 'bg-red-100 text-red-700 border-red-200',
-                skill: 'bg-teal-100 text-teal-700 border-teal-200'
+                maths: 'bg-blue-100/50 text-blue-700 border-blue-200/50',
+                english: 'bg-indigo-100/50 text-indigo-700 border-indigo-200/50',
+                reasoning: 'bg-orange-100/50 text-orange-700 border-orange-200/50',
+                gs: 'bg-emerald-100/50 text-emerald-700 border-emerald-200/50',
+                revision: 'bg-purple-100/50 text-purple-700 border-purple-200/50',
+                mock: 'bg-red-100/50 text-red-700 border-red-200/50',
+                skill: 'bg-teal-100/50 text-teal-700 border-teal-200/50'
             };
-            const c = colors[type] || 'bg-gray-100 text-gray-700';
+            const c = colors[type] || 'bg-gray-100/50 text-gray-700';
             
             return (
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${c}`}>
@@ -250,7 +247,7 @@
             const [syllabus] = React.useState(generateDetailedSyllabus());
             const [isSyncing, setIsSyncing] = React.useState(false);
             const [showDaySelector, setShowDaySelector] = React.useState(false);
-            const [taskLoading, setTaskLoading] = React.useState({}); // New state to track individual task loading
+            const [taskLoading, setTaskLoading] = React.useState({}); 
             
             // Calculate actual today index once
             const getActualDayIndex = () => {
@@ -391,8 +388,9 @@
                     <div className="p-4 md:p-6 pb-8 w-full max-w-2xl mx-auto">
                         <div className="mb-6 flex justify-between items-start">
                             <div>
-                                <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
-                                    {viewedDayIndex === actualDayIndex ? "Today's Mission" : `Day ${viewedData.dayId} Mission`}
+                                {/* Changed text and applied the gradient class for Daily Prep style */}
+                                <h1 className="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-blue-600 tracking-tight flex items-center gap-3 pb-1">
+                                    {viewedDayIndex === actualDayIndex ? "Daily Prep" : `Day ${viewedData.dayId} Prep`}
                                     {isSyncing && <i className="fa-solid fa-cloud-arrow-up text-sm text-blue-500 animate-bounce"></i>}
                                 </h1>
                                 <div className="flex items-center gap-2 mt-1.5">
@@ -451,17 +449,17 @@
             </div>
         </div>
 
-        <div className="relative mt-6 space-y-6 -ml-2">
-            <div className="absolute left-[9px] top-4 bottom-8 w-[2px] bg-slate-200 rounded-full z-0"></div>
+                        <div className="relative mt-6 space-y-6 -ml-2">
+                            <div className="absolute left-[9px] top-4 bottom-8 w-[2px] bg-slate-200 rounded-full z-0"></div>
 
-            {viewedData.tasks.map((task, idx) => {
-                const isDone = completedTasks[task.id];
-                            const isActive = !isDone && isCurrentlyActive(task.timeSlot);
+                            {viewedData.tasks.map((task, idx) => {
+                                const isDone = completedTasks[task.id];
+                                const isActive = !isDone && isCurrentlyActive(task.timeSlot);
                                 const isLoading = taskLoading[task.id];
                                 
                                 return (
                                     <div key={task.id} className="relative z-10 flex gap-4 items-start group">
-                                        <div className="mt-1 flex flex-col items-center shrink-0">
+                                        <div className="mt-1.5 flex flex-col items-center shrink-0">
                                             <button 
                                                 onClick={() => toggleTask(task)}
                                                 disabled={isLoading}
@@ -482,8 +480,8 @@
 
                                         <div 
                                             onClick={() => !isLoading && toggleTask(task)}
-                                            className={`flex-1 rounded-2xl p-4 border transition-all cursor-pointer shadow-sm
-                                                ${isDone ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 hover:shadow-md hover:border-slate-300'}
+                                            className={`flex-1 rounded-2xl p-4 border transition-all cursor-pointer shadow-sm glass
+                                                ${isDone ? 'bg-slate-50/30 border-slate-200 opacity-60' : 'bg-white/40 border-slate-200 hover:shadow-md hover:border-slate-300'}
                                                 ${isActive ? 'ring-2 ring-blue-400 ring-offset-2' : ''}
                                                 ${isLoading ? 'opacity-70' : ''}
                                             `}
@@ -508,10 +506,11 @@
 
             const renderSchedule = () => (
                 <div className="p-4 md:p-6 pb-8 w-full max-w-2xl mx-auto">
-                    <h1 className="text-2xl font-extrabold text-slate-800 mb-6 tracking-tight">Master Blueprint</h1>
+                    {/* Applied text gradient style */}
+                    <h1 className="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-blue-600 tracking-tight mb-6 pb-1">Master Blueprint</h1>
                     <div className="space-y-4">
                         {syllabus.map(day => (
-                            <div key={day.dayId} className={`rounded-xl border p-4 shadow-sm ${day.dayId === actualDayIndex + 1 ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-200'}`}>
+                            <div key={day.dayId} className={`rounded-xl border p-4 shadow-sm glass ${day.dayId === actualDayIndex + 1 ? 'bg-blue-50/80 border-blue-200' : 'bg-white/80 border-slate-200'}`}>
                                 <div className="flex justify-between items-center mb-3">
                                     <h3 
                                         className="font-bold text-slate-800 cursor-pointer hover:text-blue-600 transition-colors flex items-center gap-2"
@@ -544,7 +543,8 @@
 
             const renderStats = () => (
                 <div className="p-4 md:p-6 pb-8 w-full max-w-2xl mx-auto flex flex-col items-center">
-                    <h1 className="text-2xl font-extrabold text-slate-800 w-full mb-8 tracking-tight">Detailed Analysis</h1>
+                    {/* Applied text gradient style */}
+                    <h1 className="text-3xl sm:text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-blue-600 tracking-tight w-full mb-8 pb-1">Detailed Analysis</h1>
                     
                     <div className="relative w-40 h-40 mb-8 shrink-0">
                         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -564,17 +564,17 @@
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 w-full mb-8">
-                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
+                        <div className="bg-white/80 glass p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
                             <div className="text-3xl font-black text-slate-800">{completedCount}</div>
                             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1">Tasks Done</div>
                         </div>
-                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
+                        <div className="bg-white/80 glass p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
                             <div className="text-3xl font-black text-slate-800">{totalTasks - completedCount}</div>
                             <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1">Remaining</div>
                         </div>
                     </div>
 
-                    <div className="w-full bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-8">
+                    <div className="w-full bg-white/80 glass p-5 rounded-2xl border border-slate-200 shadow-sm mb-8">
                         <h3 className="font-extrabold text-slate-800 mb-4 tracking-tight">Subject Progress</h3>
                         {Object.keys(subStats).map(key => {
                             const stat = subStats[key];
@@ -597,7 +597,7 @@
                         href="https://docs.google.com/spreadsheets/d/1W0tnRXomGUHBU3sEPWN4jbm_VcA5r0n5kRXJHMGmsTU/edit?usp=sharing"
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="w-full bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-200 py-4 rounded-2xl font-extrabold text-[15px] transition-all shadow-sm flex items-center justify-center gap-3 active:scale-95 mb-2"
+                        className="w-full bg-white/90 glass hover:bg-white text-slate-800 border-2 border-slate-200 py-4 rounded-2xl font-extrabold text-[15px] transition-all shadow-sm flex items-center justify-center gap-3 active:scale-95 mb-2"
                     >
                         <i className="fa-solid fa-fire text-orange-500 text-xl"></i> 
                         Open Progress sheet
@@ -607,7 +607,7 @@
             );
 
             return (
-                <div className="h-full w-full flex flex-col bg-slate-50 relative">
+                <div className="h-full w-full flex flex-col relative bg-transparent z-10">
                     {/* Main Scrollable Content Box */}
                     <div className="flex-1 overflow-y-auto hide-scrollbar w-full">
                         {activeTab === 'today' && renderToday()}
