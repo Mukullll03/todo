@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mission90 Pro</title>
+    <title>To Do</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -65,7 +65,7 @@
     <div id="root" class="h-full w-full"></div>
 
     <script type="text/babel">
-        const START_DATE = new Date('2026-08-18T00:00:00');
+        const START_DATE = new Date('2026-08-22T00:00:00');
         const TOTAL_DAYS = 90;
 
         const mathsTopics = [
@@ -217,16 +217,16 @@
             const getActualDayIndex = () => {
                 const todayDateMidnight = new Date();
                 todayDateMidnight.setHours(0, 0, 0, 0);
-                const startStr = new Date('2026-08-18T00:00:00');
+                const startStr = new Date(START_DATE);
                 startStr.setHours(0, 0, 0, 0);
                 const diffTime = todayDateMidnight - startStr;
                 const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                 return Math.max(0, Math.min(diffDays, 89));
             };
+            
             const actualDayIndex = getActualDayIndex();
             const [viewedDayIndex, setViewedDayIndex] = React.useState(actualDayIndex);
 
-            // Load saved progress from local storage
             const [completedTasks, setCompletedTasks] = React.useState(() => {
                 try {
                     const saved = localStorage.getItem('mission90_completed_tasks');
@@ -236,7 +236,6 @@
                 }
             });
 
-            // Save to local storage whenever tasks change
             React.useEffect(() => {
                 localStorage.setItem('mission90_completed_tasks', JSON.stringify(completedTasks));
             }, [completedTasks]);
@@ -302,7 +301,6 @@
                 }
             };
 
-            // Calculate overall and subject-wise stats
             let totalTasks = 0;
             let completedCount = 0;
             const subStats = {
@@ -331,23 +329,25 @@
             const renderToday = () => {
                 const completedToday = viewedData.tasks.filter(t => completedTasks[t.id]).length;
                 const totalToday = viewedData.tasks.length;
+                // Calculate days left, ensuring it stops at 0
+                const daysLeft = Math.max(0, TOTAL_DAYS - actualDayIndex);
 
                 return (
                     <div className="p-4 md:p-6 pb-8 w-full max-w-2xl mx-auto">
-                        <div className="mb-6 flex justify-between items-end">
+                        <div className="mb-6 flex justify-between items-start">
                             <div>
                                 <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
                                     {viewedDayIndex === actualDayIndex ? "Today's Mission" : `Day ${viewedData.dayId} Mission`}
                                     {isSyncing && <i className="fa-solid fa-cloud-arrow-up text-sm text-blue-500 animate-bounce"></i>}
                                 </h1>
-                                <div className="flex items-center gap-2 mt-2">
+                                <div className="flex items-center gap-2 mt-1.5">
                                     <p 
                                         onClick={() => setShowDaySelector(true)}
-                                        className="text-slate-600 font-bold flex items-center gap-1.5 text-sm cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm hover:bg-slate-50 hover:text-blue-600 transition-all active:scale-95 select-none"
+                                        className="text-slate-500 font-semibold flex items-center gap-1 text-xs cursor-pointer hover:text-blue-600 transition-all active:scale-95 select-none"
                                     >
-                                        <i className="fa-regular fa-calendar text-blue-500"></i>
-                                        Day {viewedData.dayId} <span className="opacity-60 font-medium text-xs hidden sm:inline">• {viewedData.date}</span>
-                                        <i className="fa-solid fa-caret-down text-[10px] ml-1 opacity-50"></i>
+                                        <i className="fa-regular fa-calendar text-blue-500 mr-0.5"></i>
+                                        Day {viewedData.dayId} <span className="ml-0.5">• {viewedData.date}</span>
+                                        <i className="fa-solid fa-caret-down text-[10px] ml-0.5 opacity-50"></i>
                                     </p>
                                     {viewedDayIndex !== actualDayIndex && (
                                         <button 
@@ -359,24 +359,20 @@
                                     )}
                                 </div>
                             </div>
-                            <div className="bg-slate-800 text-white px-3 py-1.5 rounded-xl text-sm font-bold shadow-md">
+                            <div className="flex flex-col items-end gap-2">
+                                <div className="bg-slate-800 text-white px-3 py-1.5 rounded-xl text-sm font-bold shadow-md whitespace-nowrap">
                                 {completedToday}/{totalToday} Done
                             </div>
-                        </div>
-
-                        {viewedData.dayType === 'saturday' && (
-                            <div className="bg-purple-100 border border-purple-200 text-purple-800 p-4 rounded-2xl mb-6 flex items-start gap-3 shadow-sm">
-                                <i className="fa-solid fa-rotate-left text-xl mt-0.5"></i>
-                                <div>
-                                    <h3 className="font-bold">Weekly Revision Day</h3>
-                                    <p className="text-sm mt-1 opacity-90">No new topics today. Your goal is strictly to revise everything you studied from Monday to Friday.</p>
-                                </div>
+                            <div className="bg-orange-100 text-orange-700 px-2 py-1 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 border border-orange-200 whitespace-nowrap">
+                                <i className="fa-solid fa-hourglass-half"></i>
+                                {daysLeft} {daysLeft === 1 ? 'Day' : 'Days'} Left
                             </div>
-                        )}
+                        </div>
+                    </div>
 
-                        {viewedData.dayType === 'sunday' && (
-                            <div className="bg-red-100 border border-red-200 text-red-800 p-4 rounded-2xl mb-6 flex items-start gap-3 shadow-sm">
-                                <i className="fa-solid fa-shield-halved text-xl mt-0.5"></i>
+                    {viewedData.dayType === 'sunday' && (
+                        <div className="bg-red-100 border border-red-200 text-red-800 p-4 rounded-2xl mb-6 flex items-start gap-3 shadow-sm">
+                            <i className="fa-solid fa-shield-halved text-xl mt-0.5"></i>
                                 <div>
                                     <h3 className="font-bold">Mock Test Day</h3>
                                     <p className="text-sm mt-1 opacity-90">Test day! Attempt the mock in exam-like conditions. Do not skip the analysis part.</p>
