@@ -370,10 +370,6 @@
             // --- NEW FEATURES STATE: Zen Mode, Mock Scores & Scratchpad ---
             const [zenMode, setZenMode] = React.useState(false);
 
-            const [scratchpadOpen, setScratchpadOpen] = React.useState(false);
-            const [scratchpadText, setScratchpadText] = React.useState(() => localStorage.getItem('mission90_scratchpad') || "");
-            React.useEffect(() => { localStorage.setItem('mission90_scratchpad', scratchpadText); }, [scratchpadText]);
-
             const [noiseActive, setNoiseActive] = React.useState(false);
             const noiseContextRef = React.useRef(null);
             
@@ -594,7 +590,7 @@
             const progressVal = Math.round((completedCount / totalTasks) * 100) || 0;
 
             const handleExportData = () => {
-                const data = { completedTasks, customTasks, confettiFiredDays, scratchpadText };
+                const data = { completedTasks, customTasks, confettiFiredDays };
                 const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -613,7 +609,6 @@
                         if (data.completedTasks) setCompletedTasks(data.completedTasks);
                         if (data.customTasks) setCustomTasks(data.customTasks);
                         if (data.confettiFiredDays) setConfettiFiredDays(data.confettiFiredDays);
-                        if (data.scratchpadText) setScratchpadText(data.scratchpadText);
                         alert("Backup restored successfully!");
                     } catch (err) {
                         alert("Invalid backup file.");
@@ -1235,37 +1230,6 @@
                         {activeTab === 'timer' && renderTimer()}
                         {activeTab === 'stats' && renderStats()}
                     </div>
-
-                    {/* Scratchpad UI */}
-                    {!zenMode && (
-                        <>
-                            <div className="fixed bottom-[88px] right-4 z-40">
-                                <button 
-                                    onClick={() => setScratchpadOpen(!scratchpadOpen)} 
-                                    className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg shadow-yellow-500/30 transition-all active:scale-95 border-2 border-white ${scratchpadOpen ? 'bg-slate-800' : 'bg-amber-400 hover:bg-amber-500'}`}
-                                    title="Quick Scratchpad"
-                                >
-                                    <i className={`fa-solid ${scratchpadOpen ? 'fa-xmark text-xl' : 'fa-pen text-lg'}`}></i>
-                                </button>
-                            </div>
-                            
-                            {scratchpadOpen && (
-                                <div className="fixed bottom-[145px] right-4 w-[280px] sm:w-80 h-72 bg-[#fef9c3] rounded-2xl shadow-2xl border border-yellow-200 p-1 flex flex-col z-40 transform origin-bottom-right">
-                                    <div className="flex justify-between items-center px-3 py-2 bg-yellow-200/50 rounded-t-xl mb-1 border-b border-yellow-200">
-                                        <span className="text-xs font-bold text-yellow-800 flex items-center gap-1.5"><i className="fa-solid fa-pen-clip"></i> Quick Scratchpad</span>
-                                        <button onClick={() => setScratchpadText('')} className="text-[10px] font-bold text-yellow-700 hover:text-red-600 bg-yellow-100 px-2 py-1 rounded transition-colors active:scale-95">Clear</button>
-                                    </div>
-                                    <textarea 
-                                        value={scratchpadText}
-                                        onChange={(e) => setScratchpadText(e.target.value)}
-                                        placeholder="Jot down quick formulas, vocab words, or thoughts here..."
-                                        className="flex-1 w-full bg-transparent border-none resize-none focus:ring-0 p-3 text-sm text-yellow-900 placeholder-yellow-700/50 font-medium font-sans hide-scrollbar"
-                                        spellCheck="false"
-                                    />
-                                </div>
-                            )}
-                        </>
-                    )}
 
                     {/* Fixed Flex-Shrink Bottom Navigation Bar */}
                     {!zenMode && (
